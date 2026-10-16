@@ -334,13 +334,18 @@ async function loadPaper(){
     const px=st.prices||{};const eqv=COINS.reduce((a,c)=>a+st.cash[c.s]+st.qty[c.s]*(px[c.s]||0),0);
     const bh=COINS.reduce((a,c)=>a+st.bh_qty[c.s]*(px[c.s]||0),0);
     const sells=(st.trades||[]).filter(t=>t.side==='SELL'),wins=sells.filter(t=>t.ret>0).length;
-    const rows=COINS.map(c=>{const p=cfg[c.s],v=st.cash[c.s]+st.qty[c.s]*(px[c.s]||0);
-      return `<tr><td>${c.s}</td><td class="num">$${v.toFixed(2)}</td><td>${st.qty[c.s]>0?'<span class="pill buy">في صفقة</span>':'<span class="pill hold">نقد</span>'}</td><td class="sub">${p&&p.active?p.strategy+' · '+p.tf:'لا استراتيجية رابحة'}</td></tr>`}).join('');
+    const stCls={'نشطة':'buy','بديلة':'warn','موقوفة':'sell','نقد':'hold'};
+    const rows=COINS.map(c=>{const p=(st.perf||{})[c.s]||{},v=st.cash[c.s]+st.qty[c.s]*(px[c.s]||0);
+      const st0=p.status||(cfg[c.s]&&cfg[c.s].active?'نشطة':'نقد');
+      const live=p.live_n?`${p.live_n} صفقات · ${(p.live_win*100).toFixed(0)}% رابحة · ${pct(p.live_ret)}`:'لا صفقات مغلقة بعد';
+      return `<tr><td>${c.s}</td><td class="num">$${v.toFixed(2)} <span class="sub">(${pct(v/1000-1)})</span></td><td><span class="pill ${stCls[st0]||'hold'}">${st0}</span>${st.qty[c.s]>0?' <span class="sub">في صفقة</span>':''}</td><td class="sub">${p.strategy?p.strategy+' · '+p.tf:'—'}</td><td class="sub">${live}</td><td class="num sub">${p.backtest_ret!=null?pct(p.backtest_ret):'—'}</td></tr>`}).join('');
+    const evs=(st.events||[]).slice(-6).reverse().map(e=>`<li><span class="num sub">${e.time}</span> ${e.text}</li>`).join('');
     const last=(st.trades||[]).slice(-8).reverse().map(t=>`<tr><td class="num">${t.time}</td><td>${t.coin}</td><td class="${t.side==='BUY'?'up':'down'}">${t.side==='BUY'?'شراء':'بيع'}</td><td class="num">${t.price}</td><td class="num">${t.ret!==undefined?pct(t.ret):''}</td></tr>`).join('');
     el.innerHTML=`<dl class="kv"><dt>رصيد الحساب</dt><dd class="num ${eqv>=5000?'up':'down'}">$${eqv.toFixed(2)} (${pct(eqv/5000-1)})</dd>
       <dt>لو اشتريت وانتظرت</dt><dd class="num">$${bh.toFixed(2)} (${pct(bh/5000-1)})</dd>
       <dt>صفقات مغلقة / رابحة</dt><dd class="num">${sells.length} / ${wins}</dd><dt>بدأ في</dt><dd class="num">${st.start.slice(0,16).replace('T',' ')} UTC</dd></dl>
-      <div style="overflow-x:auto;margin-top:10px"><table><tr><th>العملة</th><th>القيمة</th><th>الحالة</th><th>الاستراتيجية</th></tr>${rows}</table></div>
+      <div style="overflow-x:auto;margin-top:10px"><table><tr><th>العملة</th><th>القيمة (من 1000$)</th><th>الحالة</th><th>الاستراتيجية</th><th>الأداء الحي</th><th>اختبار تاريخي</th></tr>${rows}</table></div>
+      ${evs?`<h2 style="margin-top:14px">قرارات النظام</h2><ul>${evs}</ul>`:''}
       ${last?`<h2 style="margin-top:14px">آخر الصفقات</h2><div style="overflow-x:auto"><table><tr><th>الوقت</th><th>العملة</th><th>النوع</th><th>السعر</th><th>النتيجة</th></tr>${last}</table></div>`:''}`;
   }catch(e){el.innerHTML='<span class="sub">لا توجد بيانات بعد. شغّل workflow باسم backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span>'}
 }

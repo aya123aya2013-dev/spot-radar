@@ -292,22 +292,34 @@ def cmd_backtest():
     if not results:
         sys.exit("No data. Check your internet connection.")
     for coin in COINS:
-        cand = [r for r in results if r["coin"] == coin]
+        cand = sorted((r for r in results if r["coin"] == coin),
+                      key=lambda r: r["train"]["ret"] - 0.5 * r["train"]["dd"], reverse=True)
         if not cand:
             continue
-        r = max(cand, key=lambda r: r["train"]["ret"] - 0.5 * r["train"]["dd"])
-        ok = r["test"]["ret"] > 0 and r["test"]["n"] >= 3
-        picks[coin] = dict(active=ok, tf=r["tf"], strategy=r["strategy"], params=r["params"], stop=r["stop"],
-                           test_ret=r["test"]["ret"], test_bh=r["test"]["bh"])
+        good = [r for r in cand if r["test"]["ret"] > 0 and r["test"]["n"] >= 3]
+
+        def pack(r, active):
+            return dict(active=active, tf=r["tf"], strategy=r["strategy"], params=r["params"], stop=r["stop"],
+                        test_ret=r["test"]["ret"], test_bh=r["test"]["bh"])
+        if good:
+            picks[coin] = pack(good[0], True)
+            picks[coin]["alts"] = [pack(r, True) for r in good[1:3]]
+        else:
+            picks[coin] = pack(cand[0], False)
+            picks[coin]["alts"] = []
+    picks["generated"] = datetime.now(timezone.utc).isoformat()
     json.dump(results, open(os.path.join(OUT, "backtest.json"), "w"), indent=1)
     json.dump(picks, open(os.path.join(OUT, "config.json"), "w"), indent=1)
     print("\nChosen for paper trading (train on first 60%, judged on the unseen last 40%):")
     for c, p in picks.items():
+        if c == "generated":
+            continue
         tag = "ACTIVE" if p["active"] else "cash (no edge found)"
         print(f"  {c:4} {tag:22} {p['strategy']} {p['params']} stop={p['stop']} tf={p['tf']}  "
               f"test {p['test_ret']*100:+.1f}% vs buy&hold {p['test_bh']*100:+.1f}%")
-    avg_t = sum(p["test_ret"] if p["active"] else 0 for p in picks.values()) / len(picks)
-    avg_b = sum(p["test_bh"] for p in picks.values()) / len(picks)
+    coins_p = [p for k, p in picks.items() if k != "generated"]
+    avg_t = sum(p["test_ret"] if p["active"] else 0 for p in coins_p) / len(coins_p)
+    avg_b = sum(p["test_bh"] for p in coins_p) / len(coins_p)
     print(f"\nWhole account on the unseen period: strategy {avg_t*100:+.1f}% vs buy&hold {avg_b*100:+.1f}% "
           f"(${CAPITAL*(1+avg_t):,.0f} vs ${CAPITAL*(1+avg_b):,.0f})")
     print("Saved lab_data/backtest.json and lab_data/config.json. Next: python3 spot_lab.py paper")
@@ -317,12 +329,25 @@ def cmd_backtest():
 STATE = os.path.join(OUT, "paper.json")
 
 
+PAUSE_LOSS = -0.08     # live compounded return of closed trades for one strategy
+PAUSE_DD = 0.12        # drawdown of the coin's sleeve from its own peak
+PAUSE_MIN_TRADES = 3
+
+
 def load_state(prices):
     if os.path.exists(STATE):
-        return json.load(open(STATE))
-    st = dict(start=datetime.now(timezone.utc).isoformat(), cash={c: SLEEVE for c in COINS},
-              qty={c: 0.0 for c in COINS}, basis={c: 0.0 for c in COINS}, peak={c: 0.0 for c in COINS},
-              last_bar={c: 0 for c in COINS}, bh_qty={c: SLEEVE / prices[c] for c in COINS}, trades=[])
+        st = json.load(open(STATE))
+    else:
+        st = dict(start=datetime.now(timezone.utc).isoformat(), cash={c: SLEEVE for c in COINS},
+                  qty={c: 0.0 for c in COINS}, basis={c: 0.0 for c in COINS}, peak={c: 0.0 for c in COINS},
+                  last_bar={c: 0 for c in COINS}, bh_qty={c: SLEEVE / prices[c] for c in COINS}, trades=[])
+    st.setdefault("override", {})
+    st.setdefault("paused", {})
+    st.setdefault("tried", {})
+    st.setdefault("sleeve_peak", {c: SLEEVE for c in COINS})
+    st.setdefault("events", [])
+    st.setdefault("cfg_gen", "")
+    st.setdefault("perf", {})
     return st
 
 
@@ -344,11 +369,52 @@ def log_csv(name, row):
         w.writerow(row)
 
 
+def skey(p):
+    return f"{p['strategy']}|{p['tf']}|{json.dumps(p['params'], sort_keys=True)}|{p['stop']}"
+
+
+def effective(cfg, st, c):
+    """The strategy that is allowed to trade this coin right now, or None (stay in cash)."""
+    if c in st["paused"]:
+        return None
+    p = st["override"].get(c) or cfg.get(c)
+    return p if p and p.get("active") else None
+
+
+def event(st, now, text):
+    st["events"] = (st["events"] + [dict(time=now, text=text)])[-30:]
+    print("  EVENT:", text)
+
+
+def live_stats(st, c, key):
+    rets = [t["ret"] for t in st["trades"]
+            if t["coin"] == c and t["side"] == "SELL" and t.get("key") == key and t.get("gen", "") == st["cfg_gen"]]
+    comp = 1.0
+    for r in rets:
+        comp *= 1 + r
+    return dict(n=len(rets), win=(sum(1 for r in rets if r > 0) / len(rets)) if rets else 0, ret=comp - 1)
+
+
+def sell(st, c, px, now, why):
+    cash = st["qty"][c] * px * (1 - SLIP) * (1 - FEE)
+    ret = cash / st["basis"][c] - 1
+    st["trades"].append(dict(time=now, coin=c, side="SELL", price=px, ret=ret, why=why, key=st.get("holding_key", {}).get(c), gen=st["cfg_gen"]))
+    log_csv("paper_trades.csv", [now, c, "SELL", px, f"{ret*100:.2f}%", why])
+    print(f"  SELL {c} @ {px:g}  {ret*100:+.2f}%  ({why})")
+    st["cash"][c], st["qty"][c] = cash, 0.0
+
+
 def cycle(cfg, st):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    if cfg.get("generated", "") != st["cfg_gen"]:       # a fresh backtest replaced the strategy set
+        if st["cfg_gen"]:
+            event(st, now, "تم تحديث الاستراتيجيات بعد اختبار جديد، وأُلغيت التحويلات والإيقافات السابقة")
+        st["override"], st["paused"], st["tried"] = {}, {}, {}
+        st["cfg_gen"] = cfg.get("generated", "")
     prices, data = {}, {}
     for c in COINS:
-        p = cfg.get(c)
-        tf = p["tf"] if p and p["active"] else "1h"
+        p = effective(cfg, st, c) or cfg.get(c)
+        tf = p["tf"] if p else "1h"
         try:
             rows = klines(c, tf, 400)
             data[c] = rows
@@ -358,36 +424,71 @@ def cycle(cfg, st):
     if len(prices) < len(COINS):
         print("  skipping this cycle, missing prices")
         return st
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    st.setdefault("holding_key", {})
     for c in COINS:
-        p = cfg.get(c)
-        if not p or not p["active"]:
+        p = effective(cfg, st, c)
+        if not p:
             continue
+        key = skey(p)
         rows, px = data[c], prices[c]
-        fn = STRATS[p["strategy"]][0]
-        en, ex = fn(rows, **p["params"])
+        en, ex = STRATS[p["strategy"]][0](rows, **p["params"])
         at = atr(rows)
         bar = rows[-1][0]
         if st["qty"][c] > 0:
             st["peak"][c] = max(st["peak"][c], px)
             stopped = p["stop"] and px < st["peak"][c] - p["stop"] * at[-1]
             if ex[-1] or stopped:
-                cash = st["qty"][c] * px * (1 - SLIP) * (1 - FEE)
-                ret = cash / st["basis"][c] - 1
-                st["trades"].append(dict(time=now, coin=c, side="SELL", price=px, ret=ret, why="stop" if stopped else "signal"))
-                log_csv("paper_trades.csv", [now, c, "SELL", px, f"{ret*100:.2f}%", "stop" if stopped else "signal"])
-                print(f"  SELL {c} @ {px:g}  {ret*100:+.2f}%  ({'stop' if stopped else 'signal'})")
-                st["cash"][c], st["qty"][c] = cash, 0.0
+                sell(st, c, px, now, "stop" if stopped else "signal")
         elif en[-1] and bar != st["last_bar"][c]:
             cash = st["cash"][c]
             st["basis"][c], st["peak"][c] = cash, px
             st["qty"][c] = cash * (1 - FEE) / (px * (1 + SLIP))
             st["cash"][c] = 0.0
-            st["trades"].append(dict(time=now, coin=c, side="BUY", price=px))
+            st["holding_key"][c] = key
+            st["trades"].append(dict(time=now, coin=c, side="BUY", price=px, key=key, gen=st["cfg_gen"]))
             log_csv("paper_trades.csv", [now, c, "BUY", px, "", ""])
             print(f"  BUY  {c} @ {px:g}")
         if en[-1]:
             st["last_bar"][c] = bar
+        # ---- live performance check: pause or switch a strategy that is losing
+        v = st["cash"][c] + st["qty"][c] * px
+        st["sleeve_peak"][c] = max(st["sleeve_peak"].get(c, SLEEVE), v)
+        dd = 1 - v / st["sleeve_peak"][c]
+        ls = live_stats(st, c, key)
+        why = None
+        if ls["n"] >= PAUSE_MIN_TRADES and ls["ret"] <= PAUSE_LOSS:
+            why = f"خسارة حية {ls['ret']*100:.1f}% في {ls['n']} صفقات"
+        elif dd >= PAUSE_DD:
+            why = f"هبوط {dd*100:.1f}% من قمة رصيد العملة"
+        if why:
+            if st["qty"][c] > 0:
+                sell(st, c, px, now, "pause")
+            st["tried"].setdefault(c, []).append(key)
+            nxt = next((a for a in cfg.get(c, {}).get("alts", []) if skey(a) not in st["tried"][c]), None)
+            st["sleeve_peak"][c] = st["cash"][c]
+            if nxt:
+                st["override"][c] = nxt
+                event(st, now, f"{c}: توقفت {p['strategy']} ({why}) وتم التحويل إلى {nxt['strategy']} {nxt['tf']}")
+            else:
+                st["paused"][c] = why
+                event(st, now, f"{c}: توقفت {p['strategy']} ({why}) ولا بديل، العملة نقد حتى الاختبار القادم")
+    # ---- performance log, shown on the dashboard
+    perf = {}
+    for c in COINS:
+        p = effective(cfg, st, c)
+        v = st["cash"][c] + st["qty"][c] * prices[c]
+        base = cfg.get(c, {})
+        if p:
+            ls = live_stats(st, c, skey(p))
+            status = "بديلة" if c in st["override"] else "نشطة"
+        else:
+            ls = dict(n=0, win=0, ret=0)
+            status = "موقوفة" if c in st["paused"] else "نقد"
+        perf[c] = dict(status=status, strategy=(p or base).get("strategy"), tf=(p or base).get("tf"),
+                       live_n=ls["n"], live_win=ls["win"], live_ret=ls["ret"],
+                       sleeve_ret=v / SLEEVE - 1, sleeve_dd=1 - v / st["sleeve_peak"].get(c, SLEEVE),
+                       backtest_ret=(p or base).get("test_ret"), reason=st["paused"].get(c, ""))
+    st["perf"] = perf
     eq = equity(st, prices)
     bh = sum(st["bh_qty"][c] * prices[c] for c in COINS)
     log_csv("paper_equity.csv", [now, round(eq, 2), round(bh, 2)])
