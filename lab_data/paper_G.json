@@ -1,0 +1,361 @@
+{
+ "start": "2026-11-02T16:56:09.669451+00:00",
+ "cash": 4461.134540516964,
+ "pos": {
+  "ZRO": {
+   "qty": 102.88800394116393,
+   "basis": 181.25174067264624,
+   "entry": 1.759,
+   "stop": 1.26403239556173,
+   "r": 0.5183,
+   "slip": 0.0005,
+   "high": 1.875,
+   "half": false,
+   "entry_ms": 1793638603934,
+   "regime": "bull"
+  },
+  "BCH": {
+   "qty": 1.2513475717907003,
+   "basis": 346.01582893263065,
+   "entry": 276.1,
+   "stop": 234.48,
+   "r": 41.62000000000003,
+   "slip": 0.0005,
+   "high": 281.7,
+   "half": false,
+   "entry_ms": 1793638604515,
+   "regime": "bull"
+  }
+ },
+ "trades": [
+  {
+   "time": "2026-11-02 16:56",
+   "coin": "ZRO",
+   "side": "BUY",
+   "price": 1.759,
+   "weight": 0.11662276974271564,
+   "regime": "bull",
+   "usd": 583.11,
+   "qty": 331.00600000000003
+  },
+  {
+   "time": "2026-11-02 16:56",
+   "coin": "BCH",
+   "side": "BUY",
+   "price": 276.1,
+   "weight": 0.125,
+   "regime": "bull",
+   "usd": 625.0,
+   "qty": 2.260278
+  },
+  {
+   "time": "2026-11-02 18:21",
+   "coin": "ZRO",
+   "side": "SELL",
+   "price": 1.725,
+   "ret": -0.02226774666248421,
+   "why": "risk_trim",
+   "frac": 0.6891657433969054,
+   "usd": 392.91,
+   "cost_usd": 401.86,
+   "pnl_usd": -8.95,
+   "qty": 228.1179960588361,
+   "fee_usd": 0.3933,
+   "slip_usd": 0.1968,
+   "pos_id": null,
+   "hours": 1.4
+  },
+  {
+   "time": "2026-11-02 18:21",
+   "coin": "BCH",
+   "side": "SELL",
+   "price": 274.3,
+   "ret": -0.009496343958227071,
+   "why": "risk_trim",
+   "frac": 0.44637448500109267,
+   "usd": 276.33,
+   "cost_usd": 278.98,
+   "pnl_usd": -2.65,
+   "qty": 1.0089304282092997,
+   "fee_usd": 0.2766,
+   "slip_usd": 0.1384,
+   "pos_id": null,
+   "hours": 1.4
+  }
+ ],
+ "events": [
+  {
+   "time": "2026-11-02 16:56",
+   "regime": "bull",
+   "text": "G: حالة السوق صاعد، ميزانية المخاطرة 50%"
+  },
+  {
+   "time": "2026-11-02 18:21",
+   "text": "G: تقليص ZRO: الخسارة حتى الوقف كانت $160 فوق حد المخاطرة $50، بيع جزء لإعادتها إلى الحد"
+  },
+  {
+   "time": "2026-11-02 18:21",
+   "text": "G: تقليص BCH: الخسارة حتى الوقف كانت $90 فوق حد المخاطرة $50، بيع جزء لإعادتها إلى الحد"
+  },
+  {
+   "time": "2026-11-03 03:05",
+   "regime": "bull",
+   "text": "G: حالة السوق صاعد، ميزانية المخاطرة 50%"
+  }
+ ],
+ "last_day": 20762,
+ "orders": [
+  {
+   "pair": "ZRO-USDT",
+   "side": "شراء",
+   "type": "محدد (Limit)",
+   "price": 1.759,
+   "usd": 116.62,
+   "qty": 66.3,
+   "stop": 1.2407,
+   "stop_pct": 0.2947,
+   "note": "لكل 1000$ من رأس مالك: 117$. الوقف عند 1.2407 (−29.5%)."
+  },
+  {
+   "pair": "BCH-USDT",
+   "side": "شراء",
+   "type": "محدد (Limit)",
+   "price": 276.1,
+   "usd": 125.0,
+   "qty": 0.452734,
+   "stop": 234.48,
+   "stop_pct": 0.1507,
+   "note": "لكل 1000$ من رأس مالك: 125$. الوقف عند 234.48 (−15.1%)."
+  }
+ ],
+ "peak": 5009.045769404459,
+ "regime": "bull",
+ "budget": 0.5,
+ "breadth": 0.1935483870967742,
+ "watch": [
+  "QNT",
+  "ZRO",
+  "ZEC",
+  "BTC",
+  "ETH",
+  "BCH"
+ ],
+ "decision": "حالة السوق: صاعد. BTC عند 80,504 مقابل متوسط 50 يوماً 80,148 ومتوسط 200 يوم 76,806. اتساع السوق: 19% من العملات المباحة فوق متوسطها 50 يوماً.\nميزانية المخاطرة اليوم: 50% من الحساب كحد أقصى في العملات.\nقائمة القادة (الأقوى أمام BTC): QNT، ZRO، ZEC، BTC، ETH، BCH\nما فعلته اليوم: تخطي QNT: غير متاحة للتداول الفوري على OKX؛ رفض ZEC: الوقف أبعد من 12%: العملة متذبذبة أكثر من اللازم\nالمراكز: ZRO +5.3% (وقف 1.26403)؛ BCH +2.5% (وقف 234.48)\nما يغيّر رأيي: عودة BTC تحت متوسط 200 يوم مع تقاطع 50 تحت 200 يعيد الحساب إلى النقد.",
+ "equity": 4964.306050023183,
+ "prices": {
+  "ZRO": 1.586,
+  "BCH": 271.7
+ },
+ "holdings": {
+  "ZRO": {
+   "qty": 102.88800394116393,
+   "basis": 181.25,
+   "t1": 2.7956,
+   "t2": 3.8322,
+   "half_taken": false,
+   "pnl_usd": -18.23,
+   "risk_usd": 33.13,
+   "value": 163.18037425068601,
+   "entry": 1.759,
+   "sl": 1.26403239556173,
+   "tp": 2.7956,
+   "pnl": -0.09835133598635581,
+   "signal": "bull",
+   "protected": false
+  },
+  "BCH": {
+   "qty": 1.2513475717907003,
+   "basis": 346.02,
+   "t1": 359.3400000000001,
+   "t2": 442.58000000000015,
+   "half_taken": false,
+   "pnl_usd": -6.36,
+   "risk_usd": 46.58,
+   "value": 339.99113525553327,
+   "entry": 276.1,
+   "sl": 234.48,
+   "tp": 359.3400000000001,
+   "pnl": -0.015936254980079778,
+   "signal": "bull",
+   "protected": false
+  }
+ },
+ "stats": {
+  "trades": 2,
+  "gate_trades": 20,
+  "gate": "مغلقة 2 · الحكم بعد 3 أشهر مقابل الاحتفاظ بـBTC والشراء الدوري"
+ },
+ "rules": {
+  "coins": [
+   "BTC",
+   "ETH",
+   "SOL",
+   "XRP",
+   "ADA",
+   "DOGE",
+   "AVAX",
+   "LINK",
+   "LTC",
+   "OP",
+   "DOT",
+   "TRX",
+   "ATOM",
+   "NEAR",
+   "XLM",
+   "HBAR",
+   "SUI",
+   "ARB",
+   "ALGO",
+   "FIL",
+   "ICP",
+   "ETC",
+   "BCH",
+   "ZRO",
+   "ZK",
+   "ZEC",
+   "TAO",
+   "RENDER",
+   "QNT",
+   "WLD"
+  ],
+  "agent": true,
+  "real_money_mode": true,
+  "account_dd_limit": 0.15,
+  "watch_n": 8,
+  "max_pos": 6,
+  "vol_unit": 0.0075,
+  "init_atr": 2.5,
+  "trail_atr": 3.0,
+  "partial_r": 2.0,
+  "risk": {
+   "mode": "paper",
+   "emergency_stop": false,
+   "risk_per_trade": 0.01,
+   "max_stop": 0.2,
+   "max_position": 0.25,
+   "max_positions": 6,
+   "max_cluster_exposure": 0.4,
+   "corr_limit": 0.8,
+   "daily_loss_limit": 0.03,
+   "weekly_loss_limit": 0.06,
+   "max_drawdown": 0.15,
+   "halt_days": 14,
+   "loss_streak": 4,
+   "streak_cooldown_days": 3,
+   "asset_cooldown_days": 3,
+   "max_spread_bps": 30.0,
+   "max_slip_bps": 25.0,
+   "data_max_age_hours": 30,
+   "min_data_coverage": 0.8,
+   "min_order_usd": 10.0,
+   "min_edge": 0.005,
+   "edge_min_trades": 20
+  }
+ },
+ "cooldown": {},
+ "day_id": 20762,
+ "day_start_eq": 5005.917374636709,
+ "week_id": 2966,
+ "week_start_eq": 4981.860986257661,
+ "control": {
+  "mode": "paper",
+  "emergency_stop": false,
+  "halt_until": 0,
+  "streak_until": 0,
+  "prices_ok": true
+ },
+ "journal_head": "1f56ee7fe3dc1cee3d6bec3c6fb9226e5065c27e9d53f08ce57c8ccb30e5232d",
+ "journal": {
+  "records": 12,
+  "intact": true,
+  "first_bad_line": null
+ },
+ "accounting": {
+  "equity": 4964.306050023183,
+  "cash": 4461.134540516964,
+  "invested": 503.1715095062193,
+  "exposure": 0.101357874481544,
+  "realized_pnl": -11.6,
+  "unrealized_pnl": -24.59,
+  "total_pnl": -35.69394997681684,
+  "fees": 0.6698999999999999,
+  "slippage": 0.3352,
+  "turnover": 1877.3500000000001,
+  "trades_closed": 2,
+  "win_rate": 0.0,
+  "avg_win": null,
+  "avg_loss": -5.8,
+  "expectancy_usd": -5.8,
+  "profit_factor": 0.0,
+  "max_drawdown": 0.007517128456929312,
+  "drawdown_now": 0.007517128456929312,
+  "day": -0.007517128456929312,
+  "week": -0.004358168005070051,
+  "month": -0.004358168005070051,
+  "btc_hold": -0.012513511687609724,
+  "cash_benchmark": 0.0,
+  "days": 4,
+  "sharpe": null,
+  "sortino": null,
+  "calmar": null,
+  "note": "needs 30 days",
+  "operating": {
+   "monthly_cost": 1500.0,
+   "items": [
+    {
+     "name": "تكاليف التشغيل والاشتراكات (تقدير المالك، الحد الأدنى)",
+     "usd": 1500
+    }
+   ],
+   "realized_this_month": -11.6,
+   "coverage": -0.007733333333333333,
+   "remaining": 1511.6,
+   "paper": true,
+   "support": {
+    "hist_cagr": 0.1473859553833834,
+    "hist_max_dd": 0.2375240562845008,
+    "monthly_at_cagr": 60.97241583318143,
+    "capital_needed": 122128.32595329743,
+    "covers": false
+   }
+  }
+ },
+ "rejected": [
+  {
+   "coin": "BTC",
+   "reasons": [
+    "no_entry_signal"
+   ],
+   "text": "قائد لكن بلا إشارة دخول اليوم"
+  },
+  {
+   "coin": "ETH",
+   "reasons": [
+    "no_entry_signal"
+   ],
+   "text": "قائد لكن بلا إشارة دخول اليوم"
+  },
+  {
+   "coin": "QNT",
+   "reasons": [
+    "not_on_okx"
+   ],
+   "text": "not_on_okx"
+  },
+  {
+   "coin": "ZEC",
+   "reasons": [
+    "stop_too_far"
+   ],
+   "text": "الوقف أبعد من 12%: العملة متذبذبة أكثر من اللازم"
+  }
+ ],
+ "health": {
+  "data_age_h": 3.7,
+  "coverage": 1.0,
+  "allow_entries": true,
+  "gate_reasons": [],
+  "gate_text": [],
+  "checked": "2026-11-05 03:42"
+ }
+}
