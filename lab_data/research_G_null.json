@@ -1,0 +1,1138 @@
+{
+ "generated": "2026-11-22T11:38:07.939317+00:00",
+ "synthetic": true,
+ "rule": "Pre-registered research rule (written 7 Nov 2026 before any run; candidates live in candidates.json with the date each was added). Baseline = the live strategy (strategy.json + control.json, risk engine on). Same data, same costs, halal coins tradable on OKX only, min-edge tables and the ML filter strictly walk-forward. Stage 1 (each candidate changes one thing): eligible only if (a) full-period max drawdown <= 25% (the owner's limit), (b) positive return in >= 4 of the 5 consecutive folds, (c) full-period return positive with costs x3, (d) full-period Calmar >= 1.10 x the baseline's, (e) a better Calmar than the baseline in >= 3 of the 5 folds. The eligible candidate with the highest Calmar wins. Stage 1b: the two best eligible candidates combined (only if they change different parameters) replace the winner only if the combination passes (a)-(e) and has a higher Calmar. Stage 2 (only if there is a winner): risk per trade is raised in steps (1.25%, 1.5%, 1.75%, 2%); the highest step is kept whose full-period drawdown is no deeper than the baseline's (the drawdown the owner already accepted, +0.5 point) and that still passes (b) and (c). No winner: nothing changes. Monte Carlo ranges, neighbouring parameter values and the same round on synthetic noise are reported, never used to decide.",
+ "period": [
+  "2019-05-23",
+  "2026-11-20"
+ ],
+ "coins": 30,
+ "tradable": null,
+ "folds": [
+  [
+   "2019-05-23",
+   "2020-11-20"
+  ],
+  [
+   "2020-11-20",
+   "2022-05-22"
+  ],
+  [
+   "2022-05-22",
+   "2023-11-21"
+  ],
+  [
+   "2023-11-21",
+   "2025-05-22"
+  ],
+  [
+   "2025-05-22",
+   "2026-11-20"
+  ]
+ ],
+ "baseline": {
+  "params": {
+   "watch_n": 8,
+   "max_pos": 6,
+   "slot": 4,
+   "vol_unit": 0.0075,
+   "init_atr": 2.5,
+   "trail_atr": 3.0,
+   "partial_r": 0.0,
+   "target2_r": 4.0,
+   "breakout_n": 20,
+   "resume": true,
+   "exit": "donchian",
+   "exit_low_n": 20,
+   "time_stop_days": 0,
+   "time_stop_r": 1.0,
+   "pyramid": false,
+   "pyramid_r": 1.0,
+   "ml": false,
+   "regime_band": 0.0,
+   "no_weekend_entry": false,
+   "vol_confirm": 1.5
+  },
+  "risk": {
+   "mode": "paper",
+   "emergency_stop": false,
+   "risk_per_trade": 0.0125,
+   "max_stop": 0.2,
+   "max_position": 0.25,
+   "max_positions": 6,
+   "max_cluster_exposure": 0.4,
+   "corr_limit": 0.8,
+   "daily_loss_limit": 0.03,
+   "weekly_loss_limit": 0.06,
+   "max_drawdown": 0.15,
+   "halt_days": 14,
+   "loss_streak": 4,
+   "streak_cooldown_days": 3,
+   "asset_cooldown_days": 3,
+   "max_spread_bps": 30.0,
+   "max_slip_bps": 25.0,
+   "data_max_age_hours": 30,
+   "min_data_coverage": 0.8,
+   "min_order_usd": 10.0,
+   "min_edge": 0.005,
+   "edge_min_trades": 20
+  },
+  "result": {
+   "full": {
+    "ret": 0.0,
+    "cagr": 0.0,
+    "max_dd": 0.0,
+    "sharpe": null,
+    "calmar": null,
+    "exposure": 0.0
+   },
+   "x3": 0.0,
+   "folds": [
+    {
+     "start": "2019-05",
+     "end": "2020-11",
+     "ret": 0.0,
+     "max_dd": 0.0,
+     "cagr": 0.0,
+     "calmar": null,
+     "trades": 0
+    },
+    {
+     "start": "2020-11",
+     "end": "2022-05",
+     "ret": 0.0,
+     "max_dd": 0.0,
+     "cagr": 0.0,
+     "calmar": null,
+     "trades": 0
+    },
+    {
+     "start": "2022-05",
+     "end": "2023-11",
+     "ret": 0.0,
+     "max_dd": 0.0,
+     "cagr": 0.0,
+     "calmar": null,
+     "trades": 0
+    },
+    {
+     "start": "2023-11",
+     "end": "2025-05",
+     "ret": 0.0,
+     "max_dd": 0.0,
+     "cagr": 0.0,
+     "calmar": null,
+     "trades": 0
+    },
+    {
+     "start": "2025-05",
+     "end": "2026-11",
+     "ret": 0.0,
+     "max_dd": 0.0,
+     "cagr": 0.0,
+     "calmar": null,
+     "trades": 0
+    }
+   ],
+   "trades": 0,
+   "win": null,
+   "profit_factor": null,
+   "yearly": {
+    "2019": 0.0,
+    "2020": 0.0,
+    "2021": 0.0,
+    "2022": 0.0,
+    "2023": 0.0,
+    "2024": 0.0,
+    "2025": 0.0,
+    "2026": 0.0
+   },
+   "filter": null,
+   "adds": 0
+  }
+ },
+ "candidates": {
+  "breakout55": {
+   "title": "\u062f\u062e\u0648\u0644 \u0639\u0644\u0649 \u0643\u0633\u0631 \u0642\u0645\u0629 55 \u064a\u0648\u0645\u0627\u064b \u0628\u062f\u0644 20",
+   "params": {
+    "breakout_n": 55
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "turtle": {
+   "title": "\u0646\u0638\u0627\u0645 \u0627\u0644\u0633\u0644\u0627\u062d\u0641 \u0643\u0627\u0645\u0644\u0627\u064b: \u0643\u0633\u0631 55 \u064a\u0648\u0645\u0627\u064b\u060c \u062e\u0631\u0648\u062c \u0639\u0644\u0649 \u0623\u062f\u0646\u0649 20 \u064a\u0648\u0645\u0627\u064b\u060c \u0628\u0644\u0627 \u0628\u064a\u0639 \u0644\u0644\u0646\u0635\u0641",
+   "params": {
+    "breakout_n": 55,
+    "resume": false,
+    "exit": "donchian",
+    "exit_low_n": 20,
+    "partial_r": 0.0
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "partial_3r": {
+   "title": "\u0628\u064a\u0639 \u0627\u0644\u0646\u0635\u0641 \u0639\u0646\u062f 3 \u0623\u0636\u0639\u0627\u0641 \u0627\u0644\u0645\u062e\u0627\u0637\u0631\u0629 \u0628\u062f\u0644 \u0636\u0639\u0641\u064a\u0646",
+   "params": {
+    "partial_r": 3.0
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "trail_4atr": {
+   "title": "\u0648\u0642\u0641 \u0645\u062a\u062d\u0631\u0643 \u0623\u0648\u0633\u0639 (4 \u0623\u0636\u0639\u0627\u0641 \u0627\u0644\u062a\u0630\u0628\u0630\u0628 \u0628\u062f\u0644 3)",
+   "params": {
+    "trail_atr": 4.0
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "wider_net": {
+   "title": "\u0634\u0628\u0643\u0629 \u0623\u0648\u0633\u0639: 12 \u0642\u0627\u0626\u062f\u0627\u064b \u0648\u062d\u062a\u0649 8 \u0635\u0641\u0642\u0627\u062a",
+   "params": {
+    "watch_n": 12,
+    "max_pos": 8,
+    "slot": 6
+   },
+   "risk": {
+    "max_positions": 8
+   },
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "time_stop": {
+   "title": "\u0625\u063a\u0644\u0627\u0642 \u0627\u0644\u0635\u0641\u0642\u0629 \u0627\u0644\u0631\u0627\u0643\u062f\u0629: 30 \u064a\u0648\u0645\u0627\u064b \u0628\u0644\u0627 \u0631\u0628\u062d \u064a\u0633\u0627\u0648\u064a \u0627\u0644\u0645\u062e\u0627\u0637\u0631\u0629",
+   "params": {
+    "time_stop_days": 30,
+    "time_stop_r": 1.0
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "pyramid": {
+   "title": "\u0632\u064a\u0627\u062f\u0629 \u0627\u0644\u0643\u0645\u064a\u0629 \u0639\u0644\u0649 \u0627\u0644\u0631\u0627\u0628\u062d \u0639\u0646\u062f \u0631\u0628\u062d \u064a\u0633\u0627\u0648\u064a \u0627\u0644\u0645\u062e\u0627\u0637\u0631\u0629",
+   "params": {
+    "pyramid": true,
+    "pyramid_r": 1.0
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "ml_filter": {
+   "title": "\u0641\u0644\u062a\u0631 \u062a\u0639\u0644\u0651\u0645 \u0622\u0644\u0629: \u062a\u062e\u0637\u064a \u0627\u0644\u0625\u0634\u0627\u0631\u0627\u062a \u0627\u0644\u0623\u0636\u0639\u0641 \u0645\u0646 \u0627\u0644\u0645\u062a\u0648\u0633\u0637",
+   "params": {
+    "ml": true
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": {
+     "seen": 0,
+     "kept": 0,
+     "models": 0
+    },
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "regime_band": {
+   "title": "\u0647\u0627\u0645\u0634 \u0623\u0645\u0627\u0646 2% \u0642\u0628\u0644 \u0627\u0644\u062d\u0643\u0645 \u0628\u0623\u0646 \u0627\u0644\u0633\u0648\u0642 \u062a\u063a\u064a\u0651\u0631",
+   "params": {
+    "regime_band": 0.02
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  },
+  "no_weekend_entry": {
+   "title": "\u0644\u0627 \u0634\u0631\u0627\u0621 \u064a\u0648\u0645\u064a \u0627\u0644\u0633\u0628\u062a \u0648\u0627\u0644\u0623\u062d\u062f",
+   "params": {
+    "no_weekend_entry": true
+   },
+   "risk": {},
+   "result": {
+    "full": {
+     "ret": 0.0,
+     "cagr": 0.0,
+     "max_dd": 0.0,
+     "sharpe": null,
+     "calmar": null,
+     "exposure": 0.0
+    },
+    "x3": 0.0,
+    "folds": [
+     {
+      "start": "2019-05",
+      "end": "2020-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2020-11",
+      "end": "2022-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2022-05",
+      "end": "2023-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2023-11",
+      "end": "2025-05",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     },
+     {
+      "start": "2025-05",
+      "end": "2026-11",
+      "ret": 0.0,
+      "max_dd": 0.0,
+      "cagr": 0.0,
+      "calmar": null,
+      "trades": 0
+     }
+    ],
+    "trades": 0,
+    "win": null,
+    "profit_factor": null,
+    "yearly": {
+     "2019": 0.0,
+     "2020": 0.0,
+     "2021": 0.0,
+     "2022": 0.0,
+     "2023": 0.0,
+     "2024": 0.0,
+     "2025": 0.0,
+     "2026": 0.0
+    },
+    "filter": null,
+    "adds": 0
+   },
+   "checks": {
+    "dd": true,
+    "folds": false,
+    "costs_x3": false,
+    "calmar": false,
+    "fold_wins": false
+   },
+   "eligible": false
+  }
+ },
+ "caveats": [
+  "survivorship: the universe is today's listed permissible coins",
+  "every run before 2026-11-02 was history the rules could have been fitted to; the live record is the only unseen test",
+  "spread and data-freshness gates are live-only",
+  "the more candidates are tried, the likelier one wins by luck: the fold and cost checks are there for that"
+ ],
+ "stage1": {
+  "eligible": [],
+  "winner": null
+ },
+ "monte_carlo": {
+  "baseline": {
+   "paths": 2000,
+   "horizon_days": 1095,
+   "block_days": 20,
+   "cagr_p5": 0.0,
+   "cagr_p50": 0.0,
+   "cagr_p95": 0.0,
+   "dd_p50": 0.0,
+   "dd_p95": 0.0,
+   "p_loss_first_year": 0.0
+  }
+ },
+ "adopted": null,
+ "robustness": [
+  {
+   "param": "breakout_n",
+   "value": 10,
+   "calmar": null,
+   "cagr": 0.0,
+   "max_dd": 0.0
+  },
+  {
+   "param": "breakout_n",
+   "value": 30,
+   "calmar": null,
+   "cagr": 0.0,
+   "max_dd": 0.0
+  },
+  {
+   "param": "init_atr",
+   "value": 2.0,
+   "calmar": null,
+   "cagr": 0.0,
+   "max_dd": 0.0
+  },
+  {
+   "param": "init_atr",
+   "value": 3.0,
+   "calmar": null,
+   "cagr": 0.0,
+   "max_dd": 0.0
+  },
+  {
+   "param": "exit_low_n",
+   "value": 15,
+   "calmar": null,
+   "cagr": 0.0,
+   "max_dd": 0.0
+  },
+  {
+   "param": "exit_low_n",
+   "value": 25,
+   "calmar": null,
+   "cagr": 0.0,
+   "max_dd": 0.0
+  }
+ ],
+ "btc_hold": {
+  "ret": 4.105371437190017,
+  "max_dd": 0.2677166598887033,
+  "cagr": 0.24294254716491404,
+  "days": 2738,
+  "sharpe": 1.0608242167660262,
+  "sortino": 1.59540936712339,
+  "calmar": 0.9074614454920792,
+  "exposure": 1.0
+ },
+ "btc_dca": {
+  "ret": 1.671658616173524,
+  "max_dd": 0.2066039900547848,
+  "cagr": 0.1400731172731926,
+  "days": 2738,
+  "sharpe": 0.972250925270098,
+  "sortino": 1.4712356333470769,
+  "calmar": 0.6779787613784694,
+  "exposure": 0.551756379114087
+ }
+}
