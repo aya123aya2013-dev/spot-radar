@@ -1,0 +1,391 @@
+{
+ "generated": "2026-11-22T11:38:04.877831+00:00",
+ "synthetic": true,
+ "coins": 30,
+ "tradable": null,
+ "period": [
+  "2019-05-23",
+  "2026-11-20"
+ ],
+ "candidates_tested": 2,
+ "promotion_rule": "challenger (rules + risk engine) replaces champion (rules alone) only if ALL hold: (1) full-period max drawdown at least 5 points lower; (2) full-period Calmar or Sharpe at least as high; (3) positive return in at least 3 of the 5 walk-forward folds; (4) full-period return still positive with costs x3. Written before the first run; 2 candidates tested.",
+ "risk_config": {
+  "mode": "paper",
+  "emergency_stop": false,
+  "risk_per_trade": 0.0125,
+  "max_stop": 0.2,
+  "max_position": 0.25,
+  "max_positions": 6,
+  "max_cluster_exposure": 0.4,
+  "corr_limit": 0.8,
+  "daily_loss_limit": 0.03,
+  "weekly_loss_limit": 0.06,
+  "max_drawdown": 0.15,
+  "halt_days": 14,
+  "loss_streak": 4,
+  "streak_cooldown_days": 3,
+  "asset_cooldown_days": 3,
+  "max_spread_bps": 30.0,
+  "max_slip_bps": 25.0,
+  "data_max_age_hours": 30,
+  "min_data_coverage": 0.8,
+  "min_order_usd": 10.0,
+  "min_edge": 0.005,
+  "edge_min_trades": 20
+ },
+ "params": {
+  "watch_n": 8,
+  "max_pos": 6,
+  "slot": 4,
+  "vol_unit": 0.0075,
+  "init_atr": 2.5,
+  "trail_atr": 3.0,
+  "partial_r": 0.0,
+  "target2_r": 4.0,
+  "breakout_n": 20,
+  "resume": true,
+  "exit": "donchian",
+  "exit_low_n": 20,
+  "time_stop_days": 0,
+  "time_stop_r": 1.0,
+  "pyramid": false,
+  "pyramid_r": 1.0,
+  "ml": false,
+  "regime_band": 0.0,
+  "no_weekend_entry": false,
+  "vol_confirm": 1.5
+ },
+ "caveats": [
+  "survivorship: the universe is today's listed permissible coins",
+  "the 2024-2026 'exam' was lived through before the rules were written: not a truly unseen holdout",
+  "spread and data-freshness gates are live-only and not simulated",
+  "the only truly unseen test is the live paper record from 2026-11-02"
+ ],
+ "challenger_curve_end": 5000.0,
+ "champion": {
+  "full": {
+   "ret": 0.0,
+   "max_dd": 0.0,
+   "cagr": 0.0,
+   "days": 2738,
+   "sharpe": null,
+   "sortino": null,
+   "calmar": null,
+   "exposure": 0.0
+  },
+  "full_x3": {
+   "ret": 0.0,
+   "max_dd": 0.0,
+   "cagr": 0.0,
+   "days": 2738,
+   "sharpe": null,
+   "sortino": null,
+   "calmar": null,
+   "exposure": 0.0
+  },
+  "folds": [
+   {
+    "start": "2019-05",
+    "end": "2020-11",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "trades": 0
+   },
+   {
+    "start": "2020-11",
+    "end": "2022-05",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "trades": 0
+   },
+   {
+    "start": "2022-05",
+    "end": "2023-11",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "trades": 0
+   },
+   {
+    "start": "2023-11",
+    "end": "2025-05",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "trades": 0
+   },
+   {
+    "start": "2025-05",
+    "end": "2026-11",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "trades": 0
+   }
+  ],
+  "trades": {
+   "trades": 0,
+   "win": null,
+   "avg_win": null,
+   "avg_loss": null,
+   "expectancy": null,
+   "profit_factor": null,
+   "by_exit": {},
+   "fees": 0.0,
+   "slippage": 0.0,
+   "turnover_per_year": 0.0,
+   "rejected": {}
+  },
+  "regime_share": {
+   "bear": 0.14390065741417093,
+   "turn": 0.042366691015339665,
+   "early": 0.05003652300949598,
+   "bull": 0.6701972242512783,
+   "weak": 0.09349890430971512
+  },
+  "yearly": {
+   "2019": 0.0,
+   "2020": 0.0,
+   "2021": 0.0,
+   "2022": 0.0,
+   "2023": 0.0,
+   "2024": 0.0,
+   "2025": 0.0,
+   "2026": 0.0
+  }
+ },
+ "challenger": {
+  "full": {
+   "ret": 0.0,
+   "max_dd": 0.0,
+   "cagr": 0.0,
+   "days": 2738,
+   "sharpe": null,
+   "sortino": null,
+   "calmar": null,
+   "exposure": 0.0
+  },
+  "full_x3": {
+   "ret": 0.0,
+   "max_dd": 0.0,
+   "cagr": 0.0,
+   "days": 2738,
+   "sharpe": null,
+   "sortino": null,
+   "calmar": null,
+   "exposure": 0.0
+  },
+  "folds": [
+   {
+    "start": "2019-05",
+    "end": "2020-11",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "cagr": 0.0,
+    "calmar": null,
+    "trades": 0
+   },
+   {
+    "start": "2020-11",
+    "end": "2022-05",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "cagr": 0.0,
+    "calmar": null,
+    "trades": 0
+   },
+   {
+    "start": "2022-05",
+    "end": "2023-11",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "cagr": 0.0,
+    "calmar": null,
+    "trades": 0
+   },
+   {
+    "start": "2023-11",
+    "end": "2025-05",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "cagr": 0.0,
+    "calmar": null,
+    "trades": 0
+   },
+   {
+    "start": "2025-05",
+    "end": "2026-11",
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "cagr": 0.0,
+    "calmar": null,
+    "trades": 0
+   }
+  ],
+  "yearly": {
+   "2019": 0.0,
+   "2020": 0.0,
+   "2021": 0.0,
+   "2022": 0.0,
+   "2023": 0.0,
+   "2024": 0.0,
+   "2025": 0.0,
+   "2026": 0.0
+  },
+  "trades": {
+   "trades": 0,
+   "win": null,
+   "avg_win": null,
+   "avg_loss": null,
+   "expectancy": null,
+   "profit_factor": null,
+   "by_exit": {},
+   "fees": 0.0,
+   "slippage": 0.0,
+   "turnover_per_year": 0.0,
+   "rejected": {}
+  },
+  "regime_share": {
+   "bear": 0.14390065741417093,
+   "turn": 0.042366691015339665,
+   "early": 0.05003652300949598,
+   "bull": 0.6701972242512783,
+   "weak": 0.09349890430971512
+  },
+  "filter": null,
+  "adds": 0
+ },
+ "btc_hold": {
+  "ret": 4.105371437190017,
+  "max_dd": 0.2677166598887033,
+  "cagr": 0.24294254716491404,
+  "days": 2738,
+  "sharpe": 1.0608242167660262,
+  "sortino": 1.59540936712339,
+  "calmar": 0.9074614454920792,
+  "exposure": 1.0
+ },
+ "btc_dca": {
+  "ret": 1.671658616173524,
+  "max_dd": 0.2066039900547848,
+  "cagr": 0.1400731172731926,
+  "days": 2738,
+  "sharpe": 0.972250925270098,
+  "sortino": 1.4712356333470769,
+  "calmar": 0.6779787613784694,
+  "exposure": 0.551756379114087
+ },
+ "no_regime": {
+  "ret": 0.0,
+  "max_dd": 0.0,
+  "cagr": 0.0,
+  "days": 2738,
+  "sharpe": null,
+  "sortino": null,
+  "calmar": null,
+  "exposure": 0.0
+ },
+ "btc_yearly": {
+  "2019": 0.17357718572496172,
+  "2020": 0.12779354591662595,
+  "2021": -0.054709997155725554,
+  "2022": 0.3351926731102268,
+  "2023": 0.5401679806561968,
+  "2024": 0.20015796343246106,
+  "2025": 0.2891082466866923,
+  "2026": 0.26118029903566997
+ },
+ "promotion": {
+  "challenger": false,
+  "checks": [
+   false,
+   true,
+   false,
+   false
+  ]
+ },
+ "edge_by_regime": {},
+ "full": {
+  "agent": {
+   "ret": 0.0,
+   "max_dd": 0.0,
+   "cagr": 0.0,
+   "days": 2738,
+   "sharpe": null,
+   "sortino": null,
+   "calmar": null,
+   "exposure": 0.0
+  },
+  "agent_x3": {
+   "ret": 0.0,
+   "max_dd": 0.0,
+   "cagr": 0.0,
+   "days": 2738,
+   "sharpe": null,
+   "sortino": null,
+   "calmar": null,
+   "exposure": 0.0
+  },
+  "no_regime": {
+   "ret": 0.0,
+   "max_dd": 0.0,
+   "cagr": 0.0,
+   "days": 2738,
+   "sharpe": null,
+   "sortino": null,
+   "calmar": null,
+   "exposure": 0.0
+  },
+  "btc_hold": {
+   "ret": 4.105371437190017,
+   "max_dd": 0.2677166598887033,
+   "cagr": 0.24294254716491404,
+   "days": 2738,
+   "sharpe": 1.0608242167660262,
+   "sortino": 1.59540936712339,
+   "calmar": 0.9074614454920792,
+   "exposure": 1.0
+  },
+  "btc_dca": {
+   "ret": 1.671658616173524,
+   "max_dd": 0.2066039900547848,
+   "cagr": 0.1400731172731926,
+   "days": 2738,
+   "sharpe": 0.972250925270098,
+   "sortino": 1.4712356333470769,
+   "calmar": 0.6779787613784694,
+   "exposure": 0.551756379114087
+  },
+  "trades": 0,
+  "win": null
+ },
+ "exam": {
+  "agent": {
+   "ret": 0.0,
+   "max_dd": 0.0,
+   "cagr": 0.0,
+   "days": 547,
+   "sharpe": null,
+   "sortino": null,
+   "calmar": null,
+   "exposure": 0.0
+  },
+  "btc_hold": {
+   "ret": 0.35229154202730695,
+   "max_dd": 0.21689471042505992,
+   "cagr": 0.22326344423352884,
+   "days": 547,
+   "sharpe": 0.9970570077074598,
+   "sortino": 1.4882870801071297,
+   "calmar": 1.029363250934003,
+   "exposure": 1.0
+  },
+  "btc_dca": {
+   "ret": 0.13544023074746336,
+   "max_dd": 0.16635598372930305,
+   "cagr": 0.08851649304886,
+   "days": 547,
+   "sharpe": 0.6908866520420034,
+   "sortino": 1.0381289557346771,
+   "calmar": 0.5320908275406274,
+   "exposure": 0.5206407133449847
+  }
+ }
+}
