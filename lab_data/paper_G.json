@@ -1,0 +1,333 @@
+{
+ "start": "2026-11-02T16:56:09.669451+00:00",
+ "cash": 4967.791413095664,
+ "pos": {},
+ "trades": [
+  {
+   "time": "2026-11-02 16:56",
+   "coin": "ZRO",
+   "side": "BUY",
+   "price": 1.759,
+   "weight": 0.11662276974271564,
+   "regime": "bull",
+   "usd": 583.11,
+   "qty": 331.00600000000003
+  },
+  {
+   "time": "2026-11-02 16:56",
+   "coin": "BCH",
+   "side": "BUY",
+   "price": 276.1,
+   "weight": 0.125,
+   "regime": "bull",
+   "usd": 625.0,
+   "qty": 2.260278
+  },
+  {
+   "time": "2026-11-02 18:21",
+   "coin": "ZRO",
+   "side": "SELL",
+   "price": 1.725,
+   "ret": -0.02226774666248421,
+   "why": "risk_trim",
+   "frac": 0.6891657433969054,
+   "usd": 392.91,
+   "cost_usd": 401.86,
+   "pnl_usd": -8.95,
+   "qty": 228.1179960588361,
+   "fee_usd": 0.3933,
+   "slip_usd": 0.1968,
+   "pos_id": null,
+   "hours": 1.4
+  },
+  {
+   "time": "2026-11-02 18:21",
+   "coin": "BCH",
+   "side": "SELL",
+   "price": 274.3,
+   "ret": -0.009496343958227071,
+   "why": "risk_trim",
+   "frac": 0.44637448500109267,
+   "usd": 276.33,
+   "cost_usd": 278.98,
+   "pnl_usd": -2.65,
+   "qty": 1.0089304282092997,
+   "fee_usd": 0.2766,
+   "slip_usd": 0.1384,
+   "pos_id": null,
+   "hours": 1.4
+  },
+  {
+   "time": "2026-11-06 00:07",
+   "coin": "ZRO",
+   "side": "SELL",
+   "price": 1.592,
+   "ret": -0.0976523203980727,
+   "why": "budget",
+   "frac": 1.0,
+   "usd": 163.55,
+   "cost_usd": 181.25,
+   "pnl_usd": -17.7,
+   "qty": 102.88800394116393,
+   "fee_usd": 0.1637,
+   "slip_usd": 0.0819,
+   "pos_id": null,
+   "hours": 79.2
+  },
+  {
+   "time": "2026-11-06 00:07",
+   "coin": "BCH",
+   "side": "SELL",
+   "price": 274.6,
+   "ret": -0.008413037006668622,
+   "why": "budget",
+   "frac": 1.0,
+   "usd": 343.1,
+   "cost_usd": 346.02,
+   "pnl_usd": -2.91,
+   "qty": 1.2513475717907003,
+   "fee_usd": 0.3434,
+   "slip_usd": 0.1718,
+   "pos_id": null,
+   "hours": 79.2
+  }
+ ],
+ "events": [
+  {
+   "time": "2026-11-02 16:56",
+   "regime": "bull",
+   "text": "G: حالة السوق صاعد، ميزانية المخاطرة 50%"
+  },
+  {
+   "time": "2026-11-02 18:21",
+   "text": "G: تقليص ZRO: الخسارة حتى الوقف كانت $160 فوق حد المخاطرة $50، بيع جزء لإعادتها إلى الحد"
+  },
+  {
+   "time": "2026-11-02 18:21",
+   "text": "G: تقليص BCH: الخسارة حتى الوقف كانت $90 فوق حد المخاطرة $50، بيع جزء لإعادتها إلى الحد"
+  },
+  {
+   "time": "2026-11-03 03:05",
+   "regime": "bull",
+   "text": "G: حالة السوق صاعد، ميزانية المخاطرة 50%"
+  },
+  {
+   "time": "2026-11-06 00:07",
+   "regime": "weak",
+   "text": "G: حالة السوق ضعيف بلا اتجاه، ميزانية المخاطرة 0%"
+  }
+ ],
+ "last_day": 20767,
+ "orders": [
+  {
+   "pair": "ZRO-USDT",
+   "side": "شراء",
+   "type": "محدد (Limit)",
+   "price": 1.759,
+   "usd": 116.62,
+   "qty": 66.3,
+   "stop": 1.2407,
+   "stop_pct": 0.2947,
+   "note": "لكل 1000$ من رأس مالك: 117$. الوقف عند 1.2407 (−29.5%)."
+  },
+  {
+   "pair": "BCH-USDT",
+   "side": "شراء",
+   "type": "محدد (Limit)",
+   "price": 276.1,
+   "usd": 125.0,
+   "qty": 0.452734,
+   "stop": 234.48,
+   "stop_pct": 0.1507,
+   "note": "لكل 1000$ من رأس مالك: 125$. الوقف عند 234.48 (−15.1%)."
+  }
+ ],
+ "peak": 5009.045769404459,
+ "regime": "weak",
+ "budget": 0.0,
+ "breadth": 0.06451612903225806,
+ "watch": [
+  "ARB"
+ ],
+ "decision": "حالة السوق: ضعيف بلا اتجاه. BTC عند 75,368 مقابل متوسط 50 يوماً 79,321 ومتوسط 200 يوم 76,760. اتساع السوق: 6% من العملات المباحة فوق متوسطها 50 يوماً.\nميزانية المخاطرة اليوم: 0% من الحساب كحد أقصى في العملات.\nقائمة القادة (الأقوى أمام BTC): ARB\nما فعلته اليوم: لا دخول: الميزانية صفر في هذه الحالة، والنقد هو القرار\nما يغيّر رأيي: إغلاق BTC فوق متوسط 50 يوماً مع اتساع 50% أو أكثر (محاولة انعطاف، ميزانية 25%)، ثم فوق متوسط 200 يوم.",
+ "equity": 4967.791413095664,
+ "prices": {},
+ "holdings": {},
+ "stats": {
+  "trades": 4,
+  "gate_trades": 20,
+  "gate": "مغلقة 4 · الحكم بعد 3 أشهر مقابل الاحتفاظ بـBTC والشراء الدوري"
+ },
+ "rules": {
+  "coins": [
+   "BTC",
+   "ETH",
+   "SOL",
+   "XRP",
+   "ADA",
+   "DOGE",
+   "AVAX",
+   "LINK",
+   "LTC",
+   "OP",
+   "DOT",
+   "TRX",
+   "ATOM",
+   "NEAR",
+   "XLM",
+   "HBAR",
+   "SUI",
+   "ARB",
+   "ALGO",
+   "FIL",
+   "ICP",
+   "ETC",
+   "BCH",
+   "ZRO",
+   "ZK",
+   "ZEC",
+   "TAO",
+   "RENDER",
+   "QNT",
+   "WLD",
+   "GRAM"
+  ],
+  "agent": true,
+  "real_money_mode": true,
+  "account_dd_limit": 0.15,
+  "watch_n": 8,
+  "max_pos": 6,
+  "vol_unit": 0.0075,
+  "init_atr": 2.5,
+  "trail_atr": 3.0,
+  "partial_r": 2.0,
+  "risk": {
+   "mode": "paper",
+   "emergency_stop": false,
+   "risk_per_trade": 0.01,
+   "max_stop": 0.2,
+   "max_position": 0.25,
+   "max_positions": 6,
+   "max_cluster_exposure": 0.4,
+   "corr_limit": 0.8,
+   "daily_loss_limit": 0.03,
+   "weekly_loss_limit": 0.06,
+   "max_drawdown": 0.15,
+   "halt_days": 14,
+   "loss_streak": 4,
+   "streak_cooldown_days": 3,
+   "asset_cooldown_days": 3,
+   "max_spread_bps": 30.0,
+   "max_slip_bps": 25.0,
+   "data_max_age_hours": 30,
+   "min_data_coverage": 0.8,
+   "min_order_usd": 10.0,
+   "min_edge": 0.005,
+   "edge_min_trades": 20
+  },
+  "params": {
+   "watch_n": 8,
+   "max_pos": 6,
+   "slot": 4,
+   "vol_unit": 0.0075,
+   "init_atr": 2.5,
+   "trail_atr": 3.0,
+   "partial_r": 2.0,
+   "target2_r": 4.0,
+   "breakout_n": 20,
+   "resume": true,
+   "exit": "donchian",
+   "exit_low_n": 20,
+   "time_stop_days": 0,
+   "time_stop_r": 1.0,
+   "pyramid": false,
+   "pyramid_r": 1.0,
+   "ml": false
+  }
+ },
+ "cooldown": {},
+ "day_id": 20767,
+ "day_start_eq": 4967.791413095664,
+ "week_id": 2967,
+ "week_start_eq": 4967.791413095664,
+ "control": {
+  "mode": "paper",
+  "emergency_stop": false,
+  "halt_until": 0,
+  "streak_until": 0,
+  "prices_ok": true
+ },
+ "journal_head": "6f072f9397d5fe4b8d05c53fb98f2b277de4bb29dd501f935bc2e69020c3faef",
+ "journal": {
+  "records": 26,
+  "intact": true,
+  "first_bad_line": null
+ },
+ "accounting": {
+  "equity": 4967.791413095664,
+  "cash": 4967.791413095664,
+  "invested": 0,
+  "exposure": 0.0,
+  "realized_pnl": -32.21,
+  "unrealized_pnl": 0,
+  "total_pnl": -32.20858690433579,
+  "fees": 1.177,
+  "slippage": 0.5889,
+  "turnover": 2384.0,
+  "trades_closed": 4,
+  "win_rate": 0.0,
+  "avg_win": null,
+  "avg_loss": -8.0525,
+  "expectancy_usd": -8.0525,
+  "profit_factor": 0.0,
+  "max_drawdown": 0.007517128456929312,
+  "drawdown_now": 0.006821394227405131,
+  "day": 0.0,
+  "week": -0.006378408218126075,
+  "month": -0.0036602193323760357,
+  "btc_hold": -0.042480875765229076,
+  "cash_benchmark": 0.0,
+  "days": 9,
+  "sharpe": null,
+  "sortino": null,
+  "calmar": null,
+  "note": "needs 30 days",
+  "operating": {
+   "monthly_cost": 1500.0,
+   "items": [
+    {
+     "name": "تكاليف التشغيل والاشتراكات (تقدير المالك، الحد الأدنى)",
+     "usd": 1500
+    }
+   ],
+   "realized_this_month": -32.21,
+   "coverage": -0.021473333333333334,
+   "remaining": 1532.21,
+   "paper": true,
+   "support": {
+    "hist_cagr": 0.23922814067381348,
+    "hist_max_dd": 0.1662217502552943,
+    "monthly_at_cagr": 99.03629191751769,
+    "capital_needed": 75241.98428036491,
+    "covers": false
+   }
+  }
+ },
+ "rejected": [
+  {
+   "coin": "ARB",
+   "reasons": [
+    "no_entry_signal"
+   ],
+   "text": "من الأقوى، لكنها لم تعطِ إشارة شراء بعد"
+  }
+ ],
+ "health": {
+  "data_age_h": 0.1,
+  "coverage": 1.0,
+  "allow_entries": true,
+  "gate_reasons": [],
+  "gate_text": [],
+  "checked": "2026-11-10 00:07"
+ }
+}
