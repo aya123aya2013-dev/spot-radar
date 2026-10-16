@@ -166,7 +166,7 @@ canvas{width:100%;max-width:100%;display:block}
     <section class="card gl">
       <h2>كيف يتعلم النظام</h2>
       <div><b>كل أسبوع</b><span class="sub">يعاد اختبار 6 استراتيجيات على أحدث البيانات، ويُختار لكل عملة الأفضل مع بديلتين. من لا ينجح على البيانات التي لم يرها النظام يبقى نقداً.</span></div>
-      <div><b>كل 5 دقائق</b><span class="sub">يراقب الحساب الوهمي أداء كل استراتيجية حيّاً. عند خسارة 8% بعد 3 صفقات، أو هبوط 12% من القمة، تتوقف وتحل بديلتها.</span></div>
+      <div><b>كل 5 دقائق</b><span class="sub">يراقب الحساب الوهمي أداء كل استراتيجية حيّاً. عند خسارة 8% بعد 3 صفقات، أو هبوط 12% من القمة، تتوقف وتحل بديلتها. حجم كل صفقة يصغر كلما زاد تذبذب العملة، وإذا هبط الحساب كله 25% من قمته تُغلق كل الصفقات ويتوقف التداول حتى الاختبار الأسبوعي القادم.</span></div>
       <div><b>كل أسبوع (مراجعة Claude)</b><span class="sub">تُراجَع النتائج وتُقترح تحسينات كطلب تعديل على GitHub، ولا تُطبَّق إلا بموافقتك.</span></div>
     </section>
     <section class="card"><div class="sub">هذه اللوحة للتعلّم والمتابعة وليست نصيحة مالية. أداء الماضي والحساب الوهمي لا يضمنان نتائج حقيقية، والتنفيذ الفعلي يختلف بسبب الانزلاق والرسوم والسيولة.</div></section>
@@ -398,7 +398,7 @@ function renderPaper(){
     const live=p.live_n?`${p.live_n} صفقات · <span class="num">${(p.live_win*100).toFixed(0)}%</span> رابحة · <span class="num ${p.live_ret>=0?'up':'down'}">${pct(p.live_ret)}</span>`:'لا صفقات مغلقة';
     return `<div class="pc"><div class="h"><span>${c.s} <span class="sub">${c.n}</span></span><span class="pill ${STCLS[s0]||'hold'}">${s0}</span></div>
       <div class="row"><span>القيمة</span><span class="num">${usd(v)} <span class="${v>=1000?'up':'down'}">${pct(v/1000-1)}</span></span></div>
-      <div class="row"><span>الوضع</span><span>${st.qty[c.s]>0?'في صفقة':'نقد'}</span></div>
+      <div class="row"><span>الوضع</span><span>${st.qty[c.s]>0?'في صفقة'+(p.size?` · <span class="num">${Math.round(p.size*100)}%</span> من الحصة`:''):'نقد'}</span></div>
       <div class="row"><span>الاستراتيجية</span><span>${p.strategy?`<span class="num">${p.strategy}</span> · ${TFNAME[p.tf]||p.tf}`:'—'}</span></div>
       <div class="row"><span>الأداء الحي</span><span>${live}</span></div>
       <div class="row"><span>الاختبار التاريخي</span><span class="num">${p.backtest_ret!=null?pct(p.backtest_ret):'—'}</span></div>
@@ -407,6 +407,7 @@ function renderPaper(){
   const trades=(st.trades||[]).slice(-8).reverse().map(t=>`<li><span><span class="pill ${t.side==='BUY'?'buy':'sell'}">${t.side==='BUY'?'شراء':'بيع'}</span> ${t.coin} <span class="num sub">${t.price<1?t.price:fmt(t.price)}</span></span>
       <span class="num sub">${t.ret!==undefined?`<span class="${t.ret>=0?'up':'down'}">${pct(t.ret)}</span> · `:''}${localTime(t.time)}</span></li>`).join('');
   $('paperBody').innerHTML=`<div class="stack">
+    ${st.halted?'<section class="card" style="border-color:var(--down)"><b class="down">التداول متوقف</b><div class="sub">قاطع الحساب أغلق كل الصفقات بعد هبوط 25% من القمة، ويُستأنف تلقائياً بعد الاختبار الأسبوعي القادم.</div></section>':''}
     <section class="card"><div class="sub">رصيد الحساب الوهمي</div>
       <div class="big ${eqv>=5000?'up':'down'}">${usd(eqv)}</div>
       <div class="num sub">${pct(eqv/5000-1)} منذ ${localTime(st.start.slice(0,16).replace('T',' '))}</div>

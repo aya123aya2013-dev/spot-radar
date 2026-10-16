@@ -227,6 +227,19 @@ STOPS = (0, 3)  # ATR multiple for a trailing stop; 0 = no stop
 
 
 # ---------------------------------------------------------------- simulator
+RISK_PER_TRADE = 0.03   # a 2.5-ATR adverse move may cost at most 3% of the coin's slice
+ATR_RISK_MULT = 2.5
+MIN_FRAC, MAX_FRAC = 0.25, 1.0
+MAX_ACCOUNT_DD = 0.25   # whole account: sell everything and halt at -25% from its peak
+
+
+def position_fraction(atr_val, price):
+    """Share of the coin's slice to invest, smaller when the coin is more volatile."""
+    if price <= 0 or atr_val <= 0:
+        return MIN_FRAC
+    return max(MIN_FRAC, min(MAX_FRAC, RISK_PER_TRADE / (ATR_RISK_MULT * atr_val / price)))
+
+
 def simulate(rows, en, ex, stop, at, start, end, cash0=SLEEVE):
     """Long-only spot. Signal on bar i close, fill at bar i+1 open."""
     cash, qty, basis, peak = cash0, 0.0, 0.0, 0.0
@@ -236,13 +249,15 @@ def simulate(rows, en, ex, stop, at, start, end, cash0=SLEEVE):
         if qty > 0:
             peak = max(peak, c)
             if ex[i] or (stop and c < peak - stop * at[i]):
-                cash = qty * rows[i + 1][1] * (1 - SLIP) * (1 - FEE)
-                rets.append(cash / basis - 1)
+                proceeds = qty * rows[i + 1][1] * (1 - SLIP) * (1 - FEE)
+                cash += proceeds
+                rets.append(proceeds / basis - 1)
                 qty = 0.0
         elif en[i] and cash > 0:
-            basis, peak = cash, c
-            qty = cash * (1 - FEE) / (rows[i + 1][1] * (1 + SLIP))
-            cash = 0.0
+            invest = cash * position_fraction(at[i], c)
+            basis, peak = invest, c
+            qty = invest * (1 - FEE) / (rows[i + 1][1] * (1 + SLIP))
+            cash -= invest
         eq.append(cash + qty * c)
     final = cash + qty * rows[end - 1][4] * (1 - FEE)
     pk, dd = 0.0, 0.0
@@ -348,6 +363,9 @@ def load_state(prices):
     st.setdefault("events", [])
     st.setdefault("cfg_gen", "")
     st.setdefault("perf", {})
+    st.setdefault("frac", {})
+    st.setdefault("halted", "")
+    st.setdefault("eq_peak", 0.0)
     return st
 
 
@@ -387,7 +405,7 @@ def event(st, now, text):
 
 
 def live_stats(st, c, key):
-    rets = [t["ret"] for t in st["trades"]
+    rets = [t.get("sret", t["ret"]) for t in st["trades"]
             if t["coin"] == c and t["side"] == "SELL" and t.get("key") == key and t.get("gen", "") == st["cfg_gen"]]
     comp = 1.0
     for r in rets:
@@ -396,12 +414,15 @@ def live_stats(st, c, key):
 
 
 def sell(st, c, px, now, why):
-    cash = st["qty"][c] * px * (1 - SLIP) * (1 - FEE)
-    ret = cash / st["basis"][c] - 1
-    st["trades"].append(dict(time=now, coin=c, side="SELL", price=px, ret=ret, why=why, key=st.get("holding_key", {}).get(c), gen=st["cfg_gen"]))
+    proceeds = st["qty"][c] * px * (1 - SLIP) * (1 - FEE)
+    ret = proceeds / st["basis"][c] - 1
+    frac = st["frac"].get(c, 1.0)
+    st["trades"].append(dict(time=now, coin=c, side="SELL", price=px, ret=ret, sret=ret * frac, why=why,
+                             key=st.get("holding_key", {}).get(c), gen=st["cfg_gen"]))
     log_csv("paper_trades.csv", [now, c, "SELL", px, f"{ret*100:.2f}%", why])
     print(f"  SELL {c} @ {px:g}  {ret*100:+.2f}%  ({why})")
-    st["cash"][c], st["qty"][c] = cash, 0.0
+    st["cash"][c] += proceeds
+    st["qty"][c] = 0.0
 
 
 def cycle(cfg, st):
@@ -411,6 +432,9 @@ def cycle(cfg, st):
             event(st, now, "تم تحديث الاستراتيجيات بعد اختبار جديد، وأُلغيت التحويلات والإيقافات السابقة")
         st["override"], st["paused"], st["tried"] = {}, {}, {}
         st["cfg_gen"] = cfg.get("generated", "")
+        if st["halted"]:
+            event(st, now, "استُؤنف التداول بعد اختبار جديد للاستراتيجيات، وبدأ حد الهبوط من الرصيد الحالي")
+            st["halted"], st["eq_peak"] = "", 0.0
     prices, data = {}, {}
     for c in COINS:
         p = effective(cfg, st, c) or cfg.get(c)
@@ -425,8 +449,16 @@ def cycle(cfg, st):
         print("  skipping this cycle, missing prices")
         return st
     st.setdefault("holding_key", {})
+    eq_now = equity(st, prices)
+    st["eq_peak"] = max(st["eq_peak"] or 0.0, eq_now)
+    if not st["halted"] and 1 - eq_now / st["eq_peak"] >= MAX_ACCOUNT_DD:
+        for c in COINS:
+            if st["qty"][c] > 0:
+                sell(st, c, prices[c], now, "halt")
+        st["halted"] = now
+        event(st, now, f"قاطع الحساب: هبط الرصيد {MAX_ACCOUNT_DD*100:.0f}% من قمته، أُغلقت كل الصفقات وتوقف التداول حتى الاختبار الأسبوعي القادم")
     for c in COINS:
-        p = effective(cfg, st, c)
+        p = None if st["halted"] else effective(cfg, st, c)
         if not p:
             continue
         key = skey(p)
@@ -440,14 +472,15 @@ def cycle(cfg, st):
             if ex[-1] or stopped:
                 sell(st, c, px, now, "stop" if stopped else "signal")
         elif en[-1] and bar != st["last_bar"][c]:
-            cash = st["cash"][c]
-            st["basis"][c], st["peak"][c] = cash, px
-            st["qty"][c] = cash * (1 - FEE) / (px * (1 + SLIP))
-            st["cash"][c] = 0.0
+            frac = position_fraction(at[-1], px)
+            invest = st["cash"][c] * frac
+            st["basis"][c], st["peak"][c], st["frac"][c] = invest, px, frac
+            st["qty"][c] = invest * (1 - FEE) / (px * (1 + SLIP))
+            st["cash"][c] -= invest
             st["holding_key"][c] = key
-            st["trades"].append(dict(time=now, coin=c, side="BUY", price=px, key=key, gen=st["cfg_gen"]))
+            st["trades"].append(dict(time=now, coin=c, side="BUY", price=px, key=key, gen=st["cfg_gen"], size=frac))
             log_csv("paper_trades.csv", [now, c, "BUY", px, "", ""])
-            print(f"  BUY  {c} @ {px:g}")
+            print(f"  BUY  {c} @ {px:g}  size {frac*100:.0f}% of slice")
         if en[-1]:
             st["last_bar"][c] = bar
         # ---- live performance check: pause or switch a strategy that is losing
@@ -487,7 +520,8 @@ def cycle(cfg, st):
         perf[c] = dict(status=status, strategy=(p or base).get("strategy"), tf=(p or base).get("tf"),
                        live_n=ls["n"], live_win=ls["win"], live_ret=ls["ret"],
                        sleeve_ret=v / SLEEVE - 1, sleeve_dd=1 - v / st["sleeve_peak"].get(c, SLEEVE),
-                       backtest_ret=(p or base).get("test_ret"), reason=st["paused"].get(c, ""))
+                       backtest_ret=(p or base).get("test_ret"), reason=st["paused"].get(c, ""),
+                       size=st["frac"].get(c) if st["qty"][c] > 0 else None)
     st["perf"] = perf
     eq = equity(st, prices)
     bh = sum(st["bh_qty"][c] * prices[c] for c in COINS)
