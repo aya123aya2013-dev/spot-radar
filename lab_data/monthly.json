@@ -1,0 +1,57 @@
+[
+ {
+  "generated": "2026-10-23T07:40:33.628151+00:00",
+  "month": "2026-10",
+  "accounts": {
+   "A": {
+    "start": "2026-10-16 21:10",
+    "days": 6.4,
+    "equity": 5056.946972068425,
+    "ret": 0.011389394413684917,
+    "max_dd": 0.006157309060125238,
+    "closed": 1,
+    "win_rate": 1.0,
+    "avg_trade": 0.06809854582901509,
+    "btc_hold": -0.0009197330160468642,
+    "btc_dca": -0.0009197330160468642
+   },
+   "B": {
+    "start": "2026-10-16 22:02",
+    "days": 6.4,
+    "equity": 5000.0,
+    "ret": 0.0,
+    "max_dd": 0.0,
+    "closed": 0,
+    "win_rate": null,
+    "avg_trade": null,
+    "btc_hold": -0.0009197330160468642,
+    "btc_dca": -0.0009197330160468642
+   },
+   "C": {
+    "start": "2026-10-18 06:39",
+    "days": 5.0,
+    "equity": 4989.02556077882,
+    "ret": -0.0021948878442359376,
+    "max_dd": 0.019706463404535524,
+    "closed": 3,
+    "win_rate": 0.0,
+    "avg_trade": -0.02498673382053244,
+    "btc_hold": -0.006374422737080554,
+    "btc_dca": -0.006374422737080443
+   },
+   "D": {
+    "start": "2026-10-21 19:10",
+    "days": 1.5,
+    "equity": 4967.0933928185905,
+    "ret": -0.006581321436281873,
+    "max_dd": 0.006581999999999977,
+    "closed": 1,
+    "win_rate": 0.0,
+    "avg_trade": -0.03290660718140914,
+    "btc_hold": null,
+    "btc_dca": null
+   }
+  },
+  "note": "Paper accounts only. Rulers: holding BTC and weekly DCA into BTC over the same days. No profit is promised."
+ }
+]

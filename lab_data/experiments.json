@@ -1,0 +1,968 @@
+{
+ "generated": "2026-11-01T04:12:16.566635+00:00",
+ "synthetic": false,
+ "exam": "last 30% of each chart, never used for tuning",
+ "costs": {
+  "fee": 0.001,
+  "slip": 0.0005,
+  "stress": 3.0
+ },
+ "results": {
+  "e_protect_threshold": {
+   "charts": 29,
+   "variants": {
+    "be_1.0": {
+     "n": 425,
+     "mean": -0.0022909225125374365,
+     "win": 0.32
+    },
+    "be_1.5": {
+     "n": 401,
+     "mean": -0.0009449823118710451,
+     "win": 0.456359102244389
+    },
+    "be_off": {
+     "n": 385,
+     "mean": 6.480738857119145e-05,
+     "win": 0.5766233766233766
+    }
+   },
+   "variants_x3": {
+    "be_1.0": -0.007497455015282734,
+    "be_1.5": -0.0070859536149828865,
+    "be_off": -0.006647389981759494
+   },
+   "best": "be_off",
+   "mean_delta": 0.002355729901108628,
+   "mean_delta_x3": 0.0008500650335232403,
+   "share_improved": null
+  },
+  "weekend_filter": {
+   "charts": 23,
+   "mean_delta": 0.0008233603155199121,
+   "share_improved": 0.7391304347826086,
+   "mean_delta_x3": 0.005330075814825378,
+   "per_chart": [
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "obv_trend",
+     "base": 0.13763871857349086,
+     "variant": 0.17138514303473995,
+     "n_base": 16,
+     "n_variant": 14
+    },
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04485060924178941,
+     "variant": -0.00047204428541902654,
+     "n_base": 13,
+     "n_variant": 12
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "structure_bos",
+     "base": 0.10578103667317529,
+     "variant": 0.1446914878178136,
+     "n_base": 11,
+     "n_variant": 10
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.01182068203128872,
+     "variant": 0.01182068203128872,
+     "n_base": 10,
+     "n_variant": 10
+    },
+    {
+     "coin": "SOL",
+     "tf": "4h",
+     "school": "macd_trend",
+     "base": 0.20413049206688227,
+     "variant": 0.20713702978432913,
+     "n_base": 18,
+     "n_variant": 13
+    },
+    {
+     "coin": "SOL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.00039060083317399297,
+     "variant": 0.05263836232458852,
+     "n_base": 7,
+     "n_variant": 5
+    },
+    {
+     "coin": "OP",
+     "tf": "1h",
+     "school": "squeeze_break",
+     "base": -0.17402776014360666,
+     "variant": -0.1484693464129314,
+     "n_base": 12,
+     "n_variant": 10
+    },
+    {
+     "coin": "OP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.05827665641332391,
+     "variant": -0.05948662558963225,
+     "n_base": 5,
+     "n_variant": 4
+    },
+    {
+     "coin": "POL",
+     "tf": "1h",
+     "school": "obv_trend",
+     "base": -0.21913525740844342,
+     "variant": -0.24266566175039472,
+     "n_base": 11,
+     "n_variant": 11
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "ema_cross",
+     "base": 0.23359623779442962,
+     "variant": 0.29911050934104444,
+     "n_base": 19,
+     "n_variant": 15
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.03429785492445392,
+     "variant": 0.05237878113245009,
+     "n_base": 11,
+     "n_variant": 9
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "structure_bos",
+     "base": 1.0029781985407675,
+     "variant": 1.1994041133778568,
+     "n_base": 8,
+     "n_variant": 6
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.938101715410661,
+     "variant": 0.01890553662178074,
+     "n_base": 10,
+     "n_variant": 6
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "composite",
+     "base": -0.035523254206002,
+     "variant": 0.024117818105268363,
+     "n_base": 14,
+     "n_variant": 13
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.09486269567681371,
+     "variant": 0.06206691867788594,
+     "n_base": 11,
+     "n_variant": 9
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "vote",
+     "base": 0.31560183718323587,
+     "variant": 0.3140337529351571,
+     "n_base": 11,
+     "n_variant": 9
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.22715541259619632,
+     "variant": 0.22715541259619632,
+     "n_base": 9,
+     "n_variant": 9
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "donchian",
+     "base": -0.10566828456599153,
+     "variant": -0.04587117495514048,
+     "n_base": 5,
+     "n_variant": 4
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04836756659322927,
+     "variant": -6.667416371919366e-05,
+     "n_base": 7,
+     "n_variant": 4
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "ichimoku",
+     "base": 0.1735355517681938,
+     "variant": 0.17966020946130712,
+     "n_base": 12,
+     "n_variant": 11
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.006471041629661833,
+     "variant": 0.11156309472398607,
+     "n_base": 11,
+     "n_variant": 9
+    },
+    {
+     "coin": "LTC",
+     "tf": "1h",
+     "school": "ema_cross",
+     "base": -0.13674556016859152,
+     "variant": -0.11080199539524849,
+     "n_base": 6,
+     "n_variant": 5
+    },
+    {
+     "coin": "LTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.1534768205138365,
+     "variant": -0.12873312706226625,
+     "n_base": 11,
+     "n_variant": 6
+    }
+   ]
+  },
+  "volume_confirm": {
+   "charts": 23,
+   "mean_delta": -0.025188765623682146,
+   "share_improved": 0.6086956521739131,
+   "mean_delta_x3": -0.012146075340500852,
+   "per_chart": [
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "obv_trend",
+     "base": 0.13763871857349086,
+     "variant": 0.046134014065725815,
+     "n_base": 16,
+     "n_variant": 7
+    },
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04485060924178941,
+     "variant": -0.19130524532554427,
+     "n_base": 13,
+     "n_variant": 7
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "structure_bos",
+     "base": 0.10578103667317529,
+     "variant": 0.19985072042384333,
+     "n_base": 11,
+     "n_variant": 7
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.01182068203128872,
+     "variant": 0.06718774104562142,
+     "n_base": 10,
+     "n_variant": 6
+    },
+    {
+     "coin": "SOL",
+     "tf": "4h",
+     "school": "macd_trend",
+     "base": 0.20413049206688227,
+     "variant": -0.03523409028272917,
+     "n_base": 18,
+     "n_variant": 8
+    },
+    {
+     "coin": "SOL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.00039060083317399297,
+     "variant": -0.003494584265216316,
+     "n_base": 7,
+     "n_variant": 5
+    },
+    {
+     "coin": "OP",
+     "tf": "1h",
+     "school": "squeeze_break",
+     "base": -0.17402776014360666,
+     "variant": -0.10621225209325513,
+     "n_base": 12,
+     "n_variant": 7
+    },
+    {
+     "coin": "OP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.05827665641332391,
+     "variant": -0.025926949735346705,
+     "n_base": 5,
+     "n_variant": 4
+    },
+    {
+     "coin": "POL",
+     "tf": "1h",
+     "school": "obv_trend",
+     "base": -0.21913525740844342,
+     "variant": -0.18172560301754304,
+     "n_base": 11,
+     "n_variant": 8
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "ema_cross",
+     "base": 0.23359623779442962,
+     "variant": 0.084465358722142,
+     "n_base": 19,
+     "n_variant": 2
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.03429785492445392,
+     "variant": 0.02820427953081972,
+     "n_base": 11,
+     "n_variant": 5
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "structure_bos",
+     "base": 1.0029781985407675,
+     "variant": 1.0795583132175888,
+     "n_base": 8,
+     "n_variant": 6
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.938101715410661,
+     "variant": -0.06116128134283072,
+     "n_base": 10,
+     "n_variant": 7
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "composite",
+     "base": -0.035523254206002,
+     "variant": -0.005396025639068158,
+     "n_base": 14,
+     "n_variant": 10
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.09486269567681371,
+     "variant": 0.04116803266183999,
+     "n_base": 11,
+     "n_variant": 7
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "vote",
+     "base": 0.31560183718323587,
+     "variant": 0.382434676072527,
+     "n_base": 11,
+     "n_variant": 5
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.22715541259619632,
+     "variant": 0.20851090793337534,
+     "n_base": 9,
+     "n_variant": 7
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "donchian",
+     "base": -0.10566828456599153,
+     "variant": -0.00042859089740310274,
+     "n_base": 5,
+     "n_variant": 3
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04836756659322927,
+     "variant": 0.0918302618263136,
+     "n_base": 7,
+     "n_variant": 3
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "ichimoku",
+     "base": 0.1735355517681938,
+     "variant": 0.2444824050349017,
+     "n_base": 12,
+     "n_variant": 8
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.006471041629661833,
+     "variant": -0.05708166865743225,
+     "n_base": 11,
+     "n_variant": 4
+    },
+    {
+     "coin": "LTC",
+     "tf": "1h",
+     "school": "ema_cross",
+     "base": -0.13674556016859152,
+     "variant": -0.05431809537449894,
+     "n_base": 6,
+     "n_variant": 2
+    },
+    {
+     "coin": "LTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.1534768205138365,
+     "variant": -0.010319018154537174,
+     "n_base": 11,
+     "n_variant": 5
+    }
+   ]
+  },
+  "btc_regime_for_alts": {
+   "charts": 23,
+   "mean_delta": -0.005415419711619117,
+   "share_improved": 0.391304347826087,
+   "mean_delta_x3": 0.0031158889855378387,
+   "per_chart": [
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "obv_trend",
+     "base": 0.13763871857349086,
+     "variant": 0.10409038652750602,
+     "n_base": 16,
+     "n_variant": 12
+    },
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04485060924178941,
+     "variant": -0.0698459176264441,
+     "n_base": 13,
+     "n_variant": 10
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "structure_bos",
+     "base": 0.10578103667317529,
+     "variant": 0.2008213944988666,
+     "n_base": 11,
+     "n_variant": 6
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.01182068203128872,
+     "variant": -0.0015887820711427691,
+     "n_base": 10,
+     "n_variant": 7
+    },
+    {
+     "coin": "SOL",
+     "tf": "4h",
+     "school": "macd_trend",
+     "base": 0.20413049206688227,
+     "variant": -0.07518287084425246,
+     "n_base": 18,
+     "n_variant": 9
+    },
+    {
+     "coin": "SOL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.00039060083317399297,
+     "variant": -0.033782188172860494,
+     "n_base": 7,
+     "n_variant": 3
+    },
+    {
+     "coin": "OP",
+     "tf": "1h",
+     "school": "squeeze_break",
+     "base": -0.17402776014360666,
+     "variant": -0.17402776014360666,
+     "n_base": 12,
+     "n_variant": 12
+    },
+    {
+     "coin": "OP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.05827665641332391,
+     "variant": -0.005759772262916796,
+     "n_base": 5,
+     "n_variant": 2
+    },
+    {
+     "coin": "POL",
+     "tf": "1h",
+     "school": "obv_trend",
+     "base": -0.21913525740844342,
+     "variant": -0.21913525740844342,
+     "n_base": 11,
+     "n_variant": 11
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "ema_cross",
+     "base": 0.23359623779442962,
+     "variant": 0.21993852140659098,
+     "n_base": 19,
+     "n_variant": 12
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.03429785492445392,
+     "variant": 0.0010348599225997734,
+     "n_base": 11,
+     "n_variant": 7
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "structure_bos",
+     "base": 1.0029781985407675,
+     "variant": 1.1278692457785637,
+     "n_base": 8,
+     "n_variant": 5
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.938101715410661,
+     "variant": 0.8705727513476416,
+     "n_base": 10,
+     "n_variant": 6
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "composite",
+     "base": -0.035523254206002,
+     "variant": -0.035523254206002,
+     "n_base": 14,
+     "n_variant": 14
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.09486269567681371,
+     "variant": -0.024831247907678766,
+     "n_base": 11,
+     "n_variant": 7
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "vote",
+     "base": 0.31560183718323587,
+     "variant": 0.3232671024899869,
+     "n_base": 11,
+     "n_variant": 7
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.22715541259619632,
+     "variant": 0.26283337140209584,
+     "n_base": 9,
+     "n_variant": 6
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "donchian",
+     "base": -0.10566828456599153,
+     "variant": -0.022638607486937357,
+     "n_base": 5,
+     "n_variant": 3
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04836756659322927,
+     "variant": -0.0011068590104374998,
+     "n_base": 7,
+     "n_variant": 3
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "ichimoku",
+     "base": 0.1735355517681938,
+     "variant": 0.06342127455515945,
+     "n_base": 12,
+     "n_variant": 9
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.006471041629661833,
+     "variant": -0.052496790590713105,
+     "n_base": 11,
+     "n_variant": 9
+    },
+    {
+     "coin": "LTC",
+     "tf": "1h",
+     "school": "ema_cross",
+     "base": -0.13674556016859152,
+     "variant": -0.13674556016859152,
+     "n_base": 6,
+     "n_variant": 6
+    },
+    {
+     "coin": "LTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.1534768205138365,
+     "variant": -0.12517377830224052,
+     "n_base": 11,
+     "n_variant": 8
+    }
+   ]
+  },
+  "d_trailing_exit": {
+   "fixed_2_3": {
+    "n": 32,
+    "mean": -0.000796323425868304,
+    "win": 0.46875
+   },
+   "trail_2": {
+    "n": 41,
+    "mean": -0.003292939547707981,
+    "win": 0.34146341463414637
+   },
+   "fixed_3_3": {
+    "n": 30,
+    "mean": -0.002686660189128276,
+    "win": 0.3333333333333333
+   },
+   "fixed_2_3_x3": {
+    "n": 32,
+    "mean": -0.006037348364667808,
+    "win": 0.34375
+   },
+   "trail_2_x3": {
+    "n": 41,
+    "mean": -0.009238023072901736,
+    "win": 0.1951219512195122
+   },
+   "charts": 3,
+   "mean_delta": -0.002496616121839677,
+   "mean_delta_x3": -0.0032006747082339287,
+   "share_improved": null
+  },
+  "dca_ruler": {
+   "charts": 1,
+   "dca_ret": -0.0384803140975124,
+   "lump_ret": 0.17181877912289578,
+   "mean_delta": -0.21029909322040818,
+   "share_improved": null,
+   "mean_delta_x3": null,
+   "days": 900
+  },
+  "momentum_weekly": {
+   "charts": 1,
+   "params": {
+    "lookback": 60,
+    "top": 2,
+    "regime": 1,
+    "expo": 0.4
+   },
+   "daily": {
+    "ret": -0.015828458567601622,
+    "dd": 0.19686298933424773,
+    "n": 102
+   },
+   "weekly": {
+    "ret": 0.02204081641805522,
+    "dd": 0.13527741839322227,
+    "n": 31
+   },
+   "btc_hold": -0.17342574359115326,
+   "mean_delta": 0.03786927498565684,
+   "mean_delta_x3": 0.07882469738385345,
+   "share_improved": null,
+   "dd_delta": -0.06158557094102546,
+   "trades_daily": 102,
+   "trades_weekly": 31
+  },
+  "vol_target_sizing": {
+   "charts": 23,
+   "mean_delta": 0.04894149764294107,
+   "share_improved": 0.6086956521739131,
+   "mean_delta_x3": 0.0443061724779945,
+   "mean_dd_delta": 0.011746777251009805,
+   "per_chart": [
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "obv_trend",
+     "base": 0.13763871857349086,
+     "variant": 0.16965076392484257,
+     "dd_base": 0.11952052612303088,
+     "dd_variant": 0.14613044038778755
+    },
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04485060924178941,
+     "variant": -0.06124214486202273,
+     "dd_base": 0.22833450618596107,
+     "dd_variant": 0.2763457264792658
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "structure_bos",
+     "base": 0.10578103667317529,
+     "variant": 0.11676702395552763,
+     "dd_base": 0.15976623519291788,
+     "dd_variant": 0.18087140809710245
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.01182068203128872,
+     "variant": 0.01333798796291652,
+     "dd_base": 0.20131638155770637,
+     "dd_variant": 0.2398002324177796
+    },
+    {
+     "coin": "SOL",
+     "tf": "4h",
+     "school": "macd_trend",
+     "base": 0.20413049206688227,
+     "variant": 0.1948398576839232,
+     "dd_base": 0.10595454503841384,
+     "dd_variant": 0.123476648303678
+    },
+    {
+     "coin": "SOL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.00039060083317399297,
+     "variant": -0.002744579536658409,
+     "dd_base": 0.1211823263350954,
+     "dd_variant": 0.13475003894637494
+    },
+    {
+     "coin": "OP",
+     "tf": "1h",
+     "school": "squeeze_break",
+     "base": -0.17402776014360666,
+     "variant": -0.20323356025216766,
+     "dd_base": 0.2155851304479488,
+     "dd_variant": 0.2527210048547329
+    },
+    {
+     "coin": "OP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.05827665641332391,
+     "variant": -0.06145132922364971,
+     "dd_base": 0.1632448945753443,
+     "dd_variant": 0.15154197894494237
+    },
+    {
+     "coin": "POL",
+     "tf": "1h",
+     "school": "obv_trend",
+     "base": -0.21913525740844342,
+     "variant": -0.23736784756936613,
+     "dd_base": 0.2242023099063516,
+     "dd_variant": 0.24357798692139343
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "ema_cross",
+     "base": 0.23359623779442962,
+     "variant": 0.2963045100813493,
+     "dd_base": 0.21913588875315948,
+     "dd_variant": 0.25397909762158233
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.03429785492445392,
+     "variant": 0.04869671202261583,
+     "dd_base": 0.12532640488355973,
+     "dd_variant": 0.14713733841012067
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "structure_bos",
+     "base": 1.0029781985407675,
+     "variant": 1.3147882409231384,
+     "dd_base": 0.24008302343187304,
+     "dd_variant": 0.23650199890230117
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.938101715410661,
+     "variant": 1.2867177481563545,
+     "dd_base": 0.25465792650956864,
+     "dd_variant": 0.25647848287346897
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "composite",
+     "base": -0.035523254206002,
+     "variant": 0.07923731363225084,
+     "dd_base": 0.3586347477372074,
+     "dd_variant": 0.3248386262159625
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.09486269567681371,
+     "variant": -0.02238469829640799,
+     "dd_base": 0.4154780283864885,
+     "dd_variant": 0.4009339946730215
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "vote",
+     "base": 0.31560183718323587,
+     "variant": 0.42176193332979084,
+     "dd_base": 0.25177046525590785,
+     "dd_variant": 0.2710608728142643
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.22715541259619632,
+     "variant": 0.2592838610656987,
+     "dd_base": 0.2615896676682331,
+     "dd_variant": 0.26631967420247915
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "donchian",
+     "base": -0.10566828456599153,
+     "variant": -0.11850708252764053,
+     "dd_base": 0.23234585575325928,
+     "dd_variant": 0.264532357359363
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04836756659322927,
+     "variant": -0.054074522283985904,
+     "dd_base": 0.16486972245331544,
+     "dd_variant": 0.181048885160365
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "ichimoku",
+     "base": 0.1735355517681938,
+     "variant": 0.19314582532810287,
+     "dd_base": 0.14889971590021633,
+     "dd_variant": 0.1259719920285315
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.006471041629661833,
+     "variant": 0.05363695616692299,
+     "dd_base": 0.21211999166763085,
+     "dd_variant": 0.2170539804166831
+    },
+    {
+     "coin": "LTC",
+     "tf": "1h",
+     "school": "ema_cross",
+     "base": -0.13674556016859152,
+     "variant": -0.13674556016859152,
+     "dd_base": 0.18161470657546752,
+     "dd_variant": 0.18161470657546752
+    },
+    {
+     "coin": "LTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.1534768205138365,
+     "variant": -0.10419804863131599,
+     "dd_base": 0.34066507329426365,
+     "dd_variant": 0.3397864777994788
+    }
+   ]
+  }
+ }
+}

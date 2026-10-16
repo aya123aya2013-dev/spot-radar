@@ -1,0 +1,104 @@
+{
+ "BTC": {
+  "active": true,
+  "tf": "1d",
+  "strategy": "donchian",
+  "params": {
+   "n": 20
+  },
+  "stop": 0,
+  "test_ret": 0.2315470277254723,
+  "test_bh": 1.603423489932886,
+  "alts": [
+   {
+    "active": true,
+    "tf": "4h",
+    "strategy": "ema_cross",
+    "params": {
+     "fast": 20,
+     "slow": 100
+    },
+    "stop": 3,
+    "test_ret": 0.10739878136059855,
+    "test_bh": 0.055222382400319736
+   }
+  ]
+ },
+ "ETH": {
+  "active": true,
+  "tf": "1d",
+  "strategy": "ema_cross",
+  "params": {
+   "fast": 9,
+   "slow": 100
+  },
+  "stop": 0,
+  "test_ret": 0.31355453338459505,
+  "test_bh": 0.19246771234781312,
+  "alts": []
+ },
+ "SOL": {
+  "active": true,
+  "tf": "4h",
+  "strategy": "macd_trend",
+  "params": {
+   "trend": 200
+  },
+  "stop": 0,
+  "test_ret": 0.1272768899007224,
+  "test_bh": 0.15364206464061736,
+  "alts": []
+ },
+ "OP": {
+  "active": true,
+  "tf": "1h",
+  "strategy": "ema_cross",
+  "params": {
+   "fast": 9,
+   "slow": 50
+  },
+  "stop": 3,
+  "test_ret": 0.04129150284566263,
+  "test_bh": 0.1941544885177453,
+  "alts": [
+   {
+    "active": true,
+    "tf": "4h",
+    "strategy": "macd_trend",
+    "params": {
+     "trend": 100
+    },
+    "stop": 0,
+    "test_ret": 0.04412266264759457,
+    "test_bh": 0.023255813953488413
+   }
+  ]
+ },
+ "POL": {
+  "active": true,
+  "tf": "4h",
+  "strategy": "ema_cross",
+  "params": {
+   "fast": 9,
+   "slow": 100
+  },
+  "stop": 3,
+  "test_ret": 0.23630334146019827,
+  "test_bh": 0.10491017964071836,
+  "alts": [
+   {
+    "active": true,
+    "tf": "1d",
+    "strategy": "boll_revert",
+    "params": {
+     "n": 20,
+     "k": 2
+    },
+    "stop": 3,
+    "test_ret": 0.04609181042038957,
+    "test_bh": -0.13374060150375933
+   }
+  ]
+ },
+ "generated": "2026-11-01T04:07:05.574297+00:00"
+}

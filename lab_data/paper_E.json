@@ -1,0 +1,539 @@
+{
+ "start": "2026-10-23T11:04:56.862122+00:00",
+ "cash": 4917.560359592465,
+ "pos": {},
+ "trades": [
+  {
+   "time": "2026-10-23 22:36",
+   "coin": "ZEC",
+   "side": "BUY",
+   "price": 1179.0,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-23 23:07",
+   "coin": "ZEC",
+   "side": "SELL",
+   "price": 1181.358,
+   "ret": -0.001002495253373259,
+   "why": "protect",
+   "signal": "single",
+   "hours": 0.5,
+   "high": 1193.36,
+   "protected": true
+  },
+  {
+   "time": "2026-10-24 00:11",
+   "coin": "BCH",
+   "side": "BUY",
+   "price": 280.4,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-24 15:12",
+   "coin": "BCH",
+   "side": "SELL",
+   "price": 271.98799999999994,
+   "ret": -0.032906607181409364,
+   "why": "stop",
+   "signal": "single",
+   "hours": 15.0,
+   "high": 281.9,
+   "protected": false
+  },
+  {
+   "time": "2026-10-25 21:09",
+   "coin": "BCH",
+   "side": "BUY",
+   "price": 279.8,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-26 00:06",
+   "coin": "ZEC",
+   "side": "BUY",
+   "price": 1205.92,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-26 01:32",
+   "coin": "ZEC",
+   "side": "SELL",
+   "price": 1208.33184,
+   "ret": -0.001002495253373148,
+   "why": "protect",
+   "signal": "single",
+   "hours": 1.4,
+   "high": 1219.79,
+   "protected": true
+  },
+  {
+   "time": "2026-10-26 05:55",
+   "coin": "BCH",
+   "side": "SELL",
+   "price": 280.3596,
+   "ret": -0.00100249525337337,
+   "why": "protect",
+   "signal": "single",
+   "hours": 8.8,
+   "high": 284.7,
+   "protected": true
+  },
+  {
+   "time": "2026-10-27 02:59",
+   "coin": "ZEC",
+   "side": "BUY",
+   "price": 1226.33,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-27 02:59",
+   "coin": "BCH",
+   "side": "BUY",
+   "price": 282.1,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-27 05:00",
+   "coin": "QNT",
+   "side": "BUY",
+   "price": 200.34,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-27 08:01",
+   "coin": "QNT",
+   "side": "SELL",
+   "price": 200.74068,
+   "ret": -0.001002495253373259,
+   "why": "protect",
+   "signal": "single",
+   "hours": 3.0,
+   "high": 203.8,
+   "protected": true
+  },
+  {
+   "time": "2026-10-27 08:35",
+   "coin": "ZEC",
+   "side": "SELL",
+   "price": 1228.7826599999999,
+   "ret": -0.00100249525337337,
+   "why": "protect",
+   "signal": "single",
+   "hours": 5.6,
+   "high": 1241.99,
+   "protected": true
+  },
+  {
+   "time": "2026-10-27 14:21",
+   "coin": "BCH",
+   "side": "SELL",
+   "price": 282.66420000000005,
+   "ret": -0.001002495253373148,
+   "why": "protect",
+   "signal": "single",
+   "hours": 11.4,
+   "high": 285.9,
+   "protected": true
+  },
+  {
+   "time": "2026-10-27 23:17",
+   "coin": "QNT",
+   "side": "BUY",
+   "price": 200.08,
+   "signal": "strong"
+  },
+  {
+   "time": "2026-10-28 01:00",
+   "coin": "DOGE",
+   "side": "BUY",
+   "price": 0.07894,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-28 04:25",
+   "coin": "DOGE",
+   "side": "SELL",
+   "price": 0.07909788,
+   "ret": -0.00100249525337337,
+   "why": "protect",
+   "signal": "single",
+   "hours": 3.4,
+   "high": 0.0803,
+   "protected": true
+  },
+  {
+   "time": "2026-10-28 10:19",
+   "coin": "QNT",
+   "side": "SELL",
+   "price": 200.48016,
+   "ret": -0.001002495253373259,
+   "why": "protect",
+   "signal": "strong",
+   "hours": 11.0,
+   "high": 202.7,
+   "protected": true
+  },
+  {
+   "time": "2026-10-28 13:07",
+   "coin": "QNT",
+   "side": "BUY",
+   "price": 198.25,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-28 13:07",
+   "coin": "XRP",
+   "side": "BUY",
+   "price": 1.317,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-28 13:59",
+   "coin": "ZEC",
+   "side": "BUY",
+   "price": 1283.02,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-28 15:32",
+   "coin": "BCH",
+   "side": "BUY",
+   "price": 293.2,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-28 17:51",
+   "coin": "BCH",
+   "side": "SELL",
+   "price": 284.404,
+   "ret": -0.03290660718140925,
+   "why": "stop",
+   "signal": "single",
+   "hours": 2.3,
+   "high": 294.2,
+   "protected": false
+  },
+  {
+   "time": "2026-10-28 18:24",
+   "coin": "ZEC",
+   "side": "SELL",
+   "price": 1285.58604,
+   "ret": -0.001002495253373259,
+   "why": "protect",
+   "signal": "single",
+   "hours": 4.4,
+   "high": 1300.33,
+   "protected": true
+  },
+  {
+   "time": "2026-10-28 19:16",
+   "coin": "LTC",
+   "side": "BUY",
+   "price": 58.89,
+   "signal": "single"
+  },
+  {
+   "time": "2026-10-28 19:57",
+   "coin": "XRP",
+   "side": "SELL",
+   "price": 1.319634,
+   "ret": -0.001002495253373259,
+   "why": "protect",
+   "signal": "single",
+   "hours": 6.8,
+   "high": 1.3324,
+   "protected": true
+  },
+  {
+   "time": "2026-10-28 20:28",
+   "coin": "QNT",
+   "side": "SELL",
+   "price": 198.6465,
+   "ret": -0.001002495253373148,
+   "why": "protect",
+   "signal": "single",
+   "hours": 7.3,
+   "high": 201.37,
+   "protected": true
+  },
+  {
+   "time": "2026-10-28 20:28",
+   "coin": "LTC",
+   "side": "SELL",
+   "price": 59.007780000000004,
+   "ret": -0.001002495253373037,
+   "why": "protect",
+   "signal": "single",
+   "hours": 1.2,
+   "high": 59.52,
+   "protected": true
+  },
+  {
+   "time": "2026-11-01 23:59",
+   "coin": "ZRO",
+   "side": "BUY",
+   "price": 1.813,
+   "signal": "strong"
+  },
+  {
+   "time": "2026-11-02 12:18",
+   "coin": "ZRO",
+   "side": "SELL",
+   "price": 1.75861,
+   "ret": -0.03290660718140914,
+   "why": "stop",
+   "signal": "strong",
+   "hours": 12.3,
+   "high": 1.825,
+   "protected": false
+  }
+ ],
+ "events": [
+  {
+   "time": "2026-10-28 20:28",
+   "text": "E: إيقاف الإشارة single لمدة 7 أيام: متوسط -0.59% في 13 صفقة"
+  },
+  {
+   "time": "2026-10-29 01:22",
+   "text": "E: توقف الحساب بعد هبوط 10% من البداية"
+  },
+  {
+   "time": "2026-10-29 06:35",
+   "text": "E: تصحيح خطأ برمجي: خُصم $1,371.39 بلا صفقة عند إيقاف الإشارة، أُعيد المبلغ وأُلغي التوقف الناتج عنه"
+  },
+  {
+   "time": "2026-11-02 16:56",
+   "text": "E: أوقفه المالك في 2 نوفمبر 2026: الضربات السريعة خاسرة على التاريخ وحياً (0 رابحة من 15)، واستُبدل بالوكيل G."
+  }
+ ],
+ "last_bar": {
+  "BTC": 1793617200000,
+  "ETH": 1793617200000,
+  "SOL": 1793617200000,
+  "XRP": 1793617200000,
+  "ADA": 1793617200000,
+  "DOGE": 1793617200000,
+  "AVAX": 1793617200000,
+  "LINK": 1793617200000,
+  "LTC": 1793617200000,
+  "OP": 1793250000000,
+  "DOT": 1793617200000,
+  "TRX": 1793617200000,
+  "ATOM": 1793617200000,
+  "NEAR": 1793617200000,
+  "XLM": 1793617200000,
+  "HBAR": 1793617200000,
+  "SUI": 1793617200000,
+  "APT": 1793617200000,
+  "ARB": 1793617200000,
+  "ALGO": 1793617200000,
+  "FIL": 1793617200000,
+  "ICP": 1793617200000,
+  "ETC": 1793617200000,
+  "BCH": 1793617200000,
+  "ZRO": 1793617200000,
+  "TAO": 1793617200000,
+  "RENDER": 1793617200000,
+  "QNT": 1793617200000,
+  "WLD": 1793617200000,
+  "ZEC": 1793617200000
+ },
+ "day": {
+  "date": "2026-11-02",
+  "start_eq": 4934.718463364392,
+  "n": 0,
+  "traded": []
+ },
+ "halted": false,
+ "btc_qty": 0.06125238088004481,
+ "prices": {
+  "ADA": 0.1918,
+  "ALGO": 0.0934,
+  "APT": 0.6364,
+  "ARB": 0.1597,
+  "ATOM": 1.465,
+  "AVAX": 8.623,
+  "BCH": 278.6,
+  "BTC": 78038.01,
+  "DOGE": 0.07572,
+  "DOT": 0.943,
+  "ETC": 7.07,
+  "ETH": 2294.29,
+  "FIL": 0.8701,
+  "HBAR": 0.0712,
+  "ICP": 2.531,
+  "LINK": 11.362,
+  "LTC": 55.02,
+  "NEAR": 4.149,
+  "QNT": 201.0,
+  "RENDER": 1.559,
+  "SOL": 94.62,
+  "SUI": 0.8917,
+  "TAO": 230.5,
+  "TRX": 0.3164,
+  "WLD": 0.3877,
+  "XLM": 0.1683,
+  "XRP": 1.2559,
+  "ZEC": 1257.85,
+  "ZRO": 1.767
+ },
+ "holdings": {},
+ "equity": 4917.560359592465,
+ "btc_hold": 4780.013911640745,
+ "rules": {
+  "coins": [
+   "BTC",
+   "ETH",
+   "SOL",
+   "XRP",
+   "ADA",
+   "DOGE",
+   "AVAX",
+   "LINK",
+   "LTC",
+   "DOT",
+   "TRX",
+   "ATOM",
+   "NEAR",
+   "XLM",
+   "HBAR",
+   "SUI",
+   "APT",
+   "ARB",
+   "ALGO",
+   "FIL",
+   "ICP",
+   "ETC",
+   "BCH",
+   "ZRO",
+   "TAO",
+   "RENDER",
+   "QNT",
+   "WLD",
+   "ZEC"
+  ],
+  "tp": 0.02,
+  "stop": 0.03,
+  "hold_hours": 48,
+  "size": 0.15,
+  "max_open": 5,
+  "max_day": 6,
+  "day_loss_cap": 0.015,
+  "halt_dd": 0.1,
+  "fee": 0.001,
+  "slip": 0.0005,
+  "protect": {
+   "be_trigger": 0.01,
+   "be_lock": 0.002,
+   "lock_trigger": 0.02,
+   "lock": 0.02,
+   "trail_trigger": 0.03,
+   "trail": 0.01
+  },
+  "reentry": "strong signal only",
+  "take_profit": false,
+  "learn": {
+   "min_trades": 12,
+   "p": 0.15,
+   "days": 7
+  },
+  "paused": [
+   "signal:single"
+  ]
+ },
+ "stats": {
+  "trades": 15,
+  "gate_trades": 30,
+  "win_rate": 0.0,
+  "win_ci": [
+   -2.2096511667503485e-17,
+   0.20388926630434784
+  ],
+  "avg_win": 0.0,
+  "avg_loss": -0.007383317638980443,
+  "expectancy": -0.007383317638980443,
+  "breakeven_win": 1.0,
+  "profit_factor": 0.0,
+  "boot_p": 0.0,
+  "worst": -0.032906607181409364,
+  "loss_streak": 15,
+  "avg_hours": 6.293333333333334,
+  "by": {
+   "why": {
+    "protect": {
+     "n": 12,
+     "win": 0.0,
+     "mean": -0.0010024952533732405
+    },
+    "stop": {
+     "n": 3,
+     "win": 0.0,
+     "mean": -0.03290660718140925
+    }
+   },
+   "signal": {
+    "single": {
+     "n": 13,
+     "win": 0.0,
+     "mean": -0.005910820165378788
+    },
+    "strong": {
+     "n": 2,
+     "win": 0.0,
+     "mean": -0.0169545512173912
+    }
+   },
+   "coin": {
+    "ZEC": {
+     "n": 4,
+     "win": 0.0,
+     "mean": -0.001002495253373259
+    },
+    "BCH": {
+     "n": 4,
+     "win": 0.0,
+     "mean": -0.016954551217391284
+    },
+    "QNT": {
+     "n": 3,
+     "win": 0.0,
+     "mean": -0.0010024952533732219
+    },
+    "DOGE": {
+     "n": 1,
+     "win": 0.0,
+     "mean": -0.00100249525337337
+    },
+    "XRP": {
+     "n": 1,
+     "win": 0.0,
+     "mean": -0.001002495253373259
+    },
+    "LTC": {
+     "n": 1,
+     "win": 0.0,
+     "mean": -0.001002495253373037
+    },
+    "ZRO": {
+     "n": 1,
+     "win": 0.0,
+     "mean": -0.03290660718140914
+    }
+   }
+  },
+  "gate": "مغلقة 15 من 30 المطلوبة"
+ },
+ "paused": {
+  "signal:single": 1793824099367
+ },
+ "repair_20261029": {
+  "cash_before": 3570.561620103017,
+  "cash_after": 4941.953799450544
+ },
+ "retired": {
+  "time": "2026-11-02 16:56",
+  "reason": "أوقفه المالك في 2 نوفمبر 2026: الضربات السريعة خاسرة على التاريخ وحياً (0 رابحة من 15)، واستُبدل بالوكيل G.",
+  "equity": 4917.560359592465
+ }
+}
