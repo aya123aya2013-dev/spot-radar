@@ -1,0 +1,469 @@
+{
+ "date": "2026-11-11",
+ "fetched": "2026-11-11T00:07:54+00:00",
+ "source": "https://www.cryptohalal.cc/currencies",
+ "api": "https://api.cryptohalal.cc/api/coins",
+ "permissible_code": 0,
+ "n": 51,
+ "rulings": {
+  "BTC": {
+   "name": "Bitcoin",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "Bitcoin is generally considered Halal from an Islamic finance perspective. It functions as a decentralized digital currency and a store of value, lacking inherent interest (riba) mechanisms. Its utility as a medium of exchange and a means of transferring value across borders aligns with the concept ",
+   "rank": 1,
+   "slug": "bitcoin"
+  },
+  "ETH": {
+   "name": "Ethereum",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 2,
+   "slug": "ethereum"
+  },
+  "USDT": {
+   "name": "Tether USDt",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 3,
+   "slug": "tether"
+  },
+  "BNB": {
+   "name": "BNB",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 4,
+   "slug": "bnb"
+  },
+  "USDC": {
+   "name": "USDC",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 5,
+   "slug": "usd-coin"
+  },
+  "XRP": {
+   "name": "XRP",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 6,
+   "slug": "xrp"
+  },
+  "SOL": {
+   "name": "Solana",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 7,
+   "slug": "solana"
+  },
+  "TRX": {
+   "name": "TRON",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 8,
+   "slug": "tron"
+  },
+  "ZEC": {
+   "name": "Zcash",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 10,
+   "slug": "zcash"
+  },
+  "DOGE": {
+   "name": "Dogecoin",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 11,
+   "slug": "dogecoin"
+  },
+  "XMR": {
+   "name": "Monero",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 12,
+   "slug": "monero"
+  },
+  "LINK": {
+   "name": "Chainlink",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 14,
+   "slug": "chainlink"
+  },
+  "ADA": {
+   "name": "Cardano",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 15,
+   "slug": "cardano"
+  },
+  "XLM": {
+   "name": "Stellar",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 16,
+   "slug": "stellar"
+  },
+  "NEAR": {
+   "name": "NEAR Protocol",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 18,
+   "slug": "near-protocol"
+  },
+  "BCH": {
+   "name": "Bitcoin Cash",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 19,
+   "slug": "bitcoin-cash"
+  },
+  "DAI": {
+   "name": "Dai",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "as it operates as a stablecoin algorithmically designed for lending purposes.",
+   "rank": 20,
+   "slug": "multi-collateral-dai"
+  },
+  "GRAM": {
+   "name": "Gram (prev. Toncoin)",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 21,
+   "slug": "toncoin"
+  },
+  "UNI": {
+   "name": "Uniswap",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 21,
+   "slug": "uniswap"
+  },
+  "LTC": {
+   "name": "Litecoin",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 22,
+   "slug": "litecoin"
+  },
+  "AVAX": {
+   "name": "Avalanche",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 23,
+   "slug": "avalanche"
+  },
+  "SUI": {
+   "name": "Sui",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 25,
+   "slug": "sui"
+  },
+  "HBAR": {
+   "name": "Hedera",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 29,
+   "slug": "hedera"
+  },
+  "SHIB": {
+   "name": "Shiba Inu",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 33,
+   "slug": "shiba-inu"
+  },
+  "CRO": {
+   "name": "Cronos",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 35,
+   "slug": "cronos"
+  },
+  "PEPE": {
+   "name": "Pepe",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "The project as it\\'s merely a coin for speculation without any real value, project, or utility.",
+   "rank": 36,
+   "slug": "pepe"
+  },
+  "QNT": {
+   "name": "Quant",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 37,
+   "slug": "quant"
+  },
+  "OKB": {
+   "name": "OKB",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 38,
+   "slug": "okb"
+  },
+  "ENA": {
+   "name": "Ethena",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 39,
+   "slug": "ethena"
+  },
+  "AAVE": {
+   "name": "Aave",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 40,
+   "slug": "aave"
+  },
+  "TAO": {
+   "name": "Bittensor",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 40,
+   "slug": "bittensor"
+  },
+  "PAXG": {
+   "name": "PAX Gold",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 42,
+   "slug": "pax-gold"
+  },
+  "USDD": {
+   "name": "USDD",
+   "judgement": 2,
+   "permissible": false,
+   "ruling": "غير محسوم",
+   "note": "Stable currencies with a paper financial cover are permitted to use, while those that are algorithmically stable are not permitted due to the lack of reliability, and those stable currencies with a cover of cryptocurrencies have a suspicion due to the high volatility of cryptocurrencies that may be ",
+   "rank": 48,
+   "slug": "usdd"
+  },
+  "DOT": {
+   "name": "Polkadot",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 49,
+   "slug": "polkadot-new"
+  },
+  "ICP": {
+   "name": "Internet Computer",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 51,
+   "slug": "internet-computer"
+  },
+  "BGB": {
+   "name": "Bitget Token",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 53,
+   "slug": "bitget-token-new"
+  },
+  "WLD": {
+   "name": "Worldcoin",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 54,
+   "slug": "worldcoin-org"
+  },
+  "JST": {
+   "name": "JUST",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 55,
+   "slug": "just"
+  },
+  "ARB": {
+   "name": "Arbitrum",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 56,
+   "slug": "arbitrum"
+  },
+  "ETC": {
+   "name": "Ethereum Classic",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 58,
+   "slug": "ethereum-classic"
+  },
+  "GT": {
+   "name": "GateToken",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 59,
+   "slug": "gatetoken"
+  },
+  "KCS": {
+   "name": "KuCoin Token",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 61,
+   "slug": "kucoin-token"
+  },
+  "RENDER": {
+   "name": "Render",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 65,
+   "slug": "render"
+  },
+  "KAS": {
+   "name": "Kaspa",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 66,
+   "slug": "kaspa"
+  },
+  "ALGO": {
+   "name": "Algorand",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 67,
+   "slug": "algorand"
+  },
+  "INJ": {
+   "name": "Injective",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 69,
+   "slug": "injective"
+  },
+  "ATOM": {
+   "name": "Cosmos",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 70,
+   "slug": "cosmos"
+  },
+  "FIL": {
+   "name": "Filecoin",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 73,
+   "slug": "filecoin"
+  },
+  "ZRO": {
+   "name": "LayerZero",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 74,
+   "slug": "layerzero"
+  },
+  "ETHFI": {
+   "name": "ether.fi",
+   "judgement": 1,
+   "permissible": false,
+   "ruling": "غير مباح",
+   "note": "",
+   "rank": 75,
+   "slug": "ether-fi-ethfi"
+  },
+  "STX": {
+   "name": "Stacks",
+   "judgement": 0,
+   "permissible": true,
+   "ruling": "مباح",
+   "note": "",
+   "rank": 76,
+   "slug": "stacks"
+  }
+ }
+}
