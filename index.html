@@ -37,7 +37,7 @@ h2{font-size:.95rem;margin:0 0 12px;font-weight:700}
 #status{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted)}
 #status i{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
 #status.ok i{background:var(--up)} #status.bad i{background:var(--down)}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px}
 .tabs button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:500;padding:9px 6px;border-radius:9px;cursor:pointer}
 .tabs button[aria-selected="true"]{background:var(--accent);color:var(--on-accent);font-weight:700}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -103,6 +103,17 @@ canvas{width:100%;max-width:100%;display:block}
 .sb{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 14px;display:grid;gap:1px;min-width:0}
 .sbv{font-size:1.45rem;font-weight:600;line-height:1.25}
 .sb .num:last-child{font-size:.9rem;font-weight:600}
+.fresh{grid-column:1/-1;font-size:.78rem;color:var(--muted)}
+.fresh.late{color:var(--warn)}
+.spark{display:flex;gap:4px;align-items:flex-end;height:34px;direction:ltr}
+.spark i{flex:1;border-radius:3px 3px 0 0;background:var(--line);min-height:3px}
+.spark i:last-child{background:var(--accent)}
+.mood-top{display:flex;gap:16px;align-items:flex-end;justify-content:space-between}
+.jr{display:grid;gap:14px}
+.jr h3{margin:0 0 6px;font-size:.98rem}
+.jr .date{font-size:.78rem;color:var(--muted)}
+.jr ul{margin:6px 0 0;padding-inline-start:20px}.jr li{margin:5px 0}
+.jr a{color:var(--accent)}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -117,7 +128,8 @@ canvas{width:100%;max-width:100%;display:block}
 
   <div class="tabs" role="tablist" aria-label="الأقسام">
     <button role="tab" data-tab="signals" aria-selected="true">الإشارات</button>
-    <button role="tab" data-tab="paper" aria-selected="false">الحساب الوهمي</button>
+    <button role="tab" data-tab="paper" aria-selected="false">الحساب</button>
+    <button role="tab" data-tab="journal" aria-selected="false">السجل</button>
     <button role="tab" data-tab="info" aria-selected="false">الشرح</button>
   </div>
 
@@ -132,6 +144,7 @@ canvas{width:100%;max-width:100%;display:block}
     <div class="chips" id="strip"></div>
 
     <section class="card" id="hero"></section>
+    <section class="card" id="mood" hidden></section>
 
     <div class="two">
       <section class="card plan"><h2>خطة السبوت المقترحة</h2><div id="plan"></div>
@@ -148,6 +161,43 @@ canvas{width:100%;max-width:100%;display:block}
   <!-- ===== paper ===== -->
   <main id="tab-paper" class="stack" hidden>
     <div id="paperBody"><div class="empty">جارٍ تحميل الحساب الوهمي…</div></div>
+  </main>
+
+  <!-- ===== journal ===== -->
+  <main id="tab-journal" class="stack jr" hidden>
+    <section class="card">
+      <div class="date">17 أكتوبر 2026 · اليوم الأول</div>
+      <h3>ما بنيته</h3>
+      <ul>
+        <li>الحساب A: 5000$ وهمية، 1000$ لكل عملة (BTC وETH وSOL وOP وPOL)، يُفحص السوق كل نحو 5 دقائق على GitHub بدون جهازك.</li>
+        <li>6 استراتيجيات اختُبرت على نحو 3000 شمعة لكل عملة وإطار. التدريب على أول 60% من الشموع والحكم على آخر 40% التي لم يرها النظام.</li>
+        <li>المخاطر: حجم الصفقة بين 25% و100% من حصة العملة حسب تذبذبها، وإيقاف الاستراتيجية التي تخسر 8% بعد 3 صفقات، وقاطع للحساب كله عند هبوط 25% من القمة.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <div class="date">17 أكتوبر 2026 · نتائج الاختبار على بيانات حقيقية</div>
+      <h3>ما وجدته، بدون تجميل</h3>
+      <ul>
+        <li>الاستراتيجيات المختارة جميعها رابحة على الفترة غير المرئية، لكنها أقل من مجرد الاحتفاظ بالعملة في 3 عملات من 5 (BTC وSOL وOP)، لأن الفترة كانت صاعدة وهي تخرج من السوق أثناء الصعود. قيمتها الحقيقية في الحماية من الهبوط، ولا تثبت إلا في سوق هابط.</li>
+        <li>المنافس B (تدوير الزخم على 16 عملة): نسخته الأولى هبطت 47–60% في الاختبار فرفضتها. بعد سقف استثمار 40% انتهى الاختبار قرب 0% بهبوط 17%، بينما خسرت BTC نحو 29%. لم يربح، فبقي B نقداً بحسب قاعدتي.</li>
+        <li>الدرس: أي رقم جميل على الماضي قد يكون صدفة. لذلك الحَكَم هو الأداء الحي وليس الاختبار التاريخي.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <div class="date">ما أنتظره</div>
+      <h3>خطة الأسبوع</h3>
+      <ul>
+        <li>لا أغيّر الحسابين A وB حتى أجمع بيانات حية، حتى لا تضيع التجربة.</li>
+        <li>مراجعة Claude الأسبوعية: الجمعة 23 أكتوبر 19:47 بتوقيتك. تقرأ النتائج وتفتح طلب تعديل أو ملاحظة على GitHub، ولا تدمج شيئاً بنفسها.</li>
+        <li>أسبوع واحد عينة صغيرة. قد لا تحدث صفقة واحدة، والرصيد قد يبقى قرب 5000$. هذا لا يدل على نجاح ولا فشل.</li>
+        <li>لا ضمان للربح. وإذا خسر أحد الحسابين فستراه هنا كما هو.</li>
+      </ul>
+      <div class="note">
+        <a href="https://github.com/aya123aya2013-dev/spot-radar/pulls" target="_blank" rel="noopener">طلبات التعديل</a> ·
+        <a href="https://github.com/aya123aya2013-dev/spot-radar/issues" target="_blank" rel="noopener">الملاحظات الأسبوعية</a> ·
+        <a href="https://github.com/aya123aya2013-dev/spot-radar/commits/main" target="_blank" rel="noopener">كل التغييرات</a>
+      </div>
+    </section>
   </main>
 
   <!-- ===== info ===== -->
@@ -266,7 +316,7 @@ function localTime(s){ // runner writes "YYYY-MM-DD HH:MM" in UTC
 function setStatus(text,cls){const el=$('status');el.className=cls||'';el.querySelector('span').textContent=text}
 
 /* ---------- tabs ---------- */
-const TABS=['signals','paper','info'];
+const TABS=['signals','paper','journal','info'];
 function setTab(name,push){
   if(!TABS.includes(name))name='signals';
   TABS.forEach(t=>{$('tab-'+t).hidden=t!==name});
@@ -383,7 +433,12 @@ function renderSummary(){
   const eqA=COINS.reduce((a,c)=>a+st.cash[c.s]+st.qty[c.s]*(px[c.s]||0),0);
   const card=(name,v)=>{const pl=v-5000,cls=pl>0.005?'up':pl<-0.005?'down':'',ar=pl>0.005?'▲':pl<-0.005?'▼':'■';
     return `<div class="sb"><div class="sub">${name}</div><div class="num sbv">${usd(v)}</div><div class="num ${cls}">${ar} ${pl>=0?'+':'-'}${usd(Math.abs(pl))} · ${pct(pl/5000)}</div></div>`};
-  el.innerHTML=card('الحساب A · الرئيسي',eqA)+(stB?card('الحساب B · المنافس',stB.equity):'');
+  let fresh='';
+  const last=paper.series.length?paper.series[paper.series.length-1].t:null;
+  if(last){const d=new Date(String(last).replace(' ','T')+':00Z'),m=Math.round((Date.now()-d)/60000);
+    if(!isNaN(m)){const late=m>45,txt=m<60?`${Math.max(m,0)} دقيقة`:`${Math.round(m/60)} ساعة`;
+      fresh=`<div class="fresh ${late?'late':''}">آخر تحديث للحسابات: قبل ${txt}${late?' · متأخر، فجدولة GitHub تتأخر أحياناً':''}</div>`}}
+  el.innerHTML=card('الحساب A · الرئيسي',eqA)+(stB?card('الحساب B · المنافس',stB.equity):'')+fresh;
   el.hidden=false;
 }
 
@@ -487,6 +542,24 @@ function drawEquity(){
   g.fillStyle=acc;g.beginPath();g.arc(x(s.length-1),y(s[s.length-1].e),3.5,0,7);g.fill();
 }
 
+/* ---------- market mood (information only, not used by the trading engine) ---------- */
+const FNG_AR={'Extreme Fear':'خوف شديد','Fear':'خوف','Neutral':'محايد','Greed':'طمع','Extreme Greed':'طمع شديد'};
+async function loadMood(){
+  const box=$('mood');let fng=null,fund=null;
+  try{const j=await fetch('https://api.alternative.me/fng/?limit=8').then(r=>r.json());fng=j.data.map(d=>({v:+d.value,c:d.value_classification})).reverse()}catch(e){}
+  try{const arr=await fetch('https://fapi.binance.com/fapi/v1/premiumIndex').then(r=>r.json());fund={};
+    COINS.forEach(c=>{const x=arr.find(a=>a.symbol===c.s+'USDT');if(x)fund[c.s]=+x.lastFundingRate});if(!Object.keys(fund).length)fund=null}catch(e){}
+  if(!fng&&!fund){box.hidden=true;return}
+  let h='<h2>مزاج السوق <span class="sub">للعلم فقط، لا يدخل في قرارات التداول</span></h2>';
+  if(fng&&fng.length){const n=fng[fng.length-1],cls=n.v>=55?'buy':n.v<=45?'sell':'hold';
+    h+=`<div class="mood-top"><div><div class="sub">مؤشر الخوف والطمع</div><div class="price" style="font-size:1.7rem">${n.v}</div><span class="pill ${cls}">${FNG_AR[n.c]||n.c}</span></div>
+      <div style="flex:1;max-width:190px"><div class="spark">${fng.map(d=>`<i style="height:${Math.max(d.v,4)}%" title="${d.v}"></i>`).join('')}</div><div class="sub" style="text-align:center">آخر 8 أيام</div></div></div>`}
+  if(fund){h+=`<div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))">${COINS.filter(c=>c.s in fund).map(c=>{const f=fund[c.s],hi=f>0.0005,lo=f<0;
+      return `<div class="tile"><div class="l">تمويل ${c.s} (8 ساعات)</div><div class="v num ${hi?'warn':lo?'down':''}">${(f*100).toFixed(3)}%</div><div class="sub">${hi?'شراء مزدحم':lo?'بيع مزدحم':'عادي'}</div></div>`}).join('')}</div>
+      <div class="note">تمويل العقود المرتفع يعني أن كثيرين يشترون بالرافعة، وهذا يرفع خطر تصحيح حاد. المؤشر معلومة وليس إشارة.</div>`}
+  box.innerHTML=h;box.hidden=false;
+}
+
 /* ---------- control ---------- */
 async function loadAll(){
   setStatus('جارٍ التحديث…','');
@@ -501,8 +574,8 @@ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.data
 $('refresh').onclick=()=>{loadAll();loadPaper()};
 window.addEventListener('resize',()=>{if(!$('tab-signals').hidden&&data[focus]&&!data[focus].err)drawChart(data[focus]);if(!$('tab-paper').hidden)drawEquity()});
 setTab(location.hash.slice(1),false);
-loadAll();loadPaper();
-setInterval(loadAll,120000);setInterval(loadPaper,300000);
+loadAll();loadPaper();loadMood();
+setInterval(loadAll,120000);setInterval(loadPaper,300000);setInterval(loadMood,1800000);
 </script>
 </body>
 </html>
