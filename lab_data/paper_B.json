@@ -1,0 +1,22 @@
+{
+ "start": "2026-10-16T22:02:20.145490+00:00",
+ "cash": 5000.0,
+ "hold": {},
+ "last_bar": 1793318400000,
+ "trades": [],
+ "events": [],
+ "btc_qty": 0.061180295148427065,
+ "eq_peak": 5000.0,
+ "halted_until": 0,
+ "params": {
+  "lookback": 60,
+  "top": 2,
+  "regime": 1,
+  "expo": 0.4
+ },
+ "active": false,
+ "prices": {},
+ "holdings": {},
+ "equity": 5000.0,
+ "btc_hold": 4742.228450648181
+}

@@ -1,0 +1,117 @@
+{
+ "BTC": {
+  "active": true,
+  "tf": "1d",
+  "strategy": "donchian",
+  "params": {
+   "n": 20
+  },
+  "stop": 0,
+  "test_ret": 0.2315470277254723,
+  "test_bh": 1.5716146922051504,
+  "alts": [
+   {
+    "active": true,
+    "tf": "1h",
+    "strategy": "rsi_revert",
+    "params": {
+     "lo": 35,
+     "hi": 70,
+     "trend": 0
+    },
+    "stop": 0,
+    "test_ret": 0.025200883229774096,
+    "test_bh": 0.016812847126234542
+   },
+   {
+    "active": true,
+    "tf": "4h",
+    "strategy": "ema_cross",
+    "params": {
+     "fast": 20,
+     "slow": 100
+    },
+    "stop": 3,
+    "test_ret": 0.10739878136059855,
+    "test_bh": 0.13467697442703397
+   }
+  ]
+ },
+ "ETH": {
+  "active": true,
+  "tf": "1d",
+  "strategy": "ema_cross",
+  "params": {
+   "fast": 9,
+   "slow": 100
+  },
+  "stop": 0,
+  "test_ret": 0.33643462082936226,
+  "test_bh": 0.17676815549092306,
+  "alts": []
+ },
+ "SOL": {
+  "active": true,
+  "tf": "4h",
+  "strategy": "macd_trend",
+  "params": {
+   "trend": 100
+  },
+  "stop": 0,
+  "test_ret": 0.05008547055137269,
+  "test_bh": 0.21073793755912962,
+  "alts": []
+ },
+ "OP": {
+  "active": true,
+  "tf": "1h",
+  "strategy": "ema_cross",
+  "params": {
+   "fast": 9,
+   "slow": 50
+  },
+  "stop": 3,
+  "test_ret": 0.19176512940018076,
+  "test_bh": 0.12187812187812197,
+  "alts": [
+   {
+    "active": true,
+    "tf": "4h",
+    "strategy": "macd_trend",
+    "params": {
+     "trend": 100
+    },
+    "stop": 0,
+    "test_ret": 0.09545750264716868,
+    "test_bh": -0.050167224080267525
+   }
+  ]
+ },
+ "POL": {
+  "active": true,
+  "tf": "4h",
+  "strategy": "ema_cross",
+  "params": {
+   "fast": 9,
+   "slow": 100
+  },
+  "stop": 3,
+  "test_ret": 0.23630334146019827,
+  "test_bh": -0.028246753246753298,
+  "alts": [
+   {
+    "active": true,
+    "tf": "1d",
+    "strategy": "boll_revert",
+    "params": {
+     "n": 20,
+     "k": 2
+    },
+    "stop": 3,
+    "test_ret": 0.04609181042038957,
+    "test_bh": -0.1874208144796381
+   }
+  ]
+ },
+ "generated": "2026-10-25T03:51:16.404565+00:00"
+}
