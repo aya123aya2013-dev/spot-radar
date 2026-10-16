@@ -347,7 +347,8 @@ def cmd_backtest():
 
 # ---------------------------------------------------------------- challenger B: momentum rotation
 UNIVERSE = ["BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "DOT", "LTC", "TRX", "ATOM", "NEAR", "OP", "POL"]
-MOM_GRID = [dict(lookback=l, top=n, regime=r) for l in (30, 60, 90) for n in (2, 3, 5) for r in (0, 1)]
+MOM_GRID = [dict(lookback=l, top=n, regime=r, expo=x) for l in (30, 60, 90) for n in (2, 3, 5) for r in (0, 1) for x in (0.4, 0.7, 1.0)]
+MOM_MAX_DD = 0.35     # a candidate whose training drawdown exceeds this is rejected outright
 DAY_MS = 86400 * 1000
 MOM_WARMUP = 110
 STATE_B = os.path.join(OUT, "paper_B.json")
@@ -409,7 +410,7 @@ def mom_targets(close, e50, e100b, t, p):
     return [c for _, c in cands[:p["top"]]]
 
 
-def rebalance(cash, hold, tgt, price, buy_px=None):
+def rebalance(cash, hold, tgt, price, buy_px=None, expo=1.0):
     """Sell what left the target list, buy new entries with equal budgets. Returns cash, hold, list of fills."""
     fills = []
     buy_px = buy_px or price
@@ -421,7 +422,7 @@ def rebalance(cash, hold, tgt, price, buy_px=None):
     total = cash + sum(q * price[c] for c, q in hold.items() if price.get(c))
     new = [c for c in tgt if c not in hold and buy_px.get(c)]
     if new:
-        budget = min(cash / len(new), total / max(len(tgt), 1))
+        budget = min(cash / len(new), total * expo / max(len(tgt), 1))
         for c in new:
             px = buy_px[c]
             qty = budget * (1 - FEE) / (px * (1 + SLIP))
@@ -439,7 +440,7 @@ def mom_backtest(days, opn, close, e50, e100b, p, start, end, cash0=CAPITAL):
         tgt = mom_targets(close, e50, e100b, t, p)
         if set(tgt) != set(hold):
             nxt = {c: opn[c][t + 1] for c in close if opn[c][t + 1]}
-            cash, hold, fills = rebalance(cash, hold, tgt, nxt)
+            cash, hold, fills = rebalance(cash, hold, tgt, nxt, expo=p.get("expo", 1.0))
             trades += len(fills)
     last_px = {c: close[c][end - 1] for c in close if close[c][end - 1]}
     final = cash + sum(q * last_px.get(c, 0) * (1 - FEE) for c, q in hold.items())
@@ -463,21 +464,32 @@ def cmd_momentum_backtest():
     best = None
     for p in MOM_GRID:
         tr = mom_backtest(days, opn, close, e50, e100b, p, MOM_WARMUP, split)
-        sc = tr["ret"] - 0.5 * tr["dd"] if tr["n"] >= 6 else -9
+        if tr["n"] < 6 or tr["dd"] > MOM_MAX_DD:
+            continue
+        sc = tr["ret"] - 0.5 * tr["dd"]
         if best is None or sc > best[0]:
             best = (sc, p, tr)
+    if best is None:
+        print(f"  no candidate kept training drawdown under {MOM_MAX_DD*100:.0f}%: challenger B stays in cash")
+        json.dump(dict(active=False, params=dict(lookback=60, top=3, regime=1, expo=0.4), coins=sorted(uni),
+                       reason="no candidate under the drawdown limit", generated=datetime.now(timezone.utc).isoformat()),
+                  open(os.path.join(OUT, "config_B.json"), "w"), indent=1)
+        return
     _, p, tr = best
     te = mom_backtest(days, opn, close, e50, e100b, p, split, len(days))
-    print(f"  best on train: {p}  train {tr['ret']*100:+.1f}%  test {te['ret']*100:+.1f}% "
-          f"(BTC hold {te['bh']*100:+.1f}%, drawdown {te['dd']*100:.1f}%, {te['n']} fills) coins={len(uni)}")
-    json.dump(dict(params=p, train=tr, test=te, coins=sorted(uni), generated=datetime.now(timezone.utc).isoformat()),
+    active = te["ret"] > 0 and te["dd"] <= MOM_MAX_DD
+    print(f"  best (training drawdown <= {MOM_MAX_DD*100:.0f}%): {p}")
+    print(f"  train {tr['ret']*100:+.1f}% dd {tr['dd']*100:.0f}%   test {te['ret']*100:+.1f}% dd {te['dd']*100:.0f}% "
+          f"(BTC hold {te['bh']*100:+.1f}%, {te['n']} fills)  ->  {'ACTIVE' if active else 'cash: failed out-of-sample'}")
+    json.dump(dict(active=active, params=p, train=tr, test=te, coins=sorted(uni), generated=datetime.now(timezone.utc).isoformat()),
               open(os.path.join(OUT, "config_B.json"), "w"), indent=1)
 
 
 def cycle_b():
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     cp = os.path.join(OUT, "config_B.json")
-    p = json.load(open(cp))["params"] if os.path.exists(cp) else dict(lookback=60, top=3, regime=1)
+    conf = json.load(open(cp)) if os.path.exists(cp) else dict(active=False, params=dict(lookback=60, top=3, regime=1, expo=0.4))
+    p, active = conf["params"], conf.get("active", False)
     rows_all = load_universe(260, closed_only=False)
     if "BTC" not in rows_all:
         print("  B: no data this cycle")
@@ -506,17 +518,17 @@ def cycle_b():
         st["events"].append(dict(time=now, text=f"B: قاطع الحساب أغلق كل المراكز بعد هبوط {MAX_ACCOUNT_DD*100:.0f}% وتوقف أسبوعاً"))
     bar = days[t]
     if not st["halted_until"] and bar != st["last_bar"]:
-        tgt = mom_targets(close, e50, e100b, t, p)
+        tgt = mom_targets(close, e50, e100b, t, p) if active else []
         if set(tgt) != set(st["hold"]):
-            st["cash"], st["hold"], fills = rebalance(st["cash"], st["hold"], tgt, price)
+            st["cash"], st["hold"], fills = rebalance(st["cash"], st["hold"], tgt, price, expo=p.get("expo", 1.0))
             for side, c, px, _ in fills:
                 st["trades"].append(dict(time=now, coin=c, side=side, price=px, why="rebalance"))
                 print(f"  B {side} {c} @ {px:g}")
-            st["events"].append(dict(time=now, text="B: التركيبة الجديدة " + (", ".join(tgt) if tgt else "نقد (سوق BTC ضعيف أو لا زخم)")))
+            st["events"].append(dict(time=now, text="B: التركيبة الجديدة " + (", ".join(tgt) if tgt else ("نقد (سوق BTC ضعيف أو لا زخم)" if active else "نقد (لم تنجح الاستراتيجية في الاختبار)"))))
         st["last_bar"] = bar
     st["trades"], st["events"] = st["trades"][-60:], st["events"][-20:]
     v = value()
-    st["params"], st["prices"] = p, {c: price[c] for c in st["hold"]}
+    st["params"], st["active"], st["prices"] = p, active, {c: price[c] for c in st["hold"]}
     st["holdings"] = {c: dict(qty=q, value=q * price.get(c, 0)) for c, q in st["hold"].items()}
     st["equity"], st["btc_hold"] = v, st["btc_qty"] * price["BTC"]
     log_csv_b([now, round(v, 2), round(st["btc_hold"], 2)])
