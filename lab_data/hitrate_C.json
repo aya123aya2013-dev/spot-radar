@@ -1,0 +1,436 @@
+{
+ "summary": {
+  "tested": 11664,
+  "passed_selection": 246,
+  "accepted": 2,
+  "charts": 24,
+  "charts_with_selection_pick": 21,
+  "charts_pick_held_on_exam": 8,
+  "min_win": 0.7,
+  "generated": "2026-10-23T22:33:41.701623+00:00"
+ },
+ "accepted": [
+  {
+   "coin": "BNB",
+   "tf": "4h",
+   "family": "boll_dip",
+   "params": {
+    "k": 2.0,
+    "trend": false
+   },
+   "tp": 0.008,
+   "sl": 0.05,
+   "hold": 48,
+   "sel": {
+    "n": 42,
+    "win": 0.9285714285714286,
+    "mean": 0.001350508562865893,
+    "worst": -0.0523721528471528
+   },
+   "exam": {
+    "n": 22,
+    "win": 1.0,
+    "mean": 0.005483020979021142,
+    "worst": 0.0054830209790208695
+   },
+   "sel_score": 0.001350508562865893,
+   "stress_mean": 0.00046713459621154516,
+   "boot_p": 1.0,
+   "random_mean": -0.002874475207870241,
+   "random_win": 0.8484848484848485,
+   "loss_streak": 0,
+   "exam_rets": [
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548
+   ],
+   "accepted": true
+  },
+  {
+   "coin": "BNB",
+   "tf": "4h",
+   "family": "boll_dip",
+   "params": {
+    "k": 2.0,
+    "trend": false
+   },
+   "tp": 0.008,
+   "sl": 0.08,
+   "hold": 48,
+   "sel": {
+    "n": 42,
+    "win": 0.9285714285714286,
+    "mean": 0.001037947351175477,
+    "worst": -0.0822972427572427
+   },
+   "exam": {
+    "n": 22,
+    "win": 1.0,
+    "mean": 0.005483020979021142,
+    "worst": 0.0054830209790208695
+   },
+   "sel_score": 0.001037947351175477,
+   "stress_mean": 0.00046713459621154516,
+   "boot_p": 1.0,
+   "random_mean": -0.004753888607925472,
+   "random_win": 0.8620689655172413,
+   "loss_streak": 0,
+   "exam_rets": [
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548,
+    0.00548
+   ],
+   "accepted": true
+  }
+ ],
+ "per_chart": [
+  {
+   "coin": "BTC",
+   "tf": "1h",
+   "best": {
+    "family": "wick_reject",
+    "tp": 0.008,
+    "sl": 0.05,
+    "hold": 48,
+    "sel_win": 0.7741935483870968,
+    "exam_win": 0.8095238095238095,
+    "exam_mean": 0.0004961942165425882,
+    "exam_n": 21
+   }
+  },
+  {
+   "coin": "BTC",
+   "tf": "4h",
+   "best": {
+    "family": "wick_reject",
+    "tp": 0.012,
+    "sl": 0.08,
+    "hold": 48,
+    "sel_win": 0.875,
+    "exam_win": 0.8571428571428571,
+    "exam_mean": 0.00445421245365799,
+    "exam_n": 7
+   }
+  },
+  {
+   "coin": "ETH",
+   "tf": "1h",
+   "best": {
+    "family": "ema_pull",
+    "tp": 0.012,
+    "sl": 0.05,
+    "hold": 48,
+    "sel_win": 0.8181818181818182,
+    "exam_win": 0.875,
+    "exam_mean": 0.003974200575149869,
+    "exam_n": 8
+   }
+  },
+  {
+   "coin": "ETH",
+   "tf": "4h",
+   "best": {
+    "family": "ema_pull",
+    "tp": 0.012,
+    "sl": 0.05,
+    "hold": 48,
+    "sel_win": 0.8571428571428571,
+    "exam_win": 0.9259259259259259,
+    "exam_mean": 0.004891908091908274,
+    "exam_n": 27
+   }
+  },
+  {
+   "coin": "SOL",
+   "tf": "1h",
+   "best": {
+    "family": "boll_dip",
+    "tp": 0.012,
+    "sl": 0.05,
+    "hold": 48,
+    "sel_win": 0.7666666666666667,
+    "exam_win": 0.8,
+    "exam_mean": -0.00289600419580404,
+    "exam_n": 15
+   }
+  },
+  {
+   "coin": "SOL",
+   "tf": "4h",
+   "best": null
+  },
+  {
+   "coin": "OP",
+   "tf": "1h",
+   "best": {
+    "family": "rsi_dip",
+    "tp": 0.008,
+    "sl": 0.05,
+    "hold": 12,
+    "sel_win": 0.8125,
+    "exam_win": 0.8076923076923077,
+    "exam_mean": -0.0018279112616826482,
+    "exam_n": 26
+   }
+  },
+  {
+   "coin": "OP",
+   "tf": "4h",
+   "best": {
+    "family": "wick_reject",
+    "tp": 0.02,
+    "sl": 0.08,
+    "hold": 48,
+    "sel_win": 0.8666666666666667,
+    "exam_win": 0.85,
+    "exam_mean": 0.0024905119880121174,
+    "exam_n": 20
+   }
+  },
+  {
+   "coin": "POL",
+   "tf": "1h",
+   "best": {
+    "family": "wick_reject",
+    "tp": 0.02,
+    "sl": 0.05,
+    "hold": 48,
+    "sel_win": 0.7,
+    "exam_win": 0.7857142857142857,
+    "exam_mean": 0.002490511988012145,
+    "exam_n": 14
+   }
+  },
+  {
+   "coin": "POL",
+   "tf": "4h",
+   "best": {
+    "family": "rsi_dip",
+    "tp": 0.02,
+    "sl": 0.08,
+    "hold": 12,
+    "sel_win": 0.8125,
+    "exam_win": 0.8333333333333334,
+    "exam_mean": 0.0052705554631265845,
+    "exam_n": 12
+   }
+  },
+  {
+   "coin": "BNB",
+   "tf": "1h",
+   "best": {
+    "family": "boll_dip",
+    "tp": 0.008,
+    "sl": 0.08,
+    "hold": 48,
+    "sel_win": 0.8064516129032258,
+    "exam_win": 0.5384615384615384,
+    "exam_mean": -0.004416139078810204,
+    "exam_n": 13
+   }
+  },
+  {
+   "coin": "BNB",
+   "tf": "4h",
+   "best": {
+    "family": "ema_pull",
+    "tp": 0.008,
+    "sl": 0.08,
+    "hold": 24,
+    "sel_win": 0.9761904761904762,
+    "exam_win": 0.95,
+    "exam_mean": 0.001094007792207985,
+    "exam_n": 20
+   }
+  },
+  {
+   "coin": "XRP",
+   "tf": "1h",
+   "best": null
+  },
+  {
+   "coin": "XRP",
+   "tf": "4h",
+   "best": {
+    "family": "rsi_dip",
+    "tp": 0.02,
+    "sl": 0.05,
+    "hold": 48,
+    "sel_win": 0.8125,
+    "exam_win": 0.7333333333333333,
+    "exam_mean": -0.001166999000998903,
+    "exam_n": 15
+   }
+  },
+  {
+   "coin": "ADA",
+   "tf": "1h",
+   "best": {
+    "family": "rsi_dip",
+    "tp": 0.012,
+    "sl": 0.05,
+    "hold": 48,
+    "sel_win": 0.8888888888888888,
+    "exam_win": 0.7058823529411765,
+    "exam_mean": -0.007955302887651365,
+    "exam_n": 17
+   }
+  },
+  {
+   "coin": "ADA",
+   "tf": "4h",
+   "best": {
+    "family": "rsi_dip",
+    "tp": 0.02,
+    "sl": 0.08,
+    "hold": 48,
+    "sel_win": 0.8709677419354839,
+    "exam_win": 0.7142857142857143,
+    "exam_mean": -0.0074624397207355775,
+    "exam_n": 14
+   }
+  },
+  {
+   "coin": "DOGE",
+   "tf": "1h",
+   "best": {
+    "family": "rsi_dip",
+    "tp": 0.012,
+    "sl": 0.08,
+    "hold": 48,
+    "sel_win": 0.9,
+    "exam_win": 0.6923076923076923,
+    "exam_mean": -0.006048787028665916,
+    "exam_n": 13
+   }
+  },
+  {
+   "coin": "DOGE",
+   "tf": "4h",
+   "best": {
+    "family": "wick_reject",
+    "tp": 0.008,
+    "sl": 0.05,
+    "hold": 12,
+    "sel_win": 0.90625,
+    "exam_win": 0.75,
+    "exam_mean": -0.0064640071889819906,
+    "exam_n": 20
+   }
+  },
+  {
+   "coin": "AVAX",
+   "tf": "1h",
+   "best": {
+    "family": "rsi_dip",
+    "tp": 0.008,
+    "sl": 0.05,
+    "hold": 48,
+    "sel_win": 1.0,
+    "exam_win": 0.8571428571428571,
+    "exam_mean": -0.00278200385328939,
+    "exam_n": 21
+   }
+  },
+  {
+   "coin": "AVAX",
+   "tf": "4h",
+   "best": {
+    "family": "ema_pull",
+    "tp": 0.02,
+    "sl": 0.03,
+    "hold": 12,
+    "sel_win": 0.7,
+    "exam_win": 0.5789473684210527,
+    "exam_mean": -0.0012641659704118837,
+    "exam_n": 19
+   }
+  },
+  {
+   "coin": "LINK",
+   "tf": "1h",
+   "best": {
+    "family": "wick_reject",
+    "tp": 0.02,
+    "sl": 0.08,
+    "hold": 48,
+    "sel_win": 0.7352941176470589,
+    "exam_win": 0.7222222222222222,
+    "exam_mean": -0.0027712078926608198,
+    "exam_n": 18
+   }
+  },
+  {
+   "coin": "LINK",
+   "tf": "4h",
+   "best": null
+  },
+  {
+   "coin": "LTC",
+   "tf": "1h",
+   "best": {
+    "family": "wick_reject",
+    "tp": 0.012,
+    "sl": 0.08,
+    "hold": 48,
+    "sel_win": 0.7272727272727273,
+    "exam_win": 0.7727272727272727,
+    "exam_mean": -0.0024952056776725347,
+    "exam_n": 22
+   }
+  },
+  {
+   "coin": "LTC",
+   "tf": "4h",
+   "best": {
+    "family": "rsi_dip",
+    "tp": 0.02,
+    "sl": 0.08,
+    "hold": 48,
+    "sel_win": 0.8636363636363636,
+    "exam_win": 0.7222222222222222,
+    "exam_mean": -0.006289691887624756,
+    "exam_n": 18
+   }
+  }
+ ],
+ "note": "exam = last 30% of each chart, never used for selection; costs: fee 0.1% + slip 0.05% per side"
+}

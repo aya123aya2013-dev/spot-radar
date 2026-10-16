@@ -1,0 +1,558 @@
+{
+ "generated": "2026-10-22T06:22:35.606958+00:00",
+ "benchmark": {
+  "active": 5,
+  "mean_pick": 0.167788434424885,
+  "mean_hold": 0.03874411917628064,
+  "share_beat_hold": 1.0,
+  "btc_hold": 0.3137133662438292,
+  "btc_pick": 0.15907843135246225,
+  "btc_active": false
+ },
+ "leaderboard": [
+  {
+   "school": "ichimoku",
+   "charts": 20,
+   "mean_exam": 0.11032214244725122,
+   "share_positive": 0.65
+  },
+  {
+   "school": "ema_cross",
+   "charts": 22,
+   "mean_exam": 0.08550982470773899,
+   "share_positive": 0.5454545454545454
+  },
+  {
+   "school": "obv_trend",
+   "charts": 14,
+   "mean_exam": 0.08428198285823507,
+   "share_positive": 0.7857142857142857
+  },
+  {
+   "school": "supertrend",
+   "charts": 26,
+   "mean_exam": 0.08305812359806643,
+   "share_positive": 0.6153846153846154
+  },
+  {
+   "school": "squeeze_break",
+   "charts": 18,
+   "mean_exam": 0.06666282169784644,
+   "share_positive": 0.6666666666666666
+  },
+  {
+   "school": "vote",
+   "charts": 18,
+   "mean_exam": 0.062491055905736656,
+   "share_positive": 0.6666666666666666
+  },
+  {
+   "school": "composite",
+   "charts": 19,
+   "mean_exam": 0.057066068722406105,
+   "share_positive": 0.5263157894736842
+  },
+  {
+   "school": "donchian",
+   "charts": 25,
+   "mean_exam": 0.04235476604297401,
+   "share_positive": 0.52
+  },
+  {
+   "school": "structure_bos",
+   "charts": 27,
+   "mean_exam": 0.018018215582677872,
+   "share_positive": 0.3333333333333333
+  },
+  {
+   "school": "macd_trend",
+   "charts": 17,
+   "mean_exam": 0.016381466144414818,
+   "share_positive": 0.47058823529411764
+  },
+  {
+   "school": "vwap_revert",
+   "charts": 32,
+   "mean_exam": 0.005289744045959947,
+   "share_positive": 0.59375
+  },
+  {
+   "school": "vol_profile",
+   "charts": 32,
+   "mean_exam": 0.0026514966355191405,
+   "share_positive": 0.46875
+  },
+  {
+   "school": "wyckoff_spring",
+   "charts": 30,
+   "mean_exam": -0.0036230952178532673,
+   "share_positive": 0.4
+  },
+  {
+   "school": "fib_pullback",
+   "charts": 24,
+   "mean_exam": -0.008756409011807567,
+   "share_positive": 0.5416666666666666
+  },
+  {
+   "school": "trend_pullback",
+   "charts": 8,
+   "mean_exam": -0.017813549310174162,
+   "share_positive": 0.25
+  },
+  {
+   "school": "rsi_revert",
+   "charts": 34,
+   "mean_exam": -0.0307712424469452,
+   "share_positive": 0.3235294117647059
+  },
+  {
+   "school": "boll_revert",
+   "charts": 22,
+   "mean_exam": -0.052576556553546025,
+   "share_positive": 0.22727272727272727
+  }
+ ],
+ "filters": [
+  {
+   "filter": "fng<75",
+   "charts": 35,
+   "mean_delta": -0.002269946014776157,
+   "share_improved": 0.2
+  },
+  {
+   "filter": "fng<60",
+   "charts": 35,
+   "mean_delta": -0.0017052566290346174,
+   "share_improved": 0.6285714285714286
+  },
+  {
+   "filter": "funding<0.03%",
+   "charts": 35,
+   "mean_delta": 0.0,
+   "share_improved": 0.0
+  },
+  {
+   "filter": "stable_growth_7d",
+   "charts": 35,
+   "mean_delta": 0.016549270090460113,
+   "share_improved": 0.5714285714285714
+  }
+ ],
+ "account_mc": {
+  "p05": 0.01272999417776586,
+  "p50": 0.07295158065663745,
+  "p95": 0.18225100508851177,
+  "p_loss": 0.0215,
+  "coins": 5
+ },
+ "regime_now": {
+  "BTC": "bull",
+  "ETH": "bull",
+  "SOL": "bull",
+  "OP": "bear",
+  "BNB": "bull",
+  "XRP": "side",
+  "ADA": "bear",
+  "DOGE": "bear",
+  "AVAX": "bull",
+  "LINK": "bull",
+  "LTC": "bull"
+ },
+ "regime_matrix": {
+  "rsi_revert": {
+   "bear": {
+    "n": 150,
+    "mean": -0.004652561608710203,
+    "win": 0.4066666666666667
+   },
+   "bull": {
+    "n": 35,
+    "mean": 0.008406734337703427,
+    "win": 0.7142857142857143
+   },
+   "side": {
+    "n": 56,
+    "mean": -0.009596823648983482,
+    "win": 0.4107142857142857
+   }
+  },
+  "boll_revert": {
+   "bull": {
+    "n": 75,
+    "mean": 0.0012902368943068577,
+    "win": 0.6533333333333333
+   },
+   "side": {
+    "n": 57,
+    "mean": -0.008795214971228026,
+    "win": 0.45614035087719296
+   },
+   "bear": {
+    "n": 151,
+    "mean": -0.00423786516198326,
+    "win": 0.5629139072847682
+   }
+  },
+  "donchian": {
+   "side": {
+    "n": 46,
+    "mean": 0.04484674105804285,
+    "win": 0.41304347826086957
+   },
+   "bull": {
+    "n": 87,
+    "mean": -0.0020115582650626733,
+    "win": 0.367816091954023
+   },
+   "bear": {
+    "n": 90,
+    "mean": -0.006110918553438127,
+    "win": 0.25555555555555554
+   }
+  },
+  "vwap_revert": {
+   "bear": {
+    "n": 172,
+    "mean": -0.0003663959438959371,
+    "win": 0.47674418604651164
+   },
+   "side": {
+    "n": 64,
+    "mean": 0.0016060558089410163,
+    "win": 0.53125
+   },
+   "bull": {
+    "n": 27,
+    "mean": 0.0037398506699121803,
+    "win": 0.6296296296296297
+   }
+  },
+  "structure_bos": {
+   "side": {
+    "n": 36,
+    "mean": 0.0153241089474179,
+    "win": 0.4444444444444444
+   },
+   "bull": {
+    "n": 72,
+    "mean": -0.015365422716778123,
+    "win": 0.20833333333333334
+   },
+   "bear": {
+    "n": 79,
+    "mean": 0.016097457535721855,
+    "win": 0.31645569620253167
+   }
+  },
+  "wyckoff_spring": {
+   "bear": {
+    "n": 112,
+    "mean": -0.004708303049685883,
+    "win": 0.5446428571428571
+   },
+   "side": {
+    "n": 37,
+    "mean": 0.008652547508548445,
+    "win": 0.6486486486486487
+   },
+   "bull": {
+    "n": 66,
+    "mean": 0.001805098937618254,
+    "win": 0.6666666666666666
+   }
+  },
+  "fib_pullback": {
+   "bull": {
+    "n": 88,
+    "mean": -0.007940398134056578,
+    "win": 0.4318181818181818
+   },
+   "bear": {
+    "n": 21,
+    "mean": 0.01746382164601689,
+    "win": 0.5714285714285714
+   },
+   "side": {
+    "n": 4,
+    "mean": 0.07215750030408184,
+    "win": 1.0
+   }
+  },
+  "vol_profile": {
+   "bear": {
+    "n": 93,
+    "mean": -0.013425778396549166,
+    "win": 0.40860215053763443
+   },
+   "side": {
+    "n": 37,
+    "mean": 0.024574746534986376,
+    "win": 0.40540540540540543
+   },
+   "bull": {
+    "n": 84,
+    "mean": 0.0040944627687239344,
+    "win": 0.4642857142857143
+   }
+  },
+  "supertrend": {
+   "bear": {
+    "n": 165,
+    "mean": 0.00813387246885305,
+    "win": 0.3393939393939394
+   },
+   "bull": {
+    "n": 130,
+    "mean": -0.001870606338084674,
+    "win": 0.35384615384615387
+   },
+   "side": {
+    "n": 40,
+    "mean": 0.04100935502370735,
+    "win": 0.425
+   }
+  },
+  "vote": {
+   "bear": {
+    "n": 109,
+    "mean": -0.00458115679035136,
+    "win": 0.24770642201834864
+   },
+   "side": {
+    "n": 26,
+    "mean": 0.099549953187416,
+    "win": 0.5769230769230769
+   },
+   "bull": {
+    "n": 100,
+    "mean": -0.009381818333811383,
+    "win": 0.19
+   }
+  },
+  "ema_cross": {
+   "bull": {
+    "n": 94,
+    "mean": -0.005034738496634503,
+    "win": 0.24468085106382978
+   },
+   "bear": {
+    "n": 117,
+    "mean": 0.006626103949564705,
+    "win": 0.2564102564102564
+   },
+   "side": {
+    "n": 28,
+    "mean": 0.06445599608729931,
+    "win": 0.42857142857142855
+   }
+  },
+  "macd_trend": {
+   "bull": {
+    "n": 185,
+    "mean": -0.0023762508327523054,
+    "win": 0.24864864864864866
+   },
+   "bear": {
+    "n": 44,
+    "mean": 0.01774133834035479,
+    "win": 0.2727272727272727
+   },
+   "side": {
+    "n": 33,
+    "mean": 0.006912534755003049,
+    "win": 0.3333333333333333
+   }
+  },
+  "composite": {
+   "bull": {
+    "n": 122,
+    "mean": 0.0008698214052868545,
+    "win": 0.21311475409836064
+   },
+   "side": {
+    "n": 63,
+    "mean": 0.016922029110203646,
+    "win": 0.19047619047619047
+   }
+  },
+  "ichimoku": {
+   "bull": {
+    "n": 94,
+    "mean": 0.0009295670080351242,
+    "win": 0.2978723404255319
+   },
+   "bear": {
+    "n": 77,
+    "mean": -0.004788606422230814,
+    "win": 0.24675324675324675
+   },
+   "side": {
+    "n": 45,
+    "mean": 0.06198411927628011,
+    "win": 0.4666666666666667
+   }
+  },
+  "trend_pullback": {
+   "bull": {
+    "n": 101,
+    "mean": -0.0014521966521005448,
+    "win": 0.3069306930693069
+   }
+  },
+  "squeeze_break": {
+   "bull": {
+    "n": 58,
+    "mean": -0.004829344876159035,
+    "win": 0.25862068965517243
+   },
+   "bear": {
+    "n": 98,
+    "mean": -0.0036456954805697108,
+    "win": 0.25510204081632654
+   },
+   "side": {
+    "n": 25,
+    "mean": 0.0784636952196676,
+    "win": 0.52
+   }
+  },
+  "obv_trend": {
+   "bull": {
+    "n": 117,
+    "mean": -0.0063602203037094966,
+    "win": 0.1794871794871795
+   },
+   "bear": {
+    "n": 132,
+    "mean": 0.011321970038432355,
+    "win": 0.18181818181818182
+   },
+   "side": {
+    "n": 25,
+    "mean": 0.01617455695773797,
+    "win": 0.28
+   }
+  }
+ },
+ "regime_gate": {
+  "charts": 388,
+  "mean_delta": -0.014247675312919653,
+  "share_improved": 0.3788659793814433
+ },
+ "walk_forward": {
+  "charts": 35,
+  "mean_chain": 0.2493566359377642,
+  "mean_hold": 1.7624069120559085,
+  "share_positive": 0.5142857142857142,
+  "share_beat_hold": 0.5428571428571428,
+  "blocks_positive": 0.44571428571428573
+ },
+ "portfolio": {
+  "coins": 11,
+  "window_days": 180,
+  "avg_corr": 0.6793947805023747,
+  "n_eff": 1.4113515095533136,
+  "max_pair": [
+   "BTC",
+   "ETH",
+   0.8817232575498359
+  ]
+ },
+ "execution": {
+  "BTC": {
+   "spread_bps": 0.001208459140849757,
+   "slip_bps_sleeve": 0.0006042295686015109,
+   "slip_bps_1000": 0.0006042295686015109
+  },
+  "ETH": {
+   "spread_bps": 0.04102572518187024,
+   "slip_bps_sleeve": 0.020512862590749137,
+   "slip_bps_1000": 0.020512862590749137
+  },
+  "SOL": {
+   "spread_bps": 0.9530617107462583,
+   "slip_bps_sleeve": 0.47653085537335826,
+   "slip_bps_1000": 0.47653085537335826
+  },
+  "OP": {
+   "spread_bps": 8.126777732629245,
+   "slip_bps_sleeve": 4.06338886631552,
+   "slip_bps_1000": 4.06338886631552
+  },
+  "POL": {
+   "spread_bps": 1.083717149823476,
+   "slip_bps_sleeve": 0.870133996901945,
+   "slip_bps_1000": 1.8456735080363273
+  },
+  "BNB": {
+   "spread_bps": 0.13517440878080667,
+   "slip_bps_sleeve": 0.06758720439092869,
+   "slip_bps_1000": 0.06758720439092869
+  },
+  "XRP": {
+   "spread_bps": 0.7442968255739569,
+   "slip_bps_sleeve": 0.37214841278609967,
+   "slip_bps_1000": 0.37214841278609967
+  },
+  "ADA": {
+   "spread_bps": 4.581901489117479,
+   "slip_bps_sleeve": 2.290950744558984,
+   "slip_bps_1000": 2.290950744558984
+  },
+  "DOGE": {
+   "spread_bps": 1.2519561815348983,
+   "slip_bps_sleeve": 0.625978090766921,
+   "slip_bps_1000": 0.625978090766921
+  },
+  "AVAX": {
+   "spread_bps": 1.063433827829474,
+   "slip_bps_sleeve": 0.5317169139140709,
+   "slip_bps_1000": 0.5317169139140709
+  },
+  "LINK": {
+   "spread_bps": 0.8184310676428743,
+   "slip_bps_sleeve": 0.40921553382311515,
+   "slip_bps_1000": 0.40921553382311515
+  },
+  "LTC": {
+   "spread_bps": 1.65412290133124,
+   "slip_bps_sleeve": 0.8270614506655782,
+   "slip_bps_1000": 0.8270614506655782
+  }
+ },
+ "max_exposure": 0.6,
+ "school_prior": {
+  "obv_trend": 1.0139,
+  "vote": 0.8256,
+  "ema_cross": 0.6881,
+  "composite": 0.4588,
+  "structure_bos": 0.3535,
+  "donchian": 0.3302,
+  "supertrend": 0.2711,
+  "macd_trend": 0.1762,
+  "ichimoku": 0.1745,
+  "squeeze_break": 0.1209,
+  "vol_profile": 0.11,
+  "trend_pullback": 0.0434,
+  "fib_pullback": 0.043,
+  "rsi_revert": 0.0359,
+  "boll_revert": 0.0116,
+  "vwap_revert": 0.0057,
+  "wyckoff_spring": 0.0036
+ },
+ "allowed_schools": [
+  "composite",
+  "donchian",
+  "ema_cross",
+  "ichimoku",
+  "macd_trend",
+  "obv_trend",
+  "squeeze_break",
+  "structure_bos",
+  "supertrend",
+  "vote"
+ ],
+ "n_coins": 12,
+ "note": "best-by-selection pick of each school on each chart, judged on the unseen last 30%"
+}

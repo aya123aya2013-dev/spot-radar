@@ -1,0 +1,400 @@
+{
+ "generated": "2026-10-22T06:32:31.313835+00:00",
+ "synthetic": true,
+ "exam": "last 30% of each chart, never used for tuning",
+ "costs": {
+  "fee": 0.001,
+  "slip": 0.0005,
+  "stress": 3.0
+ },
+ "results": {
+  "weekend_filter": {
+   "charts": 12,
+   "mean_delta": -0.06386992012043159,
+   "share_improved": 0.6666666666666666,
+   "mean_delta_x3": -0.03793730056619853,
+   "per_chart": [
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.2396118164448804,
+     "variant": 0.31687592981807255,
+     "n_base": 17,
+     "n_variant": 13
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.9182368996071795,
+     "variant": 0.8108206466089631,
+     "n_base": 13,
+     "n_variant": 10
+    },
+    {
+     "coin": "SOL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.9983693842365775,
+     "variant": 0.5789038652630003,
+     "n_base": 12,
+     "n_variant": 7
+    },
+    {
+     "coin": "OP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.24357535648146278,
+     "variant": -0.08717008620979783,
+     "n_base": 16,
+     "n_variant": 8
+    },
+    {
+     "coin": "POL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.07992304396184335,
+     "variant": 0.003244445459015699,
+     "n_base": 18,
+     "n_variant": 11
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.19926129242126356,
+     "variant": -0.12396558922521161,
+     "n_base": 15,
+     "n_variant": 6
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.48340744215065956,
+     "variant": 0.4952749939380108,
+     "n_base": 13,
+     "n_variant": 11
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.33478754179510517,
+     "variant": -0.2747177856300538,
+     "n_base": 17,
+     "n_variant": 11
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04380920478702266,
+     "variant": -0.021879039780308807,
+     "n_base": 15,
+     "n_variant": 13
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.30252846652821996,
+     "variant": -0.1142993480191622,
+     "n_base": 13,
+     "n_variant": 9
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.06651337761003695,
+     "variant": -0.04023470434158216,
+     "n_base": 17,
+     "n_variant": 14
+    },
+    {
+     "coin": "LTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.5136584525293957,
+     "variant": 0.17865027511405285,
+     "n_base": 13,
+     "n_variant": 8
+    }
+   ]
+  },
+  "volume_confirm": {
+   "charts": 12,
+   "mean_delta": -0.20732855370334816,
+   "share_improved": 0.5,
+   "mean_delta_x3": -0.12929807001292803,
+   "per_chart": [
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.2396118164448804,
+     "variant": 0.0,
+     "n_base": 17,
+     "n_variant": 0
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.9182368996071795,
+     "variant": 0.0,
+     "n_base": 13,
+     "n_variant": 0
+    },
+    {
+     "coin": "SOL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.9983693842365775,
+     "variant": 0.0,
+     "n_base": 12,
+     "n_variant": 0
+    },
+    {
+     "coin": "OP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.24357535648146278,
+     "variant": 0.0,
+     "n_base": 16,
+     "n_variant": 0
+    },
+    {
+     "coin": "POL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.07992304396184335,
+     "variant": 0.0,
+     "n_base": 18,
+     "n_variant": 0
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.19926129242126356,
+     "variant": 0.0,
+     "n_base": 15,
+     "n_variant": 0
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.48340744215065956,
+     "variant": 0.0,
+     "n_base": 13,
+     "n_variant": 0
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.33478754179510517,
+     "variant": 0.0,
+     "n_base": 17,
+     "n_variant": 0
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04380920478702266,
+     "variant": 0.0,
+     "n_base": 15,
+     "n_variant": 0
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.30252846652821996,
+     "variant": 0.0,
+     "n_base": 13,
+     "n_variant": 0
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.06651337761003695,
+     "variant": 0.0,
+     "n_base": 17,
+     "n_variant": 0
+    },
+    {
+     "coin": "LTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.5136584525293957,
+     "variant": 0.0,
+     "n_base": 13,
+     "n_variant": 0
+    }
+   ]
+  },
+  "btc_regime_for_alts": {
+   "charts": 12,
+   "mean_delta": -0.002652233948241304,
+   "share_improved": 0.6666666666666666,
+   "mean_delta_x3": 0.004287646059944398,
+   "per_chart": [
+    {
+     "coin": "BTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.2396118164448804,
+     "variant": 0.15513064601731363,
+     "n_base": 17,
+     "n_variant": 15
+    },
+    {
+     "coin": "ETH",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.9182368996071795,
+     "variant": 0.7843346234858368,
+     "n_base": 13,
+     "n_variant": 11
+    },
+    {
+     "coin": "SOL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.9983693842365775,
+     "variant": 0.8773141953466925,
+     "n_base": 12,
+     "n_variant": 11
+    },
+    {
+     "coin": "OP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.24357535648146278,
+     "variant": -0.23574710100675456,
+     "n_base": 16,
+     "n_variant": 15
+    },
+    {
+     "coin": "POL",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.07992304396184335,
+     "variant": -0.052133908155284625,
+     "n_base": 18,
+     "n_variant": 16
+    },
+    {
+     "coin": "BNB",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.19926129242126356,
+     "variant": -0.15631729338018463,
+     "n_base": 15,
+     "n_variant": 12
+    },
+    {
+     "coin": "XRP",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.48340744215065956,
+     "variant": 0.48541806262430476,
+     "n_base": 13,
+     "n_variant": 12
+    },
+    {
+     "coin": "ADA",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.33478754179510517,
+     "variant": -0.3044710505311675,
+     "n_base": 17,
+     "n_variant": 16
+    },
+    {
+     "coin": "DOGE",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.04380920478702266,
+     "variant": -0.0019885868136730878,
+     "n_base": 15,
+     "n_variant": 14
+    },
+    {
+     "coin": "AVAX",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.30252846652821996,
+     "variant": 0.3693423929558677,
+     "n_base": 13,
+     "n_variant": 12
+    },
+    {
+     "coin": "LINK",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": -0.06651337761003695,
+     "variant": 0.02157540398893576,
+     "n_base": 17,
+     "n_variant": 15
+    },
+    {
+     "coin": "LTC",
+     "tf": "1d",
+     "school": "supertrend",
+     "base": 0.5136584525293957,
+     "variant": 0.5136584525293957,
+     "n_base": 13,
+     "n_variant": 13
+    }
+   ]
+  },
+  "d_trailing_exit": {
+   "fixed_2_3": {
+    "n": 92,
+    "mean": 0.0017315423163794229,
+    "win": 0.6847826086956522
+   },
+   "trail_2": {
+    "n": 107,
+    "mean": 0.004761065040555198,
+    "win": 0.45794392523364486
+   },
+   "fixed_3_3": {
+    "n": 76,
+    "mean": 0.004149661752141995,
+    "win": 0.6052631578947368
+   },
+   "fixed_2_3_x3": {
+    "n": 90,
+    "mean": -0.003613253849562281,
+    "win": 0.6777777777777778
+   },
+   "trail_2_x3": {
+    "n": 107,
+    "mean": -0.0011984679174671304,
+    "win": 0.38317757009345793
+   },
+   "charts": 3,
+   "mean_delta": 0.0030295227241757755,
+   "mean_delta_x3": 0.0024147859320951507,
+   "share_improved": null
+  },
+  "dca_ruler": {
+   "charts": 1,
+   "dca_ret": 0.357190699890537,
+   "lump_ret": 1.0075338170495978,
+   "mean_delta": -0.6503431171590608,
+   "share_improved": null,
+   "mean_delta_x3": null,
+   "days": 900
+  }
+ }
+}
