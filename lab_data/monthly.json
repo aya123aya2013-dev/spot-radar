@@ -1,0 +1,21 @@
+[
+ {
+  "generated": "2026-11-04T16:04:37.114501+00:00",
+  "month": "2026-11",
+  "accounts": {
+   "G": {
+    "start": "2026-11-02 16:56",
+    "days": 1.8,
+    "equity": 4998.595583155843,
+    "ret": -0.0002808833688313639,
+    "max_dd": 0.00422152819320587,
+    "closed": 2,
+    "win_rate": 0.0,
+    "avg_trade": -0.01588204531035564,
+    "btc_hold": null,
+    "btc_dca": null
+   }
+  },
+  "note": "Paper account only. Rulers: holding BTC and weekly DCA into BTC over the same days. No profit is promised."
+ }
+]
