@@ -56,10 +56,11 @@ def synthetic(sym, tf, n):
     return rows
 
 
-def klines(sym, tf, total=3000):
-    """Closed candles only: [time_ms, open, high, low, close, volume]."""
+def klines(sym, tf, total=3000, closed_only=True):
+    """[time_ms, open, high, low, close, volume]; the still-forming candle is dropped unless closed_only=False."""
     if SYN:
-        return synthetic(sym, tf, total)[:-1]
+        rows = synthetic(sym, tf, total)
+        return rows[:-1] if closed_only else rows
     rows, end = [], None
     while len(rows) < total:
         q = f"/api/v3/klines?symbol={sym}USDT&interval={tf}&limit=1000" + (f"&endTime={end}" if end else "")
@@ -71,7 +72,7 @@ def klines(sym, tf, total=3000):
         if len(b) < 1000:
             break
     rows = rows[-total:]
-    if rows and rows[-1][0] + TFS[tf] * 1000 > time.time() * 1000:
+    if closed_only and rows and rows[-1][0] + TFS[tf] * 1000 > time.time() * 1000:
         rows = rows[:-1]
     return rows
 
@@ -338,6 +339,199 @@ def cmd_backtest():
     print(f"\nWhole account on the unseen period: strategy {avg_t*100:+.1f}% vs buy&hold {avg_b*100:+.1f}% "
           f"(${CAPITAL*(1+avg_t):,.0f} vs ${CAPITAL*(1+avg_b):,.0f})")
     print("Saved lab_data/backtest.json and lab_data/config.json. Next: python3 spot_lab.py paper")
+    try:
+        cmd_momentum_backtest()
+    except Exception as e:
+        print("  momentum backtest failed:", e)
+
+
+# ---------------------------------------------------------------- challenger B: momentum rotation
+UNIVERSE = ["BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "DOT", "LTC", "TRX", "ATOM", "NEAR", "OP", "POL"]
+MOM_GRID = [dict(lookback=l, top=n, regime=r) for l in (30, 60, 90) for n in (2, 3, 5) for r in (0, 1)]
+DAY_MS = 86400 * 1000
+MOM_WARMUP = 110
+STATE_B = os.path.join(OUT, "paper_B.json")
+
+
+def ema_gaps(a, n):
+    k, e, out = 2 / (n + 1), None, []
+    for x in a:
+        if x is None:
+            out.append(None)
+            continue
+        e = x if e is None else x * k + e * (1 - k)
+        out.append(e)
+    return out
+
+
+def load_universe(total, closed_only=True):
+    out = {}
+    for c in UNIVERSE:
+        try:
+            rows = klines(c, "1d", total, closed_only=closed_only)
+        except Exception as e:
+            print(f"  ! universe {c}: {e}")
+            continue
+        if len(rows) >= 130:
+            out[c] = rows
+    return out
+
+
+def align(uni):
+    days = sorted({r[0] for rows in uni.values() for r in rows})
+    ix = {d: i for i, d in enumerate(days)}
+    opn = {c: [None] * len(days) for c in uni}
+    close = {c: [None] * len(days) for c in uni}
+    for c, rows in uni.items():
+        for r in rows:
+            opn[c][ix[r[0]]], close[c][ix[r[0]]] = r[1], r[4]
+    return days, opn, close
+
+
+def mom_prepare(close):
+    return {c: ema_gaps(cl, 50) for c, cl in close.items()}, ema_gaps(close["BTC"], 100)
+
+
+def mom_targets(close, e50, e100b, t, p):
+    """Coins to hold after the close of day t: strongest trailing returns that are above their own EMA50."""
+    if p["regime"] and (close["BTC"][t] is None or e100b[t] is None or close["BTC"][t] <= e100b[t]):
+        return []
+    cands = []
+    for c, cl in close.items():
+        if t - p["lookback"] < 0 or cl[t] is None or cl[t - p["lookback"]] is None or e50[c][t] is None:
+            continue
+        if cl[t] <= e50[c][t]:
+            continue
+        sc = cl[t] / cl[t - p["lookback"]] - 1
+        if sc > 0:
+            cands.append((sc, c))
+    cands.sort(reverse=True)
+    return [c for _, c in cands[:p["top"]]]
+
+
+def rebalance(cash, hold, tgt, price, buy_px=None):
+    """Sell what left the target list, buy new entries with equal budgets. Returns cash, hold, list of fills."""
+    fills = []
+    buy_px = buy_px or price
+    for c in [c for c in hold if c not in tgt]:
+        px = price.get(c)
+        if px:
+            cash += hold[c] * px * (1 - SLIP) * (1 - FEE)
+            fills.append(("SELL", c, px, hold.pop(c)))
+    total = cash + sum(q * price[c] for c, q in hold.items() if price.get(c))
+    new = [c for c in tgt if c not in hold and buy_px.get(c)]
+    if new:
+        budget = min(cash / len(new), total / max(len(tgt), 1))
+        for c in new:
+            px = buy_px[c]
+            qty = budget * (1 - FEE) / (px * (1 + SLIP))
+            cash -= budget
+            hold[c] = qty
+            fills.append(("BUY", c, px, qty))
+    return cash, hold, fills
+
+
+def mom_backtest(days, opn, close, e50, e100b, p, start, end, cash0=CAPITAL):
+    cash, hold, eq, trades, last = cash0, {}, [], 0, None
+    for t in range(start, end - 1):
+        price = {c: close[c][t] for c in close if close[c][t]}
+        eq.append(cash + sum(q * price.get(c, 0) for c, q in hold.items()))
+        tgt = mom_targets(close, e50, e100b, t, p)
+        if set(tgt) != set(hold):
+            nxt = {c: opn[c][t + 1] for c in close if opn[c][t + 1]}
+            cash, hold, fills = rebalance(cash, hold, tgt, nxt)
+            trades += len(fills)
+    last_px = {c: close[c][end - 1] for c in close if close[c][end - 1]}
+    final = cash + sum(q * last_px.get(c, 0) * (1 - FEE) for c, q in hold.items())
+    pk, dd = 0.0, 0.0
+    for e in eq:
+        pk = max(pk, e)
+        dd = max(dd, 1 - e / pk) if pk else 0
+    b0, b1 = close["BTC"][start], close["BTC"][end - 1]
+    return dict(ret=final / cash0 - 1, dd=dd, n=trades, bh=(b1 / b0 - 1) if b0 and b1 else 0)
+
+
+def cmd_momentum_backtest():
+    print("\nChallenger B: momentum rotation over", len(UNIVERSE), "coins (daily)")
+    uni = load_universe(1000)
+    if "BTC" not in uni or len(uni) < 5:
+        print("  not enough data, skipped")
+        return
+    days, opn, close = align(uni)
+    e50, e100b = mom_prepare(close)
+    split = int(len(days) * 0.6)
+    best = None
+    for p in MOM_GRID:
+        tr = mom_backtest(days, opn, close, e50, e100b, p, MOM_WARMUP, split)
+        sc = tr["ret"] - 0.5 * tr["dd"] if tr["n"] >= 6 else -9
+        if best is None or sc > best[0]:
+            best = (sc, p, tr)
+    _, p, tr = best
+    te = mom_backtest(days, opn, close, e50, e100b, p, split, len(days))
+    print(f"  best on train: {p}  train {tr['ret']*100:+.1f}%  test {te['ret']*100:+.1f}% "
+          f"(BTC hold {te['bh']*100:+.1f}%, drawdown {te['dd']*100:.1f}%, {te['n']} fills) coins={len(uni)}")
+    json.dump(dict(params=p, train=tr, test=te, coins=sorted(uni), generated=datetime.now(timezone.utc).isoformat()),
+              open(os.path.join(OUT, "config_B.json"), "w"), indent=1)
+
+
+def cycle_b():
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    cp = os.path.join(OUT, "config_B.json")
+    p = json.load(open(cp))["params"] if os.path.exists(cp) else dict(lookback=60, top=3, regime=1)
+    rows_all = load_universe(260, closed_only=False)
+    if "BTC" not in rows_all:
+        print("  B: no data this cycle")
+        return
+    now_ms = time.time() * 1000
+    closed = {c: (r[:-1] if r[-1][0] + DAY_MS > now_ms else r) for c, r in rows_all.items()}
+    price = {c: r[-1][4] for c, r in rows_all.items()}
+    days, opn, close = align(closed)
+    e50, e100b = mom_prepare(close)
+    t = len(days) - 1
+    st = json.load(open(STATE_B)) if os.path.exists(STATE_B) else dict(
+        start=datetime.now(timezone.utc).isoformat(), cash=CAPITAL, hold={}, last_bar=0, trades=[], events=[],
+        btc_qty=CAPITAL / price["BTC"], eq_peak=CAPITAL, halted_until=0)
+    value = lambda: st["cash"] + sum(q * price.get(c, 0) for c, q in st["hold"].items())
+    st["eq_peak"] = max(st["eq_peak"], value())
+    if st["halted_until"] and now_ms >= st["halted_until"]:
+        st["halted_until"], st["eq_peak"] = 0, value()
+        st["events"].append(dict(time=now, text="B: استُؤنف التداول بعد أسبوع التوقف"))
+    if not st["halted_until"] and 1 - value() / st["eq_peak"] >= MAX_ACCOUNT_DD:
+        for c in list(st["hold"]):
+            px = price.get(c)
+            if px:
+                st["cash"] += st["hold"].pop(c) * px * (1 - SLIP) * (1 - FEE)
+                st["trades"].append(dict(time=now, coin=c, side="SELL", price=px, why="halt"))
+        st["halted_until"] = now_ms + 7 * DAY_MS
+        st["events"].append(dict(time=now, text=f"B: قاطع الحساب أغلق كل المراكز بعد هبوط {MAX_ACCOUNT_DD*100:.0f}% وتوقف أسبوعاً"))
+    bar = days[t]
+    if not st["halted_until"] and bar != st["last_bar"]:
+        tgt = mom_targets(close, e50, e100b, t, p)
+        if set(tgt) != set(st["hold"]):
+            st["cash"], st["hold"], fills = rebalance(st["cash"], st["hold"], tgt, price)
+            for side, c, px, _ in fills:
+                st["trades"].append(dict(time=now, coin=c, side=side, price=px, why="rebalance"))
+                print(f"  B {side} {c} @ {px:g}")
+            st["events"].append(dict(time=now, text="B: التركيبة الجديدة " + (", ".join(tgt) if tgt else "نقد (سوق BTC ضعيف أو لا زخم)")))
+        st["last_bar"] = bar
+    st["trades"], st["events"] = st["trades"][-60:], st["events"][-20:]
+    v = value()
+    st["params"], st["prices"] = p, {c: price[c] for c in st["hold"]}
+    st["holdings"] = {c: dict(qty=q, value=q * price.get(c, 0)) for c, q in st["hold"].items()}
+    st["equity"], st["btc_hold"] = v, st["btc_qty"] * price["BTC"]
+    log_csv_b([now, round(v, 2), round(st["btc_hold"], 2)])
+    json.dump(st, open(STATE_B, "w"), indent=1)
+    print(f"[{now}] B account ${v:,.2f} ({(v/CAPITAL-1)*100:+.2f}%)  BTC hold ${st['btc_hold']:,.2f}  holding {list(st['hold']) or 'cash'}")
+
+
+def log_csv_b(row):
+    path = os.path.join(OUT, "paper_equity_B.csv")
+    new = not os.path.exists(path)
+    with open(path, "a", newline="") as f:
+        w = csv.writer(f)
+        if new:
+            w.writerow(["time", "equity", "btc_hold"])
+        w.writerow(row)
 
 
 # ---------------------------------------------------------------- paper trading
@@ -548,6 +742,10 @@ def cmd_paper():
                 st = load_state(init)
             st = cycle(cfg, st)
             json.dump(st, open(STATE, "w"), indent=1)
+            try:
+                cycle_b()
+            except Exception as e:
+                print("  challenger B error:", e)
         except KeyboardInterrupt:
             raise
         except Exception as e:
