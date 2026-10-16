@@ -167,6 +167,7 @@ canvas{width:100%;max-width:100%;display:block}
       <h2>كيف يتعلم النظام</h2>
       <div><b>كل أسبوع</b><span class="sub">يعاد اختبار 6 استراتيجيات على أحدث البيانات، ويُختار لكل عملة الأفضل مع بديلتين. من لا ينجح على البيانات التي لم يرها النظام يبقى نقداً.</span></div>
       <div><b>كل 5 دقائق</b><span class="sub">يراقب الحساب الوهمي أداء كل استراتيجية حيّاً. عند خسارة 8% بعد 3 صفقات، أو هبوط 12% من القمة، تتوقف وتحل بديلتها. حجم كل صفقة يصغر كلما زاد تذبذب العملة، وإذا هبط الحساب كله 25% من قمته تُغلق كل الصفقات ويتوقف التداول حتى الاختبار الأسبوعي القادم.</span></div>
+      <div><b>المنافس B</b><span class="sub">حساب وهمي ثانٍ بفكرة مختلفة (تدوير الزخم على 16 عملة). لا يتداول إلا إذا ربح في الاختبار على بيانات لم يتدرّب عليها، ويحتفظ بسقف استثمار يحدّ هبوطه.</span></div>
       <div><b>كل أسبوع (مراجعة Claude)</b><span class="sub">تُراجَع النتائج وتُقترح تحسينات كطلب تعديل على GitHub، ولا تُطبَّق إلا بموافقتك.</span></div>
     </section>
     <section class="card"><div class="sub">هذه اللوحة للتعلّم والمتابعة وليست نصيحة مالية. أداء الماضي والحساب الوهمي لا يضمنان نتائج حقيقية، والتنفيذ الفعلي يختلف بسبب الانزلاق والرسوم والسيولة.</div></section>
@@ -381,13 +382,28 @@ async function loadPaper(){
       fetch(base+'paper.json'+bust).then(r=>{if(!r.ok)throw 0;return r.json()}),
       fetch(base+'config.json'+bust).then(r=>r.ok?r.json():{}).catch(()=>({})),
       fetch(base+'paper_equity.csv'+bust).then(r=>r.ok?r.text():'').catch(()=>'')]);
+    const [stB,cfgB]=await Promise.all([
+      fetch(base+'paper_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(base+'config_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null)]);
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
-    paper={st,cfg,series};renderPaper();
+    paper={st,cfg,series,stB,cfgB};renderPaper();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
 }
 const STCLS={'نشطة':'buy','بديلة':'hold','موقوفة':'sell','نقد':'hold'};
+function cardB(){
+  const {stB,cfgB}=paper;if(!stB&&!cfgB)return '';
+  const act=cfgB&&cfgB.active,v=stB?stB.equity:5000,bh=stB?stB.btc_hold:5000;
+  const held=stB?Object.entries(stB.holdings||{}).map(([c,h])=>`<span class="pill buy">${c}</span>`).join(' '):'';
+  const t=cfgB&&cfgB.test,p=cfgB&&cfgB.params;
+  return `<section class="card"><div class="bar"><h2 style="margin:0">المنافس B · تدوير الزخم</h2><span class="pill ${act?'buy':'hold'}">${act?'يتداول':'نقد'}</span></div>
+    <div class="sub" style="margin:6px 0 12px">يختار الأقوى زخماً من 16 عملة بدل 5، ويخرج للنقد إذا ضعف سوق BTC.</div>
+    <div class="tiles"><div class="tile"><div class="l">رصيد B</div><div class="v num">${usd(v)}</div></div>
+      <div class="tile"><div class="l">لو احتفظت بـ BTC فقط</div><div class="v num">${usd(bh)}</div></div>
+      <div class="tile"><div class="l">المراكز الآن</div><div class="v">${held||'نقد'}</div></div></div>
+    ${t?`<div class="note">الاختبار التاريخي (فترة لم يتدرّب عليها): العائد <span class="num ${t.ret>=0?'up':'down'}">${pct(t.ret)}</span> مقابل BTC <span class="num">${pct(t.bh)}</span>، وأقصى هبوط <span class="num">${(t.dd*100).toFixed(0)}%</span>، بسقف استثمار ${Math.round((p.expo||1)*100)}%. ${act?'':'لم يربح في الاختبار فبقي نقداً حتى الاختبار الأسبوعي القادم.'}</div>`:'<div class="note">لم يجد الاختبار تركيبة ضمن حد الهبوط، فبقي B نقداً.</div>'}</section>`;
+}
 function renderPaper(){
   const {st,cfg}=paper,px=st.prices||{};
   const val=c=>st.cash[c]+st.qty[c]*(px[c]||0);
@@ -420,6 +436,7 @@ function renderPaper(){
       <div id="eqWrap" style="margin-top:14px"><canvas id="eqChart"></canvas></div>
       <div class="sub" id="eqNote" hidden>الرسم يظهر بعد جمع عدة قراءات (كل 5 دقائق).</div></section>
     <div><h2>العملات الخمس</h2><div class="pcards">${cards}</div></div>
+    ${cardB()}
     ${evs?`<section class="card"><h2>قرارات النظام</h2><ul class="list ev">${evs}</ul></section>`:''}
     ${trades?`<section class="card"><h2>آخر الصفقات</h2><ul class="list">${trades}</ul></section>`:'<section class="card"><div class="empty">لا صفقات بعد. الاستراتيجيات اليومية بطيئة وقد تمر أيام قبل أول إشارة.</div></section>'}
   </div>`;
