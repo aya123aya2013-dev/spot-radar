@@ -6,136 +6,172 @@
 <title>رادار السبوت</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: terminal board. Summary strip of five coins on top, one focused coin below with chart, levels, plan and backtest. Dark-first. */
+/* Layout: three tabs (signals, paper account, guide). One column on phones, two on wide screens. Dark first, amber accent. */
 :root{
-  --bg:#0c1016; --panel:#131a23; --panel2:#1a2330; --line:#243040;
-  --fg:#e6ecf2; --muted:#8a99ab; --accent:#f2b134;
-  --up:#2fbf71; --down:#e5484d; --warn:#f2b134;
+  --bg:#0b0f14; --panel:#121922; --panel2:#18212c; --line:#243040;
+  --fg:#e8edf3; --muted:#8fa0b3; --accent:#f2b134; --on-accent:#14110a;
+  --up:#33c481; --down:#ef5b60; --warn:#f2b134;
   --font:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
   color-scheme:dark;
 }
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
-  --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef1f5; --line:#d7dee6;
-  --fg:#15202b; --muted:#5f6f80; --accent:#b7780c; color-scheme:light; } }
+  --bg:#f3f5f8; --panel:#ffffff; --panel2:#eef2f6; --line:#d9e0e8;
+  --fg:#14202c; --muted:#5b6b7c; --accent:#c78310; --on-accent:#ffffff;
+  --up:#13905a; --down:#d03a40; --warn:#b7780c; color-scheme:light; } }
 :root[data-theme="light"]{
-  --bg:#f4f6f8; --panel:#ffffff; --panel2:#eef1f5; --line:#d7dee6;
-  --fg:#15202b; --muted:#5f6f80; --accent:#b7780c; color-scheme:light; }
+  --bg:#f3f5f8; --panel:#ffffff; --panel2:#eef2f6; --line:#d9e0e8;
+  --fg:#14202c; --muted:#5b6b7c; --accent:#c78310; --on-accent:#ffffff;
+  --up:#13905a; --down:#d03a40; --warn:#b7780c; color-scheme:light; }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;
-  padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.wrap{max-width:1100px;margin:0 auto;display:grid;gap:16px}
-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
-h1{font-size:1.35rem;margin:0;font-weight:700;letter-spacing:-.01em}
-h2{font-size:1rem;margin:0 0 10px;font-weight:700}
-.sub{color:var(--muted);font-size:.85rem}
-.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
-.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{background:var(--panel);color:var(--fg);border:0;padding:7px 12px;font:inherit;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--accent);color:#111;font-weight:700}
-.seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.btn{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
-.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.coin{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:right;display:grid;gap:4px;border-inline-start:4px solid var(--line)}
-.coin[aria-pressed="true"]{outline:2px solid var(--accent)}
-.coin.buy{border-inline-start-color:var(--up)}
-.coin.sell{border-inline-start-color:var(--down)}
-.coin.hold{border-inline-start-color:var(--warn)}
-.coin .sym{font-weight:700}
-.coin .px{font-size:1.05rem}
-.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.78rem;font-weight:700}
-.pill.buy{background:color-mix(in srgb,var(--up) 20%,transparent);color:var(--up)}
-.pill.sell{background:color-mix(in srgb,var(--down) 20%,transparent);color:var(--down)}
-.pill.hold{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--warn)}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media (max-width:760px){.grid2{grid-template-columns:1fr}}
-.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:.92rem}
-.kv dt{color:var(--muted)}
-.kv dd{margin:0;text-align:left}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.6;
+  padding-block:14px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:980px;margin:0 auto;display:grid;gap:14px}
+.sub{color:var(--muted);font-size:.84rem}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;display:inline-block}
 .up{color:var(--up)} .down{color:var(--down)} .warn{color:var(--warn)}
-canvas{width:100%;max-width:100%;display:block;border-radius:8px;background:var(--panel2)}
-.gauge{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--down),var(--line) 50%,var(--up));position:relative;margin:8px 0 4px;direction:ltr}
+h1{font-size:1.2rem;margin:0;font-weight:700}
+h2{font-size:.95rem;margin:0 0 12px;font-weight:700}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#status{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted)}
+#status i{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+#status.ok i{background:var(--up)} #status.bad i{background:var(--down)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:500;padding:9px 6px;border-radius:9px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--on-accent);font-weight:700}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stack{display:grid;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.two{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:760px){.two{grid-template-columns:1fr 1fr}}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{background:transparent;color:var(--muted);border:0;border-radius:8px;padding:6px 11px;font:inherit;font-size:.88rem;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--panel2);color:var(--fg);font-weight:700;box-shadow:inset 0 0 0 1px var(--line)}
+.ghost{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font:inherit;font-size:.88rem;cursor:pointer}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.chip{flex:0 0 auto;min-width:124px;scroll-snap-align:start;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:right;font:inherit;cursor:pointer;display:grid;gap:2px}
+.chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.chip .r1{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--warn);flex:none}
+.dot.buy{background:var(--up)} .dot.sell{background:var(--down)}
+@media (min-width:760px){.chips{overflow:visible;display:grid;grid-template-columns:repeat(5,1fr)}.chip{min-width:0}}
+.pill{display:inline-block;border-radius:999px;padding:2px 11px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.pill.buy{background:color-mix(in srgb,var(--up) 18%,transparent);color:var(--up)}
+.pill.sell{background:color-mix(in srgb,var(--down) 18%,transparent);color:var(--down)}
+.pill.hold{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.pill.lg{font-size:.92rem;padding:4px 14px}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.cname{font-weight:700;font-size:1.05rem}
+.price{font-family:var(--mono);font-size:1.9rem;font-weight:600;direction:ltr;line-height:1.2;margin-top:2px}
+.gauge{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--down),var(--line) 50%,var(--up));position:relative;margin:16px 0 6px;direction:ltr}
 .gauge i{position:absolute;top:-4px;width:4px;height:18px;background:var(--fg);border-radius:2px;transform:translateX(-2px)}
-.levels{display:grid;gap:6px}
-.lv{display:flex;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:8px;background:var(--panel2);font-size:.9rem}
-.lv.r{border-inline-start:3px solid var(--down)} .lv.s{border-inline-start:3px solid var(--up)}
-.note{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
-#status{font-size:.85rem;color:var(--muted)}
-.err{color:var(--down)}
-table{width:100%;border-collapse:collapse;font-size:.9rem}
-td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
-th{color:var(--muted);font-weight:500}
-ul{margin:6px 0 0;padding-inline-start:18px}
-li{margin:3px 0}
+.glabels{display:flex;justify-content:space-between;direction:ltr;font-size:.75rem;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+@media (min-width:600px){.tiles{grid-template-columns:repeat(3,1fr)}}
+.tile{background:var(--panel2);border-radius:10px;padding:9px 11px;min-width:0}
+.tile .l{font-size:.76rem;color:var(--muted)}
+.tile .v{font-weight:600;margin-top:1px}
+.plan p{margin:0 0 8px}
+.plan ul{margin:0;padding-inline-start:20px}
+.plan li{margin:5px 0}
+.note{font-size:.8rem;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+canvas{width:100%;max-width:100%;display:block}
+.lv{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:var(--panel2);font-size:.9rem;border-inline-start:3px solid var(--line)}
+.lv.r{border-inline-start-color:var(--down)} .lv.s{border-inline-start-color:var(--up)} .lv.now{border-inline-start-color:var(--fg);font-weight:700}
+.lvs{display:grid;gap:6px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:8px 12px;margin:0;font-size:.92rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.big{font-family:var(--mono);font-size:2.3rem;font-weight:600;direction:ltr;line-height:1.1}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.pcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.pc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:8px;min-width:0}
+.pc .h{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.pc .row{display:flex;justify-content:space-between;gap:10px;font-size:.86rem}
+.pc .row span:first-child{color:var(--muted)}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.list li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--panel2);border-radius:10px;padding:9px 12px;font-size:.88rem}
+.list.ev li{display:block}
+.empty{color:var(--muted);text-align:center;padding:22px 8px}
+.gl{display:grid;gap:12px}
+.gl b{display:block;margin-bottom:2px}
+.wt{width:100%;border-collapse:collapse;font-size:.88rem}
+.wt td,.wt th{text-align:right;padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.wt th{color:var(--muted);font-weight:500}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header>
-  <div><h1>رادار السبوت</h1><div class="sub">BTC · ETH · SOL · OP · POL — تحليل فني مجمّع، مناطق شراء وبيع، واختبار تاريخي للقاعدة</div></div>
-  <div class="toolbar">
-    <div class="seg" id="tfSeg" role="group" aria-label="الإطار الزمني">
-      <button data-tf="1h">1 ساعة</button><button data-tf="4h" aria-pressed="true">4 ساعات</button><button data-tf="1d">يومي</button><button data-tf="1w">أسبوعي</button>
+  <div class="top">
+    <h1>رادار السبوت</h1>
+    <div id="status"><i></i><span>جارٍ التحميل…</span></div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="الأقسام">
+    <button role="tab" data-tab="signals" aria-selected="true">الإشارات</button>
+    <button role="tab" data-tab="paper" aria-selected="false">الحساب الوهمي</button>
+    <button role="tab" data-tab="info" aria-selected="false">الشرح</button>
+  </div>
+
+  <!-- ===== signals ===== -->
+  <main id="tab-signals" class="stack">
+    <div class="bar">
+      <div class="seg" id="tfSeg" role="group" aria-label="الإطار الزمني">
+        <button data-tf="1h">ساعة</button><button data-tf="4h" aria-pressed="true">4 ساعات</button><button data-tf="1d">يومي</button><button data-tf="1w">أسبوعي</button>
+      </div>
+      <button class="ghost" id="refresh">تحديث</button>
     </div>
-    <button class="btn" id="refresh">تحديث</button>
-    <span id="status">جارٍ التحميل…</span>
-  </div>
-</header>
+    <div class="chips" id="strip"></div>
 
-<section class="strip" id="strip"></section>
+    <section class="card" id="hero"></section>
 
-<section class="grid2">
-  <div class="panel" id="focusPanel">
-    <h2 id="focusTitle">—</h2>
-    <div class="gauge"><i id="needle" style="left:50%"></i></div>
-    <div class="sub" style="display:flex;justify-content:space-between"><span>منطقة بيع</span><span>حياد</span><span>منطقة شراء</span></div>
-    <dl class="kv" id="facts"></dl>
-  </div>
-  <div class="panel">
-    <h2>الخطة المقترحة للسبوت</h2>
-    <div id="plan"></div>
-    <div class="note">الخطة مبنية على مستويات تاريخية ومؤشرات، وليست توصية مضمونة. ادخل على دفعات، وحدّد خسارة مقبولة قبل الدخول.</div>
-  </div>
-</section>
+    <div class="two">
+      <section class="card plan"><h2>خطة السبوت المقترحة</h2><div id="plan"></div>
+        <div class="note">الخطة من مستويات تاريخية ومؤشرات، وليست توصية. ادخل على دفعات وحدّد الخسارة التي تتحملها قبل الدخول.</div></section>
+      <section class="card"><h2>مناطق الشراء والبيع</h2><div class="lvs" id="levels"></div></section>
+    </div>
 
-<section class="panel">
-  <h2>الشارت <span class="sub">— آخر 120 شمعة، مع EMA50 وEMA200 ومستويات الدعم والمقاومة</span></h2>
-  <canvas id="chart" height="360"></canvas>
-</section>
+    <section class="card"><h2>الشارت <span class="sub">· <b style="color:var(--accent)">EMA50</b> · <b>EMA200</b> · الخط المتقطع: الدعم والمقاومة</span></h2><canvas id="chart"></canvas></section>
 
-<section class="grid2">
-  <div class="panel">
-    <h2>مناطق الشراء والبيع</h2>
-    <div class="levels" id="levels"></div>
-  </div>
-  <div class="panel">
-    <h2>اختبار تاريخي للقاعدة <span class="sub">— على كل الشموع المحمّلة</span></h2>
-    <div id="bt"></div>
-    <div class="note">القاعدة: شراء عند دخول المؤشر منطقة الشراء (≥ +30)، بيع عند هبوطه إلى (≤ −20). عمولة 0.1% لكل عملية. النتائج السابقة لا تضمن المستقبل.</div>
-  </div>
-</section>
+    <section class="card"><h2>اختبار القاعدة على الماضي</h2><div id="bt"></div>
+      <div class="note">القاعدة: شراء عند الدرجة +30 أو أكثر، وبيع عند −20 أو أقل، بعمولة 0.1% لكل عملية. نتائج الماضي لا تضمن المستقبل.</div></section>
+  </main>
 
-<section class="panel" id="paperPanel">
-  <h2>الحساب الوهمي <span class="sub">— 5000$ افتراضية، يتحدّث من الخادم كل 5 دقائق</span></h2>
-  <div id="paper"><span class="sub">جارٍ التحميل…</span></div>
-</section>
+  <!-- ===== paper ===== -->
+  <main id="tab-paper" class="stack" hidden>
+    <div id="paperBody"><div class="empty">جارٍ تحميل الحساب الوهمي…</div></div>
+  </main>
 
-<section class="panel">
-  <h2>كيف يُحسب المؤشر المجمّع</h2>
-  <table>
-    <tr><th>العنصر</th><th>الوزن</th><th>معناه</th></tr>
-    <tr><td>الاتجاه (السعر مقابل EMA50 وEMA200، وترتيبهما)</td><td class="num">±50</td><td>اتجاه عام صاعد أو هابط</td></tr>
-    <tr><td>الزخم (MACD هيستوغرام واتجاهه)</td><td class="num">±15</td><td>قوة الحركة الحالية</td></tr>
-    <tr><td>RSI 14 (تشبّع بيعي / شرائي)</td><td class="num">±15</td><td>فرصة ارتداد أو خطر تصحيح</td></tr>
-    <tr><td>موقع السعر داخل بولنجر (%B)</td><td class="num">±10</td><td>تمدد أم انكماش</td></tr>
-    <tr><td>حجم التداول مقابل متوسط 20</td><td class="num">±10</td><td>تأكيد الحركة</td></tr>
-  </table>
-</section>
+  <!-- ===== info ===== -->
+  <main id="tab-info" class="stack" hidden>
+    <section class="card gl">
+      <h2>كيف تقرأ اللوحة</h2>
+      <div><b>منطقة شراء / حياد / بيع</b><span class="sub">درجة مجمّعة من −100 إلى +100 تجمع الاتجاه والزخم والتشبّع والحجم. +30 أو أكثر شراء، و−30 أو أقل بيع، وما بينهما حياد.</span></div>
+      <div><b>الدعم والمقاومة</b><span class="sub">مستويات سعرية ارتدّ منها السعر أكثر من مرة. الدعم تحت السعر ومنطقة شراء محتملة، والمقاومة فوقه ومنطقة بيع محتملة.</span></div>
+      <div><b>الحساب الوهمي</b><span class="sub">5000$ افتراضية (1000$ لكل عملة) تتداول بأسعار حقيقية كل 5 دقائق على GitHub، بدون أي أموال حقيقية.</span></div>
+    </section>
+    <section class="card">
+      <h2>كيف تُحسب الدرجة</h2>
+      <table class="wt">
+        <tr><th>العنصر</th><th>الوزن</th></tr>
+        <tr><td>الاتجاه: السعر مقابل EMA50 وEMA200 وترتيبهما</td><td class="num">±50</td></tr>
+        <tr><td>الزخم: MACD واتجاهه</td><td class="num">±15</td></tr>
+        <tr><td>RSI 14: تشبّع بيعي أو شرائي</td><td class="num">±15</td></tr>
+        <tr><td>بولنجر: موقع السعر داخل النطاق</td><td class="num">±10</td></tr>
+        <tr><td>الحجم مقابل متوسط 20 شمعة</td><td class="num">±10</td></tr>
+      </table>
+    </section>
+    <section class="card gl">
+      <h2>كيف يتعلم النظام</h2>
+      <div><b>كل أسبوع</b><span class="sub">يعاد اختبار 6 استراتيجيات على أحدث البيانات، ويُختار لكل عملة الأفضل مع بديلتين. من لا ينجح على البيانات التي لم يرها النظام يبقى نقداً.</span></div>
+      <div><b>كل 5 دقائق</b><span class="sub">يراقب الحساب الوهمي أداء كل استراتيجية حيّاً. عند خسارة 8% بعد 3 صفقات، أو هبوط 12% من القمة، تتوقف وتحل بديلتها.</span></div>
+      <div><b>كل أسبوع (مراجعة Claude)</b><span class="sub">تُراجَع النتائج وتُقترح تحسينات كطلب تعديل على GitHub، ولا تُطبَّق إلا بموافقتك.</span></div>
+    </section>
+    <section class="card"><div class="sub">هذه اللوحة للتعلّم والمتابعة وليست نصيحة مالية. أداء الماضي والحساب الوهمي لا يضمنان نتائج حقيقية، والتنفيذ الفعلي يختلف بسبب الانزلاق والرسوم والسيولة.</div></section>
+  </main>
 </div>
-
 <script>
 const COINS=[{s:'BTC',n:'بيتكوين'},{s:'ETH',n:'إيثيريوم'},{s:'SOL',n:'سولانا'},{s:'OP',n:'أوبتيمزم'},{s:'POL',n:'بوليغون'}];
 const LIMIT=600;
@@ -204,152 +240,228 @@ function backtest(an,fee=0.001){
   return{ret:eq-1,bh:bh-1,n:trades.length,win:trades.length?wins/trades.length:0,dd};
 }
 
-/* ---------- rendering ---------- */
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
 const fmt=(x,d)=>x>=1000?x.toLocaleString('en-US',{maximumFractionDigits:0}):x>=1?x.toFixed(d??2):x.toFixed(4);
 const pct=x=>(x>=0?'+':'')+(x*100).toFixed(1)+'%';
+const usd=x=>'$'+x.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const zone=s=>s>=30?'buy':s<=-30?'sell':'hold';
 const zoneAr={buy:'منطقة شراء',sell:'منطقة بيع',hold:'حياد'};
 const barsPerDay={'1h':24,'4h':6,'1d':1,'1w':1};
+const TFNAME={'1h':'ساعة','4h':'4 ساعات','1d':'يومي','1w':'أسبوعي'};
+const cssv=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+function localTime(s){ // runner writes "YYYY-MM-DD HH:MM" in UTC
+  const d=new Date(String(s).replace(' ','T')+':00Z');
+  if(isNaN(d))return s;
+  return d.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(',','');
+}
+function setStatus(text,cls){const el=$('status');el.className=cls||'';el.querySelector('span').textContent=text}
 
+/* ---------- tabs ---------- */
+const TABS=['signals','paper','info'];
+function setTab(name,push){
+  if(!TABS.includes(name))name='signals';
+  TABS.forEach(t=>{$('tab-'+t).hidden=t!==name});
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===name)));
+  if(push){try{history.replaceState(null,'','#'+name)}catch(e){}}
+  if(name==='signals'&&data[focus]&&!data[focus].err)drawChart(data[focus]);
+  if(name==='paper')drawEquity();
+}
+
+/* ---------- signals ---------- */
 function renderStrip(){
-  const el=document.getElementById('strip');el.innerHTML='';
-  for(const co of COINS){const d=data[co.s];const b=document.createElement('button');b.className='coin';b.setAttribute('aria-pressed',focus===co.s);
-    if(!d||d.err){b.innerHTML=`<span class="sym">${co.s} <span class="sub">${co.n}</span></span><span class="err">${d?d.err:'…'}</span>`}
-    else{const a=d.an,s=a.score[a.n],z=zone(s);b.classList.add(z);const k=barsPerDay[tf];const ch=a.px/a.c[a.n-k]-1;
-      b.innerHTML=`<span class="sym">${co.s} <span class="sub">${co.n}</span></span><span class="px num">$${fmt(a.px)}</span>
-      <span class="num ${ch>=0?'up':'down'}">${pct(ch)} <span class="sub">(24س)</span></span><span><span class="pill ${z}">${zoneAr[z]}</span> <span class="num sub">${s>0?'+':''}${s}</span></span>`}
-    b.onclick=()=>{focus=co.s;renderStrip();renderFocus()};el.appendChild(b)}
+  const el=$('strip');el.innerHTML='';
+  for(const co of COINS){
+    const d=data[co.s];const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed',String(focus===co.s));
+    if(!d||d.err){b.innerHTML=`<span class="r1"><span>${co.s}</span></span><span class="sub">${d?'غير متاح':'…'}</span>`}
+    else{const a=d.an,s=a.score[a.n],z=zone(s),ch=a.px/a.c[a.n-barsPerDay[tf]]-1;
+      b.innerHTML=`<span class="r1"><span>${co.s}</span><span class="dot ${z}" title="${zoneAr[z]}"></span></span>
+        <span class="num">$${fmt(a.px)}</span><span class="num sub ${ch>=0?'up':'down'}">${pct(ch)}</span>`}
+    b.onclick=()=>{focus=co.s;renderStrip();renderFocus()};el.appendChild(b);
+  }
 }
 
 function renderFocus(){
-  const d=data[focus];const co=COINS.find(c=>c.s===focus);
-  document.getElementById('focusTitle').textContent=`${co.n} (${focus}/USDT) — ${({'1h':'ساعة','4h':'4 ساعات','1d':'يومي','1w':'أسبوعي'})[tf]}`;
-  if(!d||d.err){document.getElementById('facts').innerHTML=`<dt class="err">${d?d.err:'جارٍ التحميل'}</dt>`;return}
-  const a=d.an,n=a.n,s=a.score[n],z=zone(s);
-  document.getElementById('needle').style.left=(50+s/2)+'%';
-  const b=a.B[n],pb=(a.px-b.l)/(b.u-b.l);
+  const d=data[focus],co=COINS.find(c=>c.s===focus);
+  if(!d||d.err){$('hero').innerHTML=`<div class="empty">${d?d.err:'جارٍ التحميل…'}</div>`;['plan','levels','bt'].forEach(i=>$(i).innerHTML='');return}
+  const a=d.an,n=a.n,s=a.score[n],z=zone(s),b=a.B[n],pb=(a.px-b.l)/(b.u-b.l);
+  const ch=a.px/a.c[n-barsPerDay[tf]]-1;
   const trend=a.px>a.e200[n]&&a.e50[n]>a.e200[n]?['صاعد','up']:a.px<a.e200[n]&&a.e50[n]<a.e200[n]?['هابط','down']:['متذبذب','warn'];
-  document.getElementById('facts').innerHTML=`
-   <dt>الحكم الحالي</dt><dd><span class="pill ${z}">${zoneAr[z]}</span> <span class="num">${s>0?'+':''}${s}</span></dd>
-   <dt>الاتجاه العام</dt><dd class="${trend[1]}">${trend[0]}</dd>
-   <dt>السعر</dt><dd class="num">$${fmt(a.px)}</dd>
-   <dt>EMA 50 / 200</dt><dd class="num">${fmt(a.e50[n])} / ${fmt(a.e200[n])}</dd>
-   <dt>RSI 14</dt><dd class="num ${a.R[n]<30?'up':a.R[n]>70?'down':''}">${a.R[n].toFixed(1)}</dd>
-   <dt>MACD هيستوغرام</dt><dd class="num ${a.M.h[n]>=0?'up':'down'}">${a.M.h[n].toFixed(a.px>100?2:4)} ${a.M.h[n]>a.M.h[n-1]?'↑':'↓'}</dd>
-   <dt>بولنجر %B</dt><dd class="num">${(pb*100).toFixed(0)}%</dd>
-   <dt>ATR 14 (تذبذب)</dt><dd class="num">${(a.A[n]/a.px*100).toFixed(2)}%</dd>
-   <dt>الحجم مقابل متوسط 20</dt><dd class="num">${(d.rows[n].v/a.V[n]).toFixed(2)}×</dd>
-   <dt>المصدر</dt><dd>${d.src} · ${new Date(d.rows[n].t).toLocaleString('ar',{hour12:false})}</dd>`;
+  const rv=a.R[n],mh=a.M.h[n];
+  $('hero').innerHTML=`
+    <div class="hero-top">
+      <div><div class="cname">${co.n} <span class="sub">${focus}/USDT · ${TFNAME[tf]}</span></div>
+        <div class="price">$${fmt(a.px)}</div>
+        <div class="num sub ${ch>=0?'up':'down'}">${pct(ch)} خلال 24 ساعة</div></div>
+      <span class="pill lg ${z}">${zoneAr[z]}</span>
+    </div>
+    <div class="gauge"><i style="left:${50+s/2}%"></i></div>
+    <div class="glabels"><span>بيع</span><span>حياد</span><span>شراء</span></div>
+    <div class="tiles">
+      <div class="tile"><div class="l">الدرجة</div><div class="v num ${z==='buy'?'up':z==='sell'?'down':'warn'}">${s>0?'+':''}${s} / 100</div></div>
+      <div class="tile"><div class="l">الاتجاه العام</div><div class="v ${trend[1]}">${trend[0]}</div></div>
+      <div class="tile"><div class="l">RSI 14</div><div class="v num ${rv<30?'up':rv>70?'down':''}">${rv.toFixed(1)}</div></div>
+      <div class="tile"><div class="l">MACD</div><div class="v ${mh>=0?'up':'down'}">${mh>=0?'إيجابي':'سلبي'} ${mh>a.M.h[n-1]?'↑':'↓'}</div></div>
+      <div class="tile"><div class="l">بولنجر %B</div><div class="v num">${(pb*100).toFixed(0)}%</div></div>
+      <div class="tile"><div class="l">التذبذب ATR</div><div class="v num">${(a.A[n]/a.px*100).toFixed(2)}%</div></div>
+    </div>`;
   // levels
-  const L=document.getElementById('levels');L.innerHTML='';
-  const items=[...a.res.map(x=>({...x,k:'r'})).reverse(),{p:a.px,k:'px'},...a.sup.map(x=>({...x,k:'s'}))];
-  for(const it of items){const div=document.createElement('div');
-    if(it.k==='px'){div.className='lv';div.innerHTML=`<span>السعر الحالي</span><span class="num">$${fmt(it.p)}</span>`}
-    else{div.className='lv '+it.k;const dist=(it.p/a.px-1);div.innerHTML=`<span>${it.k==='r'?'مقاومة / منطقة بيع':'دعم / منطقة شراء'} <span class="sub">(${it.n} لمسة)</span></span><span class="num">$${fmt(it.p)} <span class="sub">${pct(dist)}</span></span>`}
-    L.appendChild(div)}
-  if(!a.sup.length)L.insertAdjacentHTML('beforeend','<div class="lv s"><span>لا دعم تاريخي أسفل السعر في المدى المحمّل</span></div>');
-  if(!a.res.length)L.insertAdjacentHTML('beforeend','<div class="lv r"><span>السعر في قمة المدى المحمّل، لا مقاومة فوقه</span></div>');
+  const items=[...a.res.map(x=>({...x,k:'r'})).reverse(),{p:a.px,k:'now'},...a.sup.map(x=>({...x,k:'s'}))];
+  $('levels').innerHTML=items.map(it=>it.k==='now'
+    ?`<div class="lv now"><span>السعر الحالي</span><span class="num">$${fmt(it.p)}</span></div>`
+    :`<div class="lv ${it.k}"><span>${it.k==='r'?'مقاومة · بيع':'دعم · شراء'} <span class="sub">${it.n} لمسات</span></span><span class="num">$${fmt(it.p)} <span class="sub">${pct(it.p/a.px-1)}</span></span></div>`).join('')
+    +(a.sup.length?'':'<div class="sub">لا دعم تاريخي تحت السعر في المدى المحمّل.</div>')
+    +(a.res.length?'':'<div class="sub">السعر عند قمة المدى المحمّل، لا مقاومة فوقه.</div>');
   // plan
-  const P=document.getElementById('plan');const s1=a.sup[0],s2=a.sup[1],r1=a.res[0],r2=a.res[1];
-  let html='';
-  if(z==='buy'){html+=`<p>المؤشر في <b class="up">منطقة شراء</b>. للسبوت:</p><ul>
-    <li>دفعة أولى (30–40%) قرب السعر الحالي <span class="num">$${fmt(a.px)}</span>.</li>
-    ${s1?`<li>دفعة ثانية عند الدعم <span class="num">$${fmt(s1.p)}</span>.</li>`:''}
-    ${s2?`<li>دفعة أخيرة عند <span class="num">$${fmt(s2.p)}</span>.</li>`:''}
-    <li>إلغاء الفكرة إذا أغلقت شمعة تحت <span class="num">$${fmt((s2||s1||{p:a.px*0.93}).p*0.98)}</span>.</li></ul>`}
-  else if(z==='sell'){html+=`<p>المؤشر في <b class="down">منطقة بيع</b>. إن كنت تملك العملة:</p><ul>
-    <li>جني أرباح جزئي (30–50%) قرب السعر الحالي.</li>
-    ${r1?`<li>بيع إضافي عند المقاومة <span class="num">$${fmt(r1.p)}</span>.</li>`:''}
-    <li>تجنّب الشراء الجديد حتى يعود المؤشر للحياد أو منطقة الشراء.</li></ul>`}
-  else{html+=`<p>المؤشر <b class="warn">محايد</b>. الأفضل الانتظار:</p><ul>
-    ${s1?`<li>شراء محتمل عند الدعم <span class="num">$${fmt(s1.p)}</span>${s2?` ثم <span class="num">$${fmt(s2.p)}</span>`:''}.</li>`:''}
-    ${r1?`<li>بيع محتمل عند المقاومة <span class="num">$${fmt(r1.p)}</span>${r2?` ثم <span class="num">$${fmt(r2.p)}</span>`:''}.</li>`:''}
-    <li>مراقبة اختراق EMA50 (<span class="num">$${fmt(a.e50[n])}</span>) كإشارة لتغيّر الاتجاه.</li></ul>`}
-  if(r1)html+=`<p class="sub">أهداف البيع: ${a.res.map(x=>'$'+fmt(x.p)).join(' ← ')}</p>`;
-  P.innerHTML=html;
+  const s1=a.sup[0],s2=a.sup[1],r1=a.res[0],r2=a.res[1];let h='';
+  if(z==='buy'){h=`<p>المؤشر في <b class="up">منطقة شراء</b>:</p><ul>
+    <li>دفعة أولى (30–40%) قرب <span class="num">$${fmt(a.px)}</span></li>
+    ${s1?`<li>دفعة ثانية عند الدعم <span class="num">$${fmt(s1.p)}</span></li>`:''}
+    ${s2?`<li>دفعة أخيرة عند <span class="num">$${fmt(s2.p)}</span></li>`:''}
+    <li>إلغاء الفكرة إذا أغلقت شمعة تحت <span class="num">$${fmt((s2||s1||{p:a.px*0.93}).p*0.98)}</span></li>
+    ${r1?`<li>أهداف البيع: ${a.res.map(x=>'<span class="num">$'+fmt(x.p)+'</span>').join(' ← ')}</li>`:''}</ul>`}
+  else if(z==='sell'){h=`<p>المؤشر في <b class="down">منطقة بيع</b>. إن كنت تملك العملة:</p><ul>
+    <li>جني أرباح جزئي (30–50%) قرب السعر الحالي</li>
+    ${r1?`<li>بيع إضافي عند المقاومة <span class="num">$${fmt(r1.p)}</span></li>`:''}
+    <li>تجنّب شراء جديد حتى يعود المؤشر للحياد</li></ul>`}
+  else{h=`<p>المؤشر <b class="warn">محايد</b>، والأفضل الانتظار:</p><ul>
+    ${s1?`<li>شراء محتمل عند الدعم <span class="num">$${fmt(s1.p)}</span>${s2?` ثم <span class="num">$${fmt(s2.p)}</span>`:''}</li>`:''}
+    ${r1?`<li>بيع محتمل عند المقاومة <span class="num">$${fmt(r1.p)}</span>${r2?` ثم <span class="num">$${fmt(r2.p)}</span>`:''}</li>`:''}
+    <li>راقب اختراق EMA50 عند <span class="num">$${fmt(a.e50[n])}</span> كإشارة لتغيّر الاتجاه</li></ul>`}
+  $('plan').innerHTML=h;
   // backtest
   const bt=backtest(a);
-  document.getElementById('bt').innerHTML=`<dl class="kv">
-   <dt>عائد القاعدة</dt><dd class="num ${bt.ret>=0?'up':'down'}">${pct(bt.ret)}</dd>
-   <dt>الشراء والاحتفاظ (نفس الفترة)</dt><dd class="num ${bt.bh>=0?'up':'down'}">${pct(bt.bh)}</dd>
-   <dt>عدد الصفقات</dt><dd class="num">${bt.n}</dd>
-   <dt>نسبة الصفقات الرابحة</dt><dd class="num">${(bt.win*100).toFixed(0)}%</dd>
-   <dt>أقصى انخفاض من القمة</dt><dd class="num down">-${(bt.dd*100).toFixed(1)}%</dd>
-   <dt>الفترة المختبرة</dt><dd class="num">${d.rows.length-200} شمعة</dd></dl>`;
+  $('bt').innerHTML=`<div class="tiles">
+    <div class="tile"><div class="l">عائد القاعدة</div><div class="v num ${bt.ret>=0?'up':'down'}">${pct(bt.ret)}</div></div>
+    <div class="tile"><div class="l">الشراء والانتظار</div><div class="v num ${bt.bh>=0?'up':'down'}">${pct(bt.bh)}</div></div>
+    <div class="tile"><div class="l">أقصى هبوط</div><div class="v num down">-${(bt.dd*100).toFixed(1)}%</div></div>
+    <div class="tile"><div class="l">عدد الصفقات</div><div class="v num">${bt.n}</div></div>
+    <div class="tile"><div class="l">نسبة الرابحة</div><div class="v num">${(bt.win*100).toFixed(0)}%</div></div>
+    <div class="tile"><div class="l">الفترة</div><div class="v num">${d.rows.length-200} شمعة</div></div></div>`;
   drawChart(d);
 }
 
 function drawChart(d){
-  const cv=document.getElementById('chart');const dpr=window.devicePixelRatio||1;const W=cv.clientWidth,H=360;cv.width=W*dpr;cv.height=H*dpr;
+  const cv=$('chart');if(!cv||!cv.clientWidth)return;
+  const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=W<520?290:380;
+  cv.style.height=H+'px';cv.width=W*dpr;cv.height=H*dpr;
   const g=cv.getContext('2d');g.scale(dpr,dpr);g.clearRect(0,0,W,H);
-  const css=getComputedStyle(document.documentElement);const col=k=>css.getPropertyValue(k).trim();
-  const a=d.an,N=120,start=d.rows.length-N,rows=d.rows.slice(start);
-  const padL=8,padR=64,padT=10,padB=22,plotW=W-padL-padR,plotH=H-padT-padB;
-  const lows=rows.map(r=>r.l),highs=rows.map(r=>r.h);
-  let lo=Math.min(...lows,...a.sup.map(x=>x.p)),hi=Math.max(...highs,...a.res.map(x=>x.p));const m=(hi-lo)*0.04;lo-=m;hi+=m;
-  const y=p=>padT+plotH*(1-(p-lo)/(hi-lo));const x=i=>padL+plotW*(i+0.5)/N;const cw=Math.max(2,plotW/N*0.65);
-  g.font='11px '+col('--mono');g.fillStyle=col('--muted');g.strokeStyle=col('--line');g.lineWidth=1;
-  for(let k=0;k<=4;k++){const p=lo+(hi-lo)*k/4;g.beginPath();g.moveTo(padL,y(p));g.lineTo(W-padR,y(p));g.stroke();g.textAlign='left';g.fillText(fmt(p),W-padR+6,y(p)+4)}
-  for(let i=0;i<N;i+=Math.ceil(N/5)){const t=new Date(rows[i].t);g.textAlign='center';g.fillText(tf==='1h'?t.getHours()+':00':`${t.getMonth()+1}/${t.getDate()}`,x(i),H-6)}
-  // bollinger band
-  g.fillStyle=col('--muted');g.globalAlpha=0.12;g.beginPath();
+  const a=d.an,N=W<520?80:120,start=d.rows.length-N,rows=d.rows.slice(start);
+  const padL=6,padR=58,padT=8,padB=20,plotW=W-padL-padR,plotH=H-padT-padB;
+  let lo=Math.min(...rows.map(r=>r.l),...a.sup.map(x=>x.p)),hi=Math.max(...rows.map(r=>r.h),...a.res.map(x=>x.p));
+  const m=(hi-lo)*0.04;lo-=m;hi+=m;
+  const y=p=>padT+plotH*(1-(p-lo)/(hi-lo)),x=i=>padL+plotW*(i+0.5)/N,cw=Math.max(2,plotW/N*0.65);
+  const muted=cssv('--muted'),line=cssv('--line'),up=cssv('--up'),down=cssv('--down'),acc=cssv('--accent'),fg=cssv('--fg');
+  g.font='10px '+cssv('--mono');g.lineWidth=1;
+  for(let k=0;k<=4;k++){const p=lo+(hi-lo)*k/4;g.strokeStyle=line;g.beginPath();g.moveTo(padL,y(p));g.lineTo(W-padR,y(p));g.stroke();g.fillStyle=muted;g.textAlign='left';g.fillText(fmt(p),W-padR+5,y(p)+3)}
+  for(let i=0;i<N;i+=Math.ceil(N/4)){const t=new Date(rows[i].t);g.fillStyle=muted;g.textAlign=i===0?'left':'center';g.fillText(tf==='1h'?t.getHours()+':00':`${t.getDate()}/${t.getMonth()+1}`,x(i),H-5)}
+  g.globalAlpha=0.1;g.fillStyle=muted;g.beginPath();
   rows.forEach((_,i)=>{const b=a.B[start+i];i===0?g.moveTo(x(i),y(b.u)):g.lineTo(x(i),y(b.u))});
-  for(let i=N-1;i>=0;i--){g.lineTo(x(i),y(a.B[start+i].l))}g.closePath();g.fill();g.globalAlpha=1;
-  // candles
-  rows.forEach((r,i)=>{const up=r.c>=r.o;g.strokeStyle=g.fillStyle=col(up?'--up':'--down');g.beginPath();g.moveTo(x(i),y(r.h));g.lineTo(x(i),y(r.l));g.stroke();
-    const top=y(Math.max(r.o,r.c)),h=Math.max(1,Math.abs(y(r.o)-y(r.c)));g.fillRect(x(i)-cw/2,top,cw,h)});
-  const line=(arr,color,w)=>{g.strokeStyle=color;g.lineWidth=w;g.beginPath();rows.forEach((_,i)=>{const v=arr[start+i];i===0?g.moveTo(x(i),y(v)):g.lineTo(x(i),y(v))});g.stroke()};
-  line(a.e50,col('--accent'),1.5);line(a.e200,col('--fg'),1.2);
-  // S/R
-  g.setLineDash([5,4]);
-  const level=(p,color,label)=>{g.strokeStyle=color;g.lineWidth=1;g.beginPath();g.moveTo(padL,y(p));g.lineTo(W-padR,y(p));g.stroke();g.fillStyle=color;g.textAlign='left';g.fillText(label,padL+4,y(p)-3)};
-  a.res.forEach(r=>level(r.p,col('--down'),'R '+fmt(r.p)));a.sup.forEach(s=>level(s.p,col('--up'),'S '+fmt(s.p)));
+  for(let i=N-1;i>=0;i--)g.lineTo(x(i),y(a.B[start+i].l));g.closePath();g.fill();g.globalAlpha=1;
+  rows.forEach((r,i)=>{const u=r.c>=r.o;g.strokeStyle=g.fillStyle=u?up:down;g.beginPath();g.moveTo(x(i),y(r.h));g.lineTo(x(i),y(r.l));g.stroke();
+    g.fillRect(x(i)-cw/2,y(Math.max(r.o,r.c)),cw,Math.max(1,Math.abs(y(r.o)-y(r.c))))});
+  const ln=(arr,c,w)=>{g.strokeStyle=c;g.lineWidth=w;g.beginPath();rows.forEach((_,i)=>{const v=arr[start+i];i===0?g.moveTo(x(i),y(v)):g.lineTo(x(i),y(v))});g.stroke()};
+  ln(a.e50,acc,1.5);ln(a.e200,fg,1.2);
+  g.setLineDash([5,4]);g.lineWidth=1;
+  const used=[];const lvl=(p,c,t)=>{g.strokeStyle=c;g.beginPath();g.moveTo(padL,y(p));g.lineTo(W-padR,y(p));g.stroke();if(used.some(u=>Math.abs(u-y(p))<12))return;used.push(y(p));g.fillStyle=c;g.textAlign='left';g.fillText(t,padL+3,y(p)-3)};
+  a.res.forEach(r=>lvl(r.p,down,'R '+fmt(r.p)));a.sup.forEach(s=>lvl(s.p,up,'S '+fmt(s.p)));
   g.setLineDash([]);
-  g.fillStyle=col('--accent');g.textAlign='left';g.fillText('— EMA50',padL+4,padT+12);g.fillStyle=col('--fg');g.fillText('— EMA200',padL+70,padT+12);
+}
+
+/* ---------- paper account (state is written by the GitHub Actions job to branch "data") ---------- */
+let paper=null;
+async function loadPaper(){
+  const body=$('paperBody');
+  const owner=location.hostname.split('.')[0],repo=location.pathname.split('/')[1]||'';
+  const base=`https://raw.githubusercontent.com/${owner}/${repo}/data/lab_data/`;
+  try{
+    const bust='?'+Date.now();
+    const [st,cfg,csv]=await Promise.all([
+      fetch(base+'paper.json'+bust).then(r=>{if(!r.ok)throw 0;return r.json()}),
+      fetch(base+'config.json'+bust).then(r=>r.ok?r.json():{}).catch(()=>({})),
+      fetch(base+'paper_equity.csv'+bust).then(r=>r.ok?r.text():'').catch(()=>'')]);
+    const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
+    paper={st,cfg,series};renderPaper();
+  }catch(e){
+    body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
+  }
+}
+const STCLS={'نشطة':'buy','بديلة':'hold','موقوفة':'sell','نقد':'hold'};
+function renderPaper(){
+  const {st,cfg}=paper,px=st.prices||{};
+  const val=c=>st.cash[c]+st.qty[c]*(px[c]||0);
+  const eqv=COINS.reduce((a,c)=>a+val(c.s),0),bh=COINS.reduce((a,c)=>a+st.bh_qty[c.s]*(px[c.s]||0),0);
+  const sells=(st.trades||[]).filter(t=>t.side==='SELL'),wins=sells.filter(t=>t.ret>0).length,diff=eqv-bh;
+  const cards=COINS.map(c=>{
+    const p=(st.perf||{})[c.s]||{},s0=p.status||(cfg[c.s]&&cfg[c.s].active?'نشطة':'نقد'),v=val(c.s);
+    const live=p.live_n?`${p.live_n} صفقات · <span class="num">${(p.live_win*100).toFixed(0)}%</span> رابحة · <span class="num ${p.live_ret>=0?'up':'down'}">${pct(p.live_ret)}</span>`:'لا صفقات مغلقة';
+    return `<div class="pc"><div class="h"><span>${c.s} <span class="sub">${c.n}</span></span><span class="pill ${STCLS[s0]||'hold'}">${s0}</span></div>
+      <div class="row"><span>القيمة</span><span class="num">${usd(v)} <span class="${v>=1000?'up':'down'}">${pct(v/1000-1)}</span></span></div>
+      <div class="row"><span>الوضع</span><span>${st.qty[c.s]>0?'في صفقة':'نقد'}</span></div>
+      <div class="row"><span>الاستراتيجية</span><span>${p.strategy?`<span class="num">${p.strategy}</span> · ${TFNAME[p.tf]||p.tf}`:'—'}</span></div>
+      <div class="row"><span>الأداء الحي</span><span>${live}</span></div>
+      <div class="row"><span>الاختبار التاريخي</span><span class="num">${p.backtest_ret!=null?pct(p.backtest_ret):'—'}</span></div>
+      ${p.reason?`<div class="sub">سبب الإيقاف: ${p.reason}</div>`:''}</div>`}).join('');
+  const evs=(st.events||[]).slice(-6).reverse().map(e=>`<li><span class="num sub">${localTime(e.time)}</span><br>${e.text}</li>`).join('');
+  const trades=(st.trades||[]).slice(-8).reverse().map(t=>`<li><span><span class="pill ${t.side==='BUY'?'buy':'sell'}">${t.side==='BUY'?'شراء':'بيع'}</span> ${t.coin} <span class="num sub">${t.price<1?t.price:fmt(t.price)}</span></span>
+      <span class="num sub">${t.ret!==undefined?`<span class="${t.ret>=0?'up':'down'}">${pct(t.ret)}</span> · `:''}${localTime(t.time)}</span></li>`).join('');
+  $('paperBody').innerHTML=`<div class="stack">
+    <section class="card"><div class="sub">رصيد الحساب الوهمي</div>
+      <div class="big ${eqv>=5000?'up':'down'}">${usd(eqv)}</div>
+      <div class="num sub">${pct(eqv/5000-1)} منذ ${localTime(st.start.slice(0,16).replace('T',' '))}</div>
+      <div class="cmp">
+        <div class="tile"><div class="l">لو اشتريت وانتظرت</div><div class="v num">${usd(bh)} <span class="sub">${pct(bh/5000-1)}</span></div></div>
+        <div class="tile"><div class="l">الفرق عن الانتظار</div><div class="v num ${diff>=0?'up':'down'}">${diff>=0?'+':'-'}${usd(Math.abs(diff))}</div></div>
+        <div class="tile"><div class="l">صفقات مغلقة</div><div class="v num">${sells.length}</div></div>
+        <div class="tile"><div class="l">الرابحة منها</div><div class="v num">${sells.length?Math.round(wins/sells.length*100)+'%':'—'}</div></div>
+      </div>
+      <div id="eqWrap" style="margin-top:14px"><canvas id="eqChart"></canvas></div>
+      <div class="sub" id="eqNote" hidden>الرسم يظهر بعد جمع عدة قراءات (كل 5 دقائق).</div></section>
+    <div><h2>العملات الخمس</h2><div class="pcards">${cards}</div></div>
+    ${evs?`<section class="card"><h2>قرارات النظام</h2><ul class="list ev">${evs}</ul></section>`:''}
+    ${trades?`<section class="card"><h2>آخر الصفقات</h2><ul class="list">${trades}</ul></section>`:'<section class="card"><div class="empty">لا صفقات بعد. الاستراتيجيات اليومية بطيئة وقد تمر أيام قبل أول إشارة.</div></section>'}
+  </div>`;
+  drawEquity();
+}
+
+function drawEquity(){
+  const cv=$('eqChart');if(!cv||!paper||!cv.clientWidth)return;
+  let s=paper.series;const note=$('eqNote');
+  if(s.length<2){cv.parentElement.hidden=true;note.hidden=false;return}
+  cv.parentElement.hidden=false;note.hidden=true;
+  if(s.length>300){const k=Math.ceil(s.length/300);s=s.filter((_,i)=>i%k===0||i===s.length-1)}
+  const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=150;
+  cv.style.height=H+'px';cv.width=W*dpr;cv.height=H*dpr;
+  const g=cv.getContext('2d');g.scale(dpr,dpr);g.clearRect(0,0,W,H);
+  const padL=6,padR=54,padT=8,padB=8,pw=W-padL-padR,ph=H-padT-padB;
+  const all=s.flatMap(p=>[p.e,p.b,5000]);let lo=Math.min(...all),hi=Math.max(...all);const m=(hi-lo||1)*0.12;lo-=m;hi+=m;
+  const y=v=>padT+ph*(1-(v-lo)/(hi-lo)),x=i=>padL+pw*i/(s.length-1);
+  const muted=cssv('--muted'),line=cssv('--line'),acc=cssv('--accent');
+  g.font='10px '+cssv('--mono');g.lineWidth=1;g.strokeStyle=line;
+  [lo+m,5000,hi-m].forEach(v=>{g.beginPath();g.setLineDash(v===5000?[4,4]:[]);g.moveTo(padL,y(v));g.lineTo(W-padR,y(v));g.stroke();g.fillStyle=muted;g.textAlign='left';g.fillText(Math.round(v).toLocaleString('en-US'),W-padR+5,y(v)+3)});
+  g.setLineDash([]);
+  const ln=(key,c,w)=>{g.strokeStyle=c;g.lineWidth=w;g.beginPath();s.forEach((p,i)=>{i===0?g.moveTo(x(i),y(p[key])):g.lineTo(x(i),y(p[key]))});g.stroke()};
+  ln('b',muted,1.3);ln('e',acc,2);
+  g.fillStyle=acc;g.beginPath();g.arc(x(s.length-1),y(s[s.length-1].e),3.5,0,7);g.fill();
 }
 
 /* ---------- control ---------- */
 async function loadAll(){
-  const st=document.getElementById('status');st.textContent='جارٍ تحميل البيانات…';
-  await Promise.all(COINS.map(async co=>{try{const r=await fetchKlines(co.s);data[co.s]={rows:r.rows,src:r.src,an:analyze(r.rows)}}catch(e){data[co.s]={err:'تعذر جلب البيانات: '+e.message}}}));
+  setStatus('جارٍ التحديث…','');
+  await Promise.all(COINS.map(async co=>{try{const r=await fetchKlines(co.s);data[co.s]={rows:r.rows,src:r.src,an:analyze(r.rows)}}catch(e){data[co.s]={err:'تعذر جلب البيانات'}}}));
   const ok=COINS.filter(c=>!data[c.s].err).length;
-  st.textContent=ok?`محدَّث ${new Date().toLocaleTimeString('ar',{hour12:false})} · ${ok}/${COINS.length} عملات`:'لم يتم الوصول لأي مصدر. افتح الملف من متصفح على جهازك وتأكد من اتصالك، وإن كانت Binance محجوبة عندك سيُجرَّب Bybit تلقائياً.';
+  if(ok)setStatus(`محدَّث ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} · ${ok}/${COINS.length}`,'ok');
+  else setStatus('تعذر الوصول لمصادر الأسعار. تحقق من الاتصال، وقد تكون Binance محجوبة عندك.','bad');
   renderStrip();renderFocus();
 }
 document.querySelectorAll('#tfSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tfSeg button').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');tf=b.dataset.tf;loadAll()});
-document.getElementById('refresh').onclick=loadAll;
-window.addEventListener('resize',()=>{if(data[focus]&&!data[focus].err)drawChart(data[focus])});
-loadAll();clearInterval(timer);timer=setInterval(loadAll,120000);
-
-/* ---------- paper account (state is written by the GitHub Actions job to branch "data") ---------- */
-async function loadPaper(){
-  const el=document.getElementById('paper');
-  const owner=location.hostname.split('.')[0], repo=location.pathname.split('/')[1]||'';
-  const base=`https://raw.githubusercontent.com/${owner}/${repo}/data/lab_data/`;
-  try{
-    const [st,cfg,eq]=await Promise.all([
-      fetch(base+'paper.json?'+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}),
-      fetch(base+'config.json?'+Date.now()).then(r=>r.ok?r.json():{}),
-      fetch(base+'paper_equity.csv?'+Date.now()).then(r=>r.ok?r.text():'')]);
-    const px=st.prices||{};const eqv=COINS.reduce((a,c)=>a+st.cash[c.s]+st.qty[c.s]*(px[c.s]||0),0);
-    const bh=COINS.reduce((a,c)=>a+st.bh_qty[c.s]*(px[c.s]||0),0);
-    const sells=(st.trades||[]).filter(t=>t.side==='SELL'),wins=sells.filter(t=>t.ret>0).length;
-    const stCls={'نشطة':'buy','بديلة':'warn','موقوفة':'sell','نقد':'hold'};
-    const rows=COINS.map(c=>{const p=(st.perf||{})[c.s]||{},v=st.cash[c.s]+st.qty[c.s]*(px[c.s]||0);
-      const st0=p.status||(cfg[c.s]&&cfg[c.s].active?'نشطة':'نقد');
-      const live=p.live_n?`${p.live_n} صفقات · ${(p.live_win*100).toFixed(0)}% رابحة · ${pct(p.live_ret)}`:'لا صفقات مغلقة بعد';
-      return `<tr><td>${c.s}</td><td class="num">$${v.toFixed(2)} <span class="sub">(${pct(v/1000-1)})</span></td><td><span class="pill ${stCls[st0]||'hold'}">${st0}</span>${st.qty[c.s]>0?' <span class="sub">في صفقة</span>':''}</td><td class="sub">${p.strategy?p.strategy+' · '+p.tf:'—'}</td><td class="sub">${live}</td><td class="num sub">${p.backtest_ret!=null?pct(p.backtest_ret):'—'}</td></tr>`}).join('');
-    const evs=(st.events||[]).slice(-6).reverse().map(e=>`<li><span class="num sub">${e.time}</span> ${e.text}</li>`).join('');
-    const last=(st.trades||[]).slice(-8).reverse().map(t=>`<tr><td class="num">${t.time}</td><td>${t.coin}</td><td class="${t.side==='BUY'?'up':'down'}">${t.side==='BUY'?'شراء':'بيع'}</td><td class="num">${t.price}</td><td class="num">${t.ret!==undefined?pct(t.ret):''}</td></tr>`).join('');
-    el.innerHTML=`<dl class="kv"><dt>رصيد الحساب</dt><dd class="num ${eqv>=5000?'up':'down'}">$${eqv.toFixed(2)} (${pct(eqv/5000-1)})</dd>
-      <dt>لو اشتريت وانتظرت</dt><dd class="num">$${bh.toFixed(2)} (${pct(bh/5000-1)})</dd>
-      <dt>صفقات مغلقة / رابحة</dt><dd class="num">${sells.length} / ${wins}</dd><dt>بدأ في</dt><dd class="num">${st.start.slice(0,16).replace('T',' ')} UTC</dd></dl>
-      <div style="overflow-x:auto;margin-top:10px"><table><tr><th>العملة</th><th>القيمة (من 1000$)</th><th>الحالة</th><th>الاستراتيجية</th><th>الأداء الحي</th><th>اختبار تاريخي</th></tr>${rows}</table></div>
-      ${evs?`<h2 style="margin-top:14px">قرارات النظام</h2><ul>${evs}</ul>`:''}
-      ${last?`<h2 style="margin-top:14px">آخر الصفقات</h2><div style="overflow-x:auto"><table><tr><th>الوقت</th><th>العملة</th><th>النوع</th><th>السعر</th><th>النتيجة</th></tr>${last}</table></div>`:''}`;
-  }catch(e){el.innerHTML='<span class="sub">لا توجد بيانات بعد. شغّل workflow باسم backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span>'}
-}
-loadPaper();setInterval(loadPaper,300000);
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab,true));
+$('refresh').onclick=()=>{loadAll();loadPaper()};
+window.addEventListener('resize',()=>{if(!$('tab-signals').hidden&&data[focus]&&!data[focus].err)drawChart(data[focus]);if(!$('tab-paper').hidden)drawEquity()});
+setTab(location.hash.slice(1),false);
+loadAll();loadPaper();
+setInterval(loadAll,120000);setInterval(loadPaper,300000);
 </script>
 </body>
 </html>
