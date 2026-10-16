@@ -99,6 +99,10 @@ canvas{width:100%;max-width:100%;display:block}
 .wt{width:100%;border-collapse:collapse;font-size:.88rem}
 .wt td,.wt th{text-align:right;padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}
 .wt th{color:var(--muted);font-weight:500}
+.sumbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.sb{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 14px;display:grid;gap:1px;min-width:0}
+.sbv{font-size:1.45rem;font-weight:600;line-height:1.25}
+.sb .num:last-child{font-size:.9rem;font-weight:600}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -108,6 +112,8 @@ canvas{width:100%;max-width:100%;display:block}
     <h1>رادار السبوت</h1>
     <div id="status"><i></i><span>جارٍ التحميل…</span></div>
   </div>
+
+  <div class="sumbar" id="sumbar" hidden></div>
 
   <div class="tabs" role="tablist" aria-label="الأقسام">
     <button role="tab" data-tab="signals" aria-selected="true">الإشارات</button>
@@ -370,6 +376,17 @@ function drawChart(d){
   g.setLineDash([]);
 }
 
+function renderSummary(){
+  const el=$('sumbar');
+  if(!paper){el.hidden=true;return}
+  const {st,stB}=paper,px=st.prices||{};
+  const eqA=COINS.reduce((a,c)=>a+st.cash[c.s]+st.qty[c.s]*(px[c.s]||0),0);
+  const card=(name,v)=>{const pl=v-5000,cls=pl>0.005?'up':pl<-0.005?'down':'',ar=pl>0.005?'▲':pl<-0.005?'▼':'■';
+    return `<div class="sb"><div class="sub">${name}</div><div class="num sbv">${usd(v)}</div><div class="num ${cls}">${ar} ${pl>=0?'+':'-'}${usd(Math.abs(pl))} · ${pct(pl/5000)}</div></div>`};
+  el.innerHTML=card('الحساب A · الرئيسي',eqA)+(stB?card('الحساب B · المنافس',stB.equity):'');
+  el.hidden=false;
+}
+
 /* ---------- paper account (state is written by the GitHub Actions job to branch "data") ---------- */
 let paper=null;
 async function loadPaper(){
@@ -386,7 +403,7 @@ async function loadPaper(){
       fetch(base+'paper_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(base+'config_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null)]);
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
-    paper={st,cfg,series,stB,cfgB};renderPaper();
+    paper={st,cfg,series,stB,cfgB};renderSummary();renderPaper();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -408,6 +425,8 @@ function renderPaper(){
   const {st,cfg}=paper,px=st.prices||{};
   const val=c=>st.cash[c]+st.qty[c]*(px[c]||0);
   const eqv=COINS.reduce((a,c)=>a+val(c.s),0),bh=COINS.reduce((a,c)=>a+st.bh_qty[c.s]*(px[c.s]||0),0);
+  const ser=paper.series.map(p=>p.e);let pk=0,mdd=0;ser.forEach(e=>{pk=Math.max(pk,e);mdd=Math.max(mdd,1-e/pk)});
+  pk=Math.max(pk,eqv);const curdd=1-eqv/pk;mdd=Math.max(mdd,curdd);const pl=eqv-5000;
   const sells=(st.trades||[]).filter(t=>t.side==='SELL'),wins=sells.filter(t=>t.ret>0).length,diff=eqv-bh;
   const cards=COINS.map(c=>{
     const p=(st.perf||{})[c.s]||{},s0=p.status||(cfg[c.s]&&cfg[c.s].active?'نشطة':'نقد'),v=val(c.s);
@@ -428,6 +447,10 @@ function renderPaper(){
       <div class="big ${eqv>=5000?'up':'down'}">${usd(eqv)}</div>
       <div class="num sub">${pct(eqv/5000-1)} منذ ${localTime(st.start.slice(0,16).replace('T',' '))}</div>
       <div class="cmp">
+        <div class="tile"><div class="l">الربح / الخسارة</div><div class="v num ${pl>=0?'up':'down'}">${pl>=0?'+':'-'}${usd(Math.abs(pl))} · ${pct(pl/5000)}</div></div>
+        <div class="tile"><div class="l">الهبوط الحالي عن القمة</div><div class="v num ${curdd>0.001?'down':''}">-${(curdd*100).toFixed(1)}%</div></div>
+        <div class="tile"><div class="l">أقصى هبوط حتى الآن</div><div class="v num ${mdd>0.001?'down':''}">-${(mdd*100).toFixed(1)}%</div></div>
+        <div class="tile"><div class="l">حد الإيقاف التلقائي</div><div class="v num">-25%</div></div>
         <div class="tile"><div class="l">لو اشتريت وانتظرت</div><div class="v num">${usd(bh)} <span class="sub">${pct(bh/5000-1)}</span></div></div>
         <div class="tile"><div class="l">الفرق عن الانتظار</div><div class="v num ${diff>=0?'up':'down'}">${diff>=0?'+':'-'}${usd(Math.abs(diff))}</div></div>
         <div class="tile"><div class="l">صفقات مغلقة</div><div class="v num">${sells.length}</div></div>
