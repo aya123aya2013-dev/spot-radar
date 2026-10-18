@@ -24,6 +24,9 @@ import spot_lab as sl
 OUT = sl.OUT
 FOLDS, SEL_FRAC = 3, 0.7
 MIN_TRADES_SEL, MIN_TRADES_EXAM, BOOT_P = 8, 5, 0.7
+C_COINS = ["BTC", "ETH", "SOL", "OP", "POL", "BNB", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC"]
+MAX_TOP_SHARE = 0.7        # the best single trade may not be more than 70% of the exam profit
+COST_STRESS = 3.0          # profit must survive fees and slippage multiplied by this
 
 
 # ---------------------------------------------------------------- helpers
@@ -220,6 +223,31 @@ def s_obv(rows, n, m):
     return [i > 0 and ok[i] and not ok[i - 1] for i in range(len(c))], [c[i] < ec[i] for i in range(len(c))]
 
 
+_VOTE_CACHE = {}
+VOTE_PANEL = [("ema_cross", dict(fast=12, slow=50)), ("donchian", dict(n=40)), ("macd_trend", dict(trend=100)),
+              ("supertrend", dict(n=10, m=3)), ("ichimoku", dict(t=9, k=26, b=52)), ("obv_trend", dict(n=20, m=50)),
+              ("structure_bos", dict(k=5))]
+
+
+def _in_pos(en, ex):
+    s, out = False, []
+    for a, b in zip(en, ex):
+        s = (s and not b) or (not s and a)
+        out.append(s)
+    return out
+
+
+def s_vote(rows, k):
+    """Buy when at least k of 7 schools are holding a long at the same time; sell when fewer than k are."""
+    key = (len(rows), rows[0][0], rows[0][1], rows[-1][4])
+    if key not in _VOTE_CACHE:
+        _VOTE_CACHE.clear()
+        _VOTE_CACHE[key] = [_in_pos(*ALL[name][0](rows, **p)) for name, p in VOTE_PANEL]
+    states = _VOTE_CACHE[key]
+    votes = [sum(st[i] for st in states) for i in range(len(rows))]
+    return [i > 0 and votes[i] >= k > votes[i - 1] for i in range(len(rows))], [v < k for v in votes]
+
+
 NEW = {
     "ichimoku": (s_ichimoku, [dict(t=9, k=26, b=52), dict(t=20, k=60, b=120)]),
     "vwap_revert": (s_vwap, [dict(n=n, k=k) for n in (48, 120) for k in (1.5, 2.0)]),
@@ -231,6 +259,7 @@ NEW = {
     "squeeze_break": (s_squeeze, [dict(pct=p) for p in (0.1, 0.2, 0.3)]),
     "supertrend": (s_supertrend, [dict(n=n, m=m) for n, m in ((10, 2), (10, 3), (14, 3), (14, 4), (20, 3), (20, 4))]),
     "obv_trend": (s_obv, [dict(n=n, m=m) for n in (20, 50) for m in (50, 100)]),
+    "vote": (s_vote, [dict(k=k) for k in (2, 3, 4)]),
 }
 ALL = {**sl.STRATS, **NEW}
 STOPS = sl.STOPS
@@ -276,10 +305,78 @@ def boot_profit(rets, trials=1000):
     return ok / trials
 
 
+# ---------------------------------------------------------------- external data used as filters (reported, never selected on)
+def load_fng():
+    """{ 'YYYY-MM-DD': value 0..100 } from alternative.me, or {} when unreachable."""
+    try:
+        if sl.SYN:
+            rnd = random.Random(3)
+            return {datetime.fromtimestamp(t * 86400, timezone.utc).strftime("%Y-%m-%d"): rnd.randint(10, 90)
+                    for t in range(int(__import__("time").time() // 86400) - 3000, int(__import__("time").time() // 86400) + 1)}
+        d = sl.http_json("https://api.alternative.me/fng/?limit=0&format=json")["data"]
+        return {datetime.fromtimestamp(int(x["timestamp"]), timezone.utc).strftime("%Y-%m-%d"): int(x["value"]) for x in d}
+    except Exception as e:
+        print("  fear&greed unavailable:", e)
+        return {}
+
+
+def load_funding(coin):
+    """[(time_ms, rate)] from Binance futures funding history, or [] when unreachable."""
+    try:
+        if sl.SYN:
+            rnd = random.Random(sum(map(ord, coin)))
+            now = int(__import__("time").time() * 1000)
+            return [(now - (2000 - i) * 8 * 3600 * 1000, rnd.gauss(0.0001, 0.0002)) for i in range(2000)]
+        d = sl.http_json(f"https://fapi.binance.com/fapi/v1/fundingRate?symbol={coin}USDT&limit=1000")
+        return [(int(x["fundingTime"]), float(x["fundingRate"])) for x in d]
+    except Exception as e:
+        print(f"  funding {coin} unavailable:", str(e)[:60])
+        return []
+
+
+def mask_fng(rows, fng, limit):
+    """True where entries stay allowed: yesterday's fear&greed reading is below `limit` (not too greedy)."""
+    ok, last = [], 50
+    for r in rows:
+        day = datetime.fromtimestamp(r[0] / 1000 - 86400, timezone.utc).strftime("%Y-%m-%d")
+        last = fng.get(day, last)
+        ok.append(last < limit)
+    return ok
+
+
+def mask_funding(rows, fund, limit):
+    import bisect
+    if not fund:
+        return None
+    ts = [t for t, _ in fund]
+    ok = []
+    for r in rows:
+        j = bisect.bisect_right(ts, r[0]) - 1
+        ok.append(True if j < 0 else fund[j][1] < limit)
+    return ok
+
+
+def stress_sim(rows, en, ex, stop, at, start, end):
+    f, s = sl.FEE, sl.SLIP
+    sl.FEE, sl.SLIP = f * COST_STRESS, s * COST_STRESS
+    try:
+        return sim(rows, en, ex, stop, at, start, end)
+    finally:
+        sl.FEE, sl.SLIP = f, s
+
+
+def top_share(rets):
+    pos = sum(r for r in rets if r > 0)
+    return (max(rets) / pos) if pos > 0 else 1.0
+
+
 # ---------------------------------------------------------------- research backtest -> config_C.json
 def cmd_research():
     series, family_rows = [], {}
-    for coin in sl.COINS:
+    fng = load_fng()
+    filt_rows = {"fng<75": [], "fng<60": [], "funding<0.03%": []}
+    for coin in C_COINS:
+        fund = load_funding(coin)
         for tf in sl.TFS:
             try:
                 rows = sl.klines(coin, tf)
@@ -325,25 +422,42 @@ def cmd_research():
                                base_rate=(sum(x > 0 for x in allhold) / len(allhold)) if allhold else 0,
                                bh=cands[0]["hold"]["bh"] if cands else 0))
             top = cands[0] if cands else None
+            if top:
+                en, ex = ALL[top["strategy"]][0](rows, **top["params"])
+                base = sim(rows, en, ex, top["stop"], at, sel, n)["ret"]
+                for label, mk in (("fng<75", mask_fng(rows, fng, 75) if fng else None),
+                                  ("fng<60", mask_fng(rows, fng, 60) if fng else None),
+                                  ("funding<0.03%", mask_funding(rows, fund, 0.0003))):
+                    if mk is None:
+                        continue
+                    en2 = [a and b for a, b in zip(en, mk)]
+                    filt_rows[label].append(sim(rows, en2, ex, top["stop"], at, sel, n)["ret"] - base)
+                for c in cands[:8]:
+                    e1, x1 = ALL[c["strategy"]][0](rows, **c["params"])
+                    st = stress_sim(rows, e1, x1, c["stop"], at, sel, n)
+                    c["stress_ret"], c["top_share"] = st["ret"], top_share(c["hold"]["rets"])
             print(f"{coin:4} {tf:3} tests {tests:4}  picked {top['strategy'] if top else '-':15} "
                   f"exam {top['hold']['ret']*100:+6.1f}%  (median of all {med*100:+5.1f}%)" if top else
                   f"{coin:4} {tf:3} tests {tests:4}  nothing passed selection")
 
     picks = {}
-    for coin in sl.COINS:
+    for coin in C_COINS:
         good = []
         for s in (x for x in series if x["coin"] == coin):
             for c in s["cands"]:
                 h = c["hold"]
                 bp = boot_profit(h["rets"])
-                if h["ret"] > 0 and h["n"] >= MIN_TRADES_EXAM and bp >= BOOT_P and h["ret"] > s["median_hold"]:
+                if (h["ret"] > 0 and h["n"] >= MIN_TRADES_EXAM and bp >= BOOT_P and h["ret"] > s["median_hold"]
+                        and c.get("stress_ret", -1) > 0 and c.get("top_share", 1) <= MAX_TOP_SHARE):
                     good.append((c["score"], s, c, bp))
         good.sort(key=lambda x: x[0], reverse=True)
 
         def pack(s, c, bp, active=True):
             return dict(active=active, tf=s["tf"], strategy=c["strategy"], params=c["params"], stop=c["stop"],
                         test_ret=c["hold"]["ret"], test_bh=c["hold"]["bh"], test_dd=c["hold"]["dd"],
-                        test_n=c["hold"]["n"], boot_p=bp, tests=s["tests"], base_rate=s["base_rate"])
+                        test_n=c["hold"]["n"], boot_p=bp, tests=s["tests"], base_rate=s["base_rate"],
+                        stress_ret=c.get("stress_ret"), top_share=c.get("top_share"),
+                        test_rets=[round(x, 5) for x in c["hold"]["rets"]])
         if good:
             _, s, c, bp = good[0]
             picks[coin] = pack(s, c, bp)
@@ -364,14 +478,37 @@ def cmd_research():
     board = sorted(({"school": k, "charts": len(v), "mean_exam": sum(v) / len(v),
                      "share_positive": sum(x > 0 for x in v) / len(v)} for k, v in family_rows.items()),
                    key=lambda r: r["mean_exam"], reverse=True)
-    json.dump(dict(generated=picks["generated"], leaderboard=board,
+    act = [p for k, p in picks.items() if k != "generated" and p["active"] and p.get("test_rets")]
+    mc = None
+    if act:
+        rnd, outs = random.Random(11), []
+        for _ in range(2000):
+            tot = 0.0
+            for p in act:
+                g = 1.0
+                for _ in p["test_rets"]:
+                    g *= 1 + rnd.choice(p["test_rets"])
+                tot += g - 1
+            outs.append(tot / len(C_COINS))
+        outs.sort()
+        mc = dict(p05=outs[100], p50=outs[1000], p95=outs[1900], p_loss=sum(x < 0 for x in outs) / len(outs), coins=len(act))
+    filters = [dict(filter=k, charts=len(v), mean_delta=sum(v) / len(v), share_improved=sum(x > 0 for x in v) / len(v))
+               for k, v in filt_rows.items() if v]
+    json.dump(dict(generated=picks["generated"], leaderboard=board, filters=filters, account_mc=mc,
+                   n_coins=len(C_COINS),
                    note="best-by-selection pick of each school on each chart, judged on the unseen last 30%"),
               open(os.path.join(OUT, "research_C.json"), "w"), indent=1)
     print("\nSchool leaderboard (unseen exam, mean over charts where the school passed selection):")
     for r in board:
         print(f"  {r['school']:15} {r['mean_exam']*100:+6.1f}%  positive in {r['share_positive']*100:3.0f}% of {r['charts']} charts")
+    for f in filters:
+        print(f"  filter {f['filter']:14} changes the exam return by {f['mean_delta']*100:+.2f} points on average, "
+              f"better on {f['share_improved']*100:.0f}% of {f['charts']} charts")
+    if mc:
+        print(f"  account Monte Carlo (resampled exam trades): 5% {mc['p05']*100:+.1f}%  median {mc['p50']*100:+.1f}%  "
+              f"95% {mc['p95']*100:+.1f}%  chance of loss {mc['p_loss']*100:.0f}%")
     print("\nAccount C picks:")
-    for c in sl.COINS:
+    for c in C_COINS:
         p = picks[c]
         tag = "ACTIVE" if p["active"] else "cash"
         print(f"  {c:4} {tag:7} {p['strategy']} {p['tf']}  exam {p['test_ret']*100:+.1f}%  vs hold {p['test_bh']*100:+.1f}%")
@@ -384,7 +521,14 @@ def cycle_c():
         return
     cfg = json.load(open(cfg_path))
     sl.STRATS = ALL
+    sl.COINS = C_COINS
+    sl.SLEEVE = sl.CAPITAL / len(C_COINS)
     sl.STATE = os.path.join(OUT, "paper_C.json")
+    if os.path.exists(sl.STATE):
+        old = json.load(open(sl.STATE))
+        if sorted(old.get("cash", {})) != sorted(C_COINS):      # coin set changed: restart C (it has only paper money)
+            print("  account C: coin set changed, restarting its virtual $5000")
+            os.remove(sl.STATE)
     sl.HEADERS = {"paper_trades.csv": ["time", "coin", "side", "price", "result", "reason"],
                   "paper_equity.csv": ["time", "equity", "buy_and_hold"]}
     orig = sl.log_csv
@@ -393,9 +537,9 @@ def cycle_c():
                        "paper_equity_C.csv": sl.HEADERS["paper_equity.csv"]})
     print("--- account C (research lab)")
     init = {}
-    for c in sl.COINS:
-        rows = sl.klines(c, "1h", 400)
-        init[c] = sl.last_price(c, rows)
+    if not os.path.exists(sl.STATE):
+        for c in sl.COINS:
+            init[c] = sl.last_price(c, sl.klines(c, "1h", 50))
     st = sl.load_state(init)
     st = sl.cycle(cfg, st)
     json.dump(st, open(sl.STATE, "w"), indent=1)

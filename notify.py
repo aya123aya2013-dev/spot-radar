@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+"""Telegram alerts for the paper accounts. Read-only: it never changes any account.
+
+Needs two GitHub secrets (repository Settings > Secrets and variables > Actions):
+  TELEGRAM_BOT_TOKEN   from @BotFather
+  TELEGRAM_CHAT_ID     your chat id (send /start to the bot, then open
+                       https://api.telegram.org/bot<TOKEN>/getUpdates in a browser and read "chat":{"id":...})
+Without them this script prints a note and does nothing.
+
+Sends: every new buy/sell, every system decision (strategy paused/switched, circuit breaker),
+and one balance summary per day (about 09:00 Jerusalem time).
+Flag --dry prints the messages instead of sending them.
+"""
+import json, os, sys, urllib.parse, urllib.request
+from datetime import datetime, timezone
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.environ.get("SPOT_LAB_DATA") or os.path.join(HERE, "lab_data")
+TOKEN, CHAT = os.environ.get("TELEGRAM_BOT_TOKEN", ""), os.environ.get("TELEGRAM_CHAT_ID", "")
+DRY = "--dry" in sys.argv
+STATE = os.path.join(OUT, "notify_state.json")
+CAPITAL = 5000.0
+ACCOUNTS = [("A", "paper.json"), ("B", "paper_B.json"), ("C", "paper_C.json")]
+SUMMARY_HOUR_UTC = 6
+
+
+def load(name):
+    p = os.path.join(OUT, name)
+    return json.load(open(p)) if os.path.exists(p) else None
+
+
+def equity(st):
+    if "equity" in st:                                  # account B stores it directly
+        return st["equity"]
+    px = st.get("prices") or {}
+    return sum(st["cash"][c] + st["qty"][c] * px.get(c, 0) for c in st["cash"])
+
+
+def send(text):
+    if DRY:
+        print("DRY>", text.replace("\n", " | "))
+        return True
+    data = urllib.parse.urlencode({"chat_id": CHAT, "text": text}).encode()
+    try:
+        urllib.request.urlopen(f"https://api.telegram.org/bot{TOKEN}/sendMessage", data, timeout=20).read()
+        return True
+    except Exception as e:
+        print("telegram send failed:", str(e)[:100])
+        return False
+
+
+def pct(x):
+    return f"{x*100:+.2f}%"
+
+
+def main():
+    if not DRY and not (TOKEN and CHAT):
+        print("telegram not configured (no TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID), skipping")
+        return
+    ns = json.load(open(STATE)) if os.path.exists(STATE) else None
+    first = ns is None
+    ns = ns or {"sent": [], "summary_day": ""}
+    sent = set(ns["sent"])
+    msgs, keys = [], []
+    for name, fn in ACCOUNTS:
+        st = load(fn)
+        if not st:
+            continue
+        for t in st.get("trades", []):
+            k = f"{name}|{t.get('time')}|{t.get('coin') or ''}|{t.get('side')}"
+            if k in sent:
+                continue
+            keys.append(k)
+            if t["side"] == "BUY":
+                msgs.append(f"🟢 شراء {t.get('coin')} · حساب {name}\nالسعر {(t.get('price') or 0):g}")
+            elif t["side"] == "SELL":
+                r = t.get("ret", 0)
+                msgs.append(f"{'✅' if r >= 0 else '🔻'} بيع {t.get('coin')} · حساب {name}\nالنتيجة {pct(r)} · السعر {(t.get('price') or 0):g}")
+            else:                                        # account B rebalance rows
+                msgs.append(f"🔄 حساب {name}: {t.get('side')} {t.get('coin') or ''}")
+        for e in st.get("events", []):
+            k = f"{name}|{e.get('time')}|{e.get('text', '')[:40]}"
+            if k not in sent:
+                keys.append(k)
+                msgs.append(f"⚙️ حساب {name}: {e.get('text')}")
+    now = datetime.now(timezone.utc)
+    today = now.strftime("%Y-%m-%d")
+    summary = None
+    if now.hour >= SUMMARY_HOUR_UTC and ns["summary_day"] != today:
+        lines = []
+        for name, fn in ACCOUNTS:
+            st = load(fn)
+            if st:
+                v = equity(st)
+                lines.append(f"{name}: ${v:,.2f} ({pct(v / CAPITAL - 1)})")
+        if lines:
+            summary = "📊 ملخص اليوم\n" + "\n".join(lines)
+    if first:
+        # first run: remember what already exists so history is not replayed, and say hello
+        ns["sent"] = list(sent | set(keys))[-800:]
+        ns["summary_day"] = today
+        if send("✅ تنبيهات Spot Radar تعمل. ستصلك هنا الصفقات والقرارات وملخص يومي.\n" + (summary or "")):
+            json.dump(ns, open(STATE, "w"))
+        return
+    for m in msgs[:15]:
+        send(m)
+    if len(msgs) > 15:
+        send(f"و{len(msgs) - 15} تنبيهات أخرى، راجع اللوحة.")
+    if summary:
+        send(summary)
+        ns["summary_day"] = today
+    ns["sent"] = list(sent | set(keys))[-800:]
+    if not DRY:
+        json.dump(ns, open(STATE, "w"))
+
+
+if __name__ == "__main__":
+    main()
