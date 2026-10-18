@@ -184,6 +184,17 @@ canvas{width:100%;max-width:100%;display:block}
       </ul>
     </section>
     <section class="card">
+      <div class="date">18 أكتوبر 2026 · توسيع المعرفة</div>
+      <h3>المختبر C: 10 مدارس تحليل جديدة</h3>
+      <ul>
+        <li>أضفت إيشيموكو، وارتداد VWAP، وكسر هيكل السوق، ونمط وايكوف (سبرينغ)، وارتداد فيبوناتشي، وبروفايل الحجم (POC ومنطقة القيمة)، وتصحيح داخل اتجاه، واختراق الانضغاط، وسوبر تريند، واتجاه OBV. صارت 16 مدرسة تُختبر على كل عملة وإطار.</li>
+        <li>وضعتها في حساب منفصل C ببيانات حقيقية. الحساب الحي A لم يتغير حتى لا تفسد تجربته.</li>
+        <li>التحقق أشد: 3 فترات تدريب متتالية يجب أن تربح في اثنتين منها، وامتحان على آخر 30% لم تُستخدم في الاختيار، وإعادة سحب لصفقات الامتحان تقيس احتمال الربح، ويجب أن يتفوق على وسيط كل التركيبات المجرّبة على نفس الرسم.</li>
+        <li>النتيجة بدون تجميل: بعد تجربة 158 تركيبة لكل رسم، ربحت نحو نصفها في الامتحان بالصدفة (45–65%). فكون الاستراتيجية المختارة رابحة لا يكفي دليلاً. أفضل المدارس في الامتحان كانت سوبر تريند وإيشيموكو، وأضعفها ارتداد بولنجر وكسر الهيكل، لكن العينة صغيرة.</li>
+        <li>لن ينتقل أي شيء من C إلى A إلا إذا ربح حياً لأسبوعين على الأقل ونجا من اختبار أسبوعي جديد.</li>
+      </ul>
+    </section>
+    <section class="card">
       <div class="date">ما أنتظره</div>
       <h3>خطة الأسبوع</h3>
       <ul>
@@ -438,7 +449,8 @@ function renderSummary(){
   if(last){const d=new Date(String(last).replace(' ','T')+':00Z'),m=Math.round((Date.now()-d)/60000);
     if(!isNaN(m)){const late=m>45,txt=m<60?`${Math.max(m,0)} دقيقة`:`${Math.round(m/60)} ساعة`;
       fresh=`<div class="fresh ${late?'late':''}">آخر تحديث للحسابات: قبل ${txt}${late?' · متأخر، فجدولة GitHub تتأخر أحياناً':''}</div>`}}
-  el.innerHTML=card('الحساب A · الرئيسي',eqA)+(stB?card('الحساب B · المنافس',stB.equity):'')+fresh;
+  const eqC=equityC();
+  el.innerHTML=card('الحساب A · الرئيسي',eqA)+(stB?card('الحساب B · المنافس',stB.equity):'')+(eqC!=null?card('الحساب C · المختبر',eqC):'')+fresh;
   el.hidden=false;
 }
 
@@ -457,13 +469,36 @@ async function loadPaper(){
     const [stB,cfgB]=await Promise.all([
       fetch(base+'paper_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(base+'config_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null)]);
+    const [stC,cfgC,resC]=await Promise.all(['paper_C.json','config_C.json','research_C.json'].map(f=>
+      fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
-    paper={st,cfg,series,stB,cfgB};renderSummary();renderPaper();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC};renderSummary();renderPaper();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
 }
 const STCLS={'نشطة':'buy','بديلة':'hold','موقوفة':'sell','نقد':'hold'};
+function equityC(){
+  const s=paper&&paper.stC;if(!s||!s.cash)return null;const px=s.prices||{};
+  return COINS.reduce((a,c)=>a+s.cash[c.s]+s.qty[c.s]*(px[c.s]||0),0);
+}
+const SCHOOL_AR={composite:'المؤشر المركّب',ema_cross:'تقاطع المتوسطات',rsi_revert:'ارتداد RSI',boll_revert:'ارتداد بولنجر',donchian:'اختراق دونشيان',macd_trend:'اتجاه MACD',
+  ichimoku:'إيشيموكو',vwap_revert:'ارتداد VWAP',structure_bos:'كسر هيكل السوق',wyckoff_spring:'وايكوف (سبرينغ)',fib_pullback:'ارتداد فيبوناتشي',vol_profile:'بروفايل الحجم',
+  trend_pullback:'تصحيح داخل اتجاه',squeeze_break:'اختراق الانضغاط',supertrend:'سوبر تريند',obv_trend:'اتجاه OBV'};
+function cardC(){
+  const {stC,cfgC,resC}=paper;if(!stC&&!cfgC)return '';
+  const v=equityC()??5000,pl=v-5000;
+  const rows=COINS.map(c=>{const p=cfgC&&cfgC[c.s];if(!p)return '';
+    return `<div class="row"><span>${c.s}</span><span><span class="pill ${p.active?'buy':'hold'}">${p.active?'نشطة':'نقد'}</span> <span class="num">${SCHOOL_AR[p.strategy]||p.strategy}</span> · ${TFNAME[p.tf]||p.tf} · امتحان <span class="num ${p.test_ret>=0?'up':'down'}">${pct(p.test_ret)}</span></span></div>`}).join('');
+  const lb=resC&&resC.leaderboard?resC.leaderboard.map(r=>`<div class="row"><span>${SCHOOL_AR[r.school]||r.school}</span><span class="num"><span class="${r.mean_exam>=0?'up':'down'}">${pct(r.mean_exam)}</span> · رابحة في ${Math.round(r.share_positive*100)}% من ${r.charts}</span></div>`).join(''):'';
+  return `<section class="card"><div class="bar"><h2 style="margin:0">المختبر C · مدارس تحليل أكثر</h2><span class="pill hold">تجريبي</span></div>
+    <div class="sub" style="margin:6px 0 12px">16 مدرسة تحليل (إيشيموكو، هيكل السوق، وايكوف، فيبوناتشي، بروفايل الحجم، VWAP وغيرها) بتحقق أشد: ثلاث فترات تدريب، وامتحان على فترة لم تُرَ، واختبار إعادة سحب لصفقاته. لا تدخل الحساب الرئيسي قبل أن تثبت.</div>
+    <div class="tiles"><div class="tile"><div class="l">رصيد C</div><div class="v num">${usd(v)}</div></div>
+      <div class="tile"><div class="l">الربح / الخسارة</div><div class="v num ${pl>=0?'up':'down'}">${pl>=0?'+':'-'}${usd(Math.abs(pl))} · ${pct(pl/5000)}</div></div></div>
+    ${rows?`<div class="pcards" style="margin-top:12px"><div class="pc">${rows}</div></div>`:''}
+    ${lb?`<h3 style="margin:14px 0 6px">أي مدرسة صمدت في الامتحان؟</h3><div class="pc">${lb}</div><div class="sub" style="margin-top:6px">المتوسط على الفترة التي لم تُستخدم في الاختيار. هذه أرقام تاريخية لا وعد بالمستقبل.</div>`:''}
+  </section>`;
+}
 function cardB(){
   const {stB,cfgB}=paper;if(!stB&&!cfgB)return '';
   const act=cfgB&&cfgB.active,v=stB?stB.equity:5000,bh=stB?stB.btc_hold:5000;
@@ -515,6 +550,7 @@ function renderPaper(){
       <div class="sub" id="eqNote" hidden>الرسم يظهر بعد جمع عدة قراءات (كل 5 دقائق).</div></section>
     <div><h2>العملات الخمس</h2><div class="pcards">${cards}</div></div>
     ${cardB()}
+    ${cardC()}
     ${evs?`<section class="card"><h2>قرارات النظام</h2><ul class="list ev">${evs}</ul></section>`:''}
     ${trades?`<section class="card"><h2>آخر الصفقات</h2><ul class="list">${trades}</ul></section>`:'<section class="card"><div class="empty">لا صفقات بعد. الاستراتيجيات اليومية بطيئة وقد تمر أيام قبل أول إشارة.</div></section>'}
   </div>`;
