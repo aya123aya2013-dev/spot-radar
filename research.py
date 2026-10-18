@@ -417,7 +417,7 @@ def exec_report():
             bids = [(float(p), float(q)) for p, q in d["bids"]]
             mid = (asks[0][0] + bids[0][0]) / 2
             res = dict(spread_bps=(asks[0][0] - bids[0][0]) / mid * 1e4)
-            for notional in (sl.SLEEVE, 1000.0):
+            for label, notional in (("sleeve", sl.CAPITAL / len(C_COINS)), ("1000", 1000.0)):
                 left, cost, qty = notional, 0.0, 0.0
                 for p, q in asks:
                     take = min(left, p * q)
@@ -426,7 +426,7 @@ def exec_report():
                     left -= take
                     if left <= 1e-9:
                         break
-                res[f"slip_bps_{int(notional)}"] = ((cost / qty) / mid - 1) * 1e4 if qty and left <= 1e-9 else None
+                res[f"slip_bps_{label}"] = ((cost / qty) / mid - 1) * 1e4 if qty and left <= 1e-9 else None
             out[coin] = res
         except Exception as e:
             print(f"  depth {coin} unavailable:", str(e)[:60])
@@ -644,7 +644,7 @@ def cmd_research():
     if port:
         print(f"  coins move together: avg correlation {port['avg_corr']:.2f}, {port['coins']} coins behave like {port['n_eff']:.1f} independent bets")
     for c_, r_ in execr.items():
-        print(f"  exec {c_:5} spread {r_['spread_bps']:.1f} bps, slip for ${int(sl.SLEEVE)}: {r_.get('slip_bps_%d' % int(sl.SLEEVE))}")
+        print(f"  exec {c_:5} spread {r_['spread_bps']:.1f} bps, slip for the sleeve: {r_.get('slip_bps_sleeve')}")
     if mc:
         print(f"  account Monte Carlo (resampled exam trades): 5% {mc['p05']*100:+.1f}%  median {mc['p50']*100:+.1f}%  "
               f"95% {mc['p95']*100:+.1f}%  chance of loss {mc['p_loss']*100:.0f}%")
