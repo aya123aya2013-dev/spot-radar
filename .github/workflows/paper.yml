@@ -27,6 +27,8 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python notify.py || true
+      - name: Post-mortem of closed trades (read-only)
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python postmortem.py || true
       - name: Save state (single commit, no history growth)
         run: |
           cd data

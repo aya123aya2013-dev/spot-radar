@@ -27,6 +27,8 @@ MIN_TRADES_SEL, MIN_TRADES_EXAM, BOOT_P = 8, 5, 0.7
 C_COINS = ["BTC", "ETH", "SOL", "OP", "POL", "BNB", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC"]
 MAX_TOP_SHARE = 0.7        # the best single trade may not be more than 70% of the exam profit
 COST_STRESS = 3.0          # profit must survive fees and slippage multiplied by this
+C_MAX_EXPOSURE = 0.6       # account C never holds more than 60% of its equity in coins at once
+WF_K = 5                   # walk-forward: 5 consecutive test blocks, training always expands from the start
 
 
 # ---------------------------------------------------------------- helpers
@@ -268,7 +270,7 @@ STOPS = sl.STOPS
 # ---------------------------------------------------------------- simulator that also returns trade returns
 def sim(rows, en, ex, stop, at, start, end):
     cash, qty, basis, peak, frac = sl.SLEEVE, 0.0, 0.0, 0.0, 1.0
-    cash0, rets, eq = cash, [], []
+    cash0, rets, eq, closed, ent = cash, [], [], [], 0
     for i in range(start, end - 1):
         c = rows[i][4]
         if qty > 0:
@@ -277,11 +279,12 @@ def sim(rows, en, ex, stop, at, start, end):
                 pr = qty * rows[i + 1][1] * (1 - sl.SLIP) * (1 - sl.FEE)
                 cash += pr
                 rets.append((pr / basis - 1) * frac)
+                closed.append((ent, rets[-1]))
                 qty = 0.0
         elif en[i] and cash > 0:
             frac = sl.position_fraction(at[i], c)
             invest = cash * frac
-            basis, peak = invest, c
+            basis, peak, ent = invest, c, i
             qty = invest * (1 - sl.FEE) / (rows[i + 1][1] * (1 + sl.SLIP))
             cash -= invest
         eq.append(cash + qty * c)
@@ -290,7 +293,7 @@ def sim(rows, en, ex, stop, at, start, end):
     for e in eq:
         pk = max(pk, e)
         dd = max(dd, 1 - e / pk) if pk else 0
-    return dict(ret=final / cash0 - 1, dd=dd, n=len(rets), rets=rets, bh=rows[end - 1][4] / rows[start][4] - 1)
+    return dict(ret=final / cash0 - 1, dd=dd, n=len(rets), rets=rets, trades=closed, bh=rows[end - 1][4] / rows[start][4] - 1)
 
 
 def boot_profit(rets, trials=1000):
@@ -356,6 +359,80 @@ def mask_funding(rows, fund, limit):
     return ok
 
 
+def regimes(rows):
+    """bull / bear / side for every bar, from that bar's own EMA50 and EMA200 (no look-ahead)."""
+    c = [r[4] for r in rows]
+    e50, e200 = sl.ema(c, 50), sl.ema(c, 200)
+    out = []
+    for i in range(len(c)):
+        if i < 200:
+            out.append(None)
+        elif c[i] > e200[i] and e50[i] > e200[i]:
+            out.append("bull")
+        elif c[i] < e200[i] and e50[i] < e200[i]:
+            out.append("bear")
+        else:
+            out.append("side")
+    return out
+
+
+def pearson(a, b):
+    n = len(a)
+    ma, mb = sum(a) / n, sum(b) / n
+    sa = math.sqrt(sum((x - ma) ** 2 for x in a))
+    sb = math.sqrt(sum((x - mb) ** 2 for x in b))
+    return sum((x - ma) * (y - mb) for x, y in zip(a, b)) / (sa * sb) if sa and sb else 0.0
+
+
+def portfolio_stats(daily, window=180):
+    """How much the coins move together. N_eff is how many independent bets the coins really are."""
+    coins = [c for c in C_COINS if c in daily]
+    if len(coins) < 3:
+        return None
+    common = sorted(set.intersection(*[set(t for t, _ in daily[c]) for c in coins]))[-(window + 1):]
+    if len(common) < 60:
+        return None
+    ret = {}
+    for c in coins:
+        m = dict(daily[c])
+        px = [m[t] for t in common]
+        ret[c] = [px[i] / px[i - 1] - 1 for i in range(1, len(px))]
+    pairs = [(a, b, pearson(ret[a], ret[b])) for i, a in enumerate(coins) for b in coins[i + 1:]]
+    avg = sum(p[2] for p in pairs) / len(pairs)
+    n = len(coins)
+    n_eff = n / (1 + (n - 1) * max(avg, 0))
+    hi = max(pairs, key=lambda p: p[2])
+    return dict(coins=n, window_days=len(common) - 1, avg_corr=avg, n_eff=n_eff, max_pair=[hi[0], hi[1], hi[2]])
+
+
+def exec_report():
+    """Real order-book snapshot: what a market buy of our order size would cost versus the 0.05% slippage assumed."""
+    if sl.SYN:
+        return {}
+    out = {}
+    for coin in C_COINS:
+        try:
+            d = sl.api(f"/api/v3/depth?symbol={coin}USDT&limit=100")
+            asks = [(float(p), float(q)) for p, q in d["asks"]]
+            bids = [(float(p), float(q)) for p, q in d["bids"]]
+            mid = (asks[0][0] + bids[0][0]) / 2
+            res = dict(spread_bps=(asks[0][0] - bids[0][0]) / mid * 1e4)
+            for notional in (sl.SLEEVE, 1000.0):
+                left, cost, qty = notional, 0.0, 0.0
+                for p, q in asks:
+                    take = min(left, p * q)
+                    cost += take
+                    qty += take / p
+                    left -= take
+                    if left <= 1e-9:
+                        break
+                res[f"slip_bps_{int(notional)}"] = ((cost / qty) / mid - 1) * 1e4 if qty and left <= 1e-9 else None
+            out[coin] = res
+        except Exception as e:
+            print(f"  depth {coin} unavailable:", str(e)[:60])
+    return out
+
+
 def stress_sim(rows, en, ex, stop, at, start, end):
     f, s = sl.FEE, sl.SLIP
     sl.FEE, sl.SLIP = f * COST_STRESS, s * COST_STRESS
@@ -375,6 +452,7 @@ def cmd_research():
     series, family_rows = [], {}
     fng = load_fng()
     filt_rows = {"fng<75": [], "fng<60": [], "funding<0.03%": []}
+    matrix, gate_rows, wf_rows, regime_now, daily = {}, [], [], {}, {}
     for coin in C_COINS:
         fund = load_funding(coin)
         for tf in sl.TFS:
@@ -390,6 +468,12 @@ def cmd_research():
             edges = [sl.WARMUP + (sel - sl.WARMUP) * k // FOLDS for k in range(FOLDS + 1)]
             at = sl.atr(rows)
             cands, allhold, fam_best, tests = [], [], {}, 0
+            wb = [sl.WARMUP + (n - sl.WARMUP) * k // (WF_K + 1) for k in range(WF_K + 2)]
+            wf_all = []
+            rg = regimes(rows)
+            if tf == "1d":
+                regime_now[coin] = rg[-1]
+                daily[coin] = [(r[0], r[4]) for r in rows]
             for name, (fn, grid) in ALL.items():
                 for params in grid:
                     try:
@@ -405,6 +489,12 @@ def cmd_research():
                         mret = sum(f["ret"] for f in folds) / FOLDS
                         mdd = sum(f["dd"] for f in folds) / FOLDS
                         hold = sim(rows, en, ex, stop, at, sel, n)
+                        wf = []
+                        for k in range(1, WF_K + 1):
+                            a_ = sim(rows, en, ex, stop, at, sl.WARMUP, wb[k])
+                            b_ = sim(rows, en, ex, stop, at, wb[k], wb[k + 1])
+                            wf.append((a_["ret"] - 0.5 * a_["dd"] if a_["n"] >= 5 else None, b_["ret"], b_["n"], b_["bh"]))
+                        wf_all.append(wf)
                         if hold["n"]:
                             allhold.append(hold["ret"])
                         if tot < MIN_TRADES_SEL or wins < 2:
@@ -436,6 +526,32 @@ def cmd_research():
                     e1, x1 = ALL[c["strategy"]][0](rows, **c["params"])
                     st = stress_sim(rows, e1, x1, c["stop"], at, sel, n)
                     c["stress_ret"], c["top_share"] = st["ret"], top_share(c["hold"]["rets"])
+            # ---- school x market-regime matrix, and a regime gate trained ONLY on the selection folds
+            for name, c in fam_best.items():
+                en_f, ex_f = ALL[name][0](rows, **c["params"])
+                by = {}
+                for ei, r in sim(rows, en_f, ex_f, c["stop"], at, edges[0], sel)["trades"]:
+                    if rg[ei]:
+                        by.setdefault(rg[ei], []).append(r)
+                allowed = {k for k, v in by.items() if len(v) >= 3 and sum(v) / len(v) > 0}
+                for ei, r in c["hold"]["trades"]:
+                    if rg[ei]:
+                        matrix.setdefault(name, {}).setdefault(rg[ei], []).append(r)
+                en_g = [a and rg[i] in allowed for i, a in enumerate(en_f)]
+                gate_rows.append(sim(rows, en_g, ex_f, c["stop"], at, sel, n)["ret"] - c["hold"]["ret"])
+            # ---- walk-forward of the selection process itself
+            chain, chain_hold, nb, npos = 1.0, 1.0, 0, 0
+            for k in range(WF_K):
+                pool = [(w[k][0], w[k][1]) for w in wf_all if w[k][0] is not None]
+                if not pool:
+                    continue
+                best_ = max(pool, key=lambda x: x[0])
+                chain *= 1 + best_[1]
+                chain_hold *= 1 + wf_all[0][k][3]
+                nb += 1
+                npos += best_[1] > 0
+            if nb:
+                wf_rows.append(dict(coin=coin, tf=tf, chain=chain - 1, hold=chain_hold - 1, blocks=nb, pos=npos))
             print(f"{coin:4} {tf:3} tests {tests:4}  picked {top['strategy'] if top else '-':15} "
                   f"exam {top['hold']['ret']*100:+6.1f}%  (median of all {med*100:+5.1f}%)" if top else
                   f"{coin:4} {tf:3} tests {tests:4}  nothing passed selection")
@@ -494,7 +610,22 @@ def cmd_research():
         mc = dict(p05=outs[100], p50=outs[1000], p95=outs[1900], p_loss=sum(x < 0 for x in outs) / len(outs), coins=len(act))
     filters = [dict(filter=k, charts=len(v), mean_delta=sum(v) / len(v), share_improved=sum(x > 0 for x in v) / len(v))
                for k, v in filt_rows.items() if v]
+    reg_out = {name: {r: dict(n=len(v), mean=sum(v) / len(v), win=sum(x > 0 for x in v) / len(v)) for r, v in d.items()}
+               for name, d in matrix.items()}
+    gate = dict(charts=len(gate_rows), mean_delta=sum(gate_rows) / len(gate_rows),
+                share_improved=sum(x > 0 for x in gate_rows) / len(gate_rows)) if gate_rows else None
+    wf_sum = None
+    if wf_rows:
+        wf_sum = dict(charts=len(wf_rows), mean_chain=sum(r["chain"] for r in wf_rows) / len(wf_rows),
+                      mean_hold=sum(r["hold"] for r in wf_rows) / len(wf_rows),
+                      share_positive=sum(r["chain"] > 0 for r in wf_rows) / len(wf_rows),
+                      share_beat_hold=sum(r["chain"] > r["hold"] for r in wf_rows) / len(wf_rows),
+                      blocks_positive=sum(r["pos"] for r in wf_rows) / max(1, sum(r["blocks"] for r in wf_rows)))
+    port = portfolio_stats(daily)
+    execr = exec_report()
     json.dump(dict(generated=picks["generated"], leaderboard=board, filters=filters, account_mc=mc,
+                   regime_now=regime_now, regime_matrix=reg_out, regime_gate=gate, walk_forward=wf_sum,
+                   portfolio=port, execution=execr, max_exposure=C_MAX_EXPOSURE,
                    n_coins=len(C_COINS),
                    note="best-by-selection pick of each school on each chart, judged on the unseen last 30%"),
               open(os.path.join(OUT, "research_C.json"), "w"), indent=1)
@@ -504,6 +635,16 @@ def cmd_research():
     for f in filters:
         print(f"  filter {f['filter']:14} changes the exam return by {f['mean_delta']*100:+.2f} points on average, "
               f"better on {f['share_improved']*100:.0f}% of {f['charts']} charts")
+    if gate:
+        print(f"  regime gate (trained on selection folds only): exam change {gate['mean_delta']*100:+.2f} points on average, "
+              f"better on {gate['share_improved']*100:.0f}% of {gate['charts']} school-chart pairs")
+    if wf_sum:
+        print(f"  walk-forward ({WF_K} blocks): chained {wf_sum['mean_chain']*100:+.1f}% vs hold {wf_sum['mean_hold']*100:+.1f}%, "
+              f"positive on {wf_sum['share_positive']*100:.0f}% of {wf_sum['charts']} charts, blocks positive {wf_sum['blocks_positive']*100:.0f}%")
+    if port:
+        print(f"  coins move together: avg correlation {port['avg_corr']:.2f}, {port['coins']} coins behave like {port['n_eff']:.1f} independent bets")
+    for c_, r_ in execr.items():
+        print(f"  exec {c_:5} spread {r_['spread_bps']:.1f} bps, slip for ${int(sl.SLEEVE)}: {r_.get('slip_bps_%d' % int(sl.SLEEVE))}")
     if mc:
         print(f"  account Monte Carlo (resampled exam trades): 5% {mc['p05']*100:+.1f}%  median {mc['p50']*100:+.1f}%  "
               f"95% {mc['p95']*100:+.1f}%  chance of loss {mc['p_loss']*100:.0f}%")
@@ -522,6 +663,7 @@ def cycle_c():
     cfg = json.load(open(cfg_path))
     sl.STRATS = ALL
     sl.COINS = C_COINS
+    sl.MAX_EXPOSURE = C_MAX_EXPOSURE
     sl.SLEEVE = sl.CAPITAL / len(C_COINS)
     sl.STATE = os.path.join(OUT, "paper_C.json")
     if os.path.exists(sl.STATE):

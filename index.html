@@ -166,6 +166,7 @@ canvas{width:100%;max-width:100%;display:block}
   <!-- ===== journal ===== -->
   <main id="tab-journal" class="stack jr" hidden>
     <section class="card" id="weekly" hidden></section>
+    <section class="card" id="pm" hidden></section>
     <section class="card">
       <div class="date">17 أكتوبر 2026 · اليوم الأول</div>
       <h3>ما بنيته</h3>
@@ -482,12 +483,12 @@ async function loadPaper(){
     const [stB,cfgB]=await Promise.all([
       fetch(base+'paper_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(base+'config_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null)]);
-    const [stC,cfgC,resC]=await Promise.all(['paper_C.json','config_C.json','research_C.json'].map(f=>
+    const [stC,cfgC,resC,pm]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json'].map(f=>
       fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
     const [csvB,csvC]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -511,12 +512,27 @@ function cardC(){
   const mcTxt=mc?`<div class="note">محاكاة مونت كارلو لصفقات الامتحان (2000 مرة): الحساب بين <span class="num">${pct(mc.p05)}</span> و<span class="num">${pct(mc.p95)}</span> في 90% من السيناريوهات، والوسيط <span class="num">${pct(mc.p50)}</span>، واحتمال الخسارة <span class="num">${Math.round(mc.p_loss*100)}%</span>. هذا يفترض أن المستقبل يشبه الامتحان، وهو افتراض قد يخيب.</div>`:'';
   const flTxt=fl&&fl.length?`<h3 style="margin:14px 0 6px">هل تفيد بيانات الخوف والتمويل؟</h3><div class="pc">${fl.map(f=>`<div class="row"><span>${{'fng<75':'منع الشراء عند طمع فوق 75','fng<60':'منع الشراء عند طمع فوق 60','funding<0.03%':'منع الشراء عند تمويل مرتفع'}[f.filter]||f.filter}</span><span class="num"><span class="${f.mean_delta>=0?'up':'down'}">${f.mean_delta>=0?'+':''}${(f.mean_delta*100).toFixed(1)} نقطة</span> · أفادت في ${Math.round(f.share_improved*100)}% من ${f.charts}</span></div>`).join('')}</div><div class="sub" style="margin-top:6px">للمعلومة فقط. لم أبنِ قرارات التداول عليها قبل أن يثبت أنها تفيد.</div>`:'';
   const lb=resC&&resC.leaderboard?resC.leaderboard.map(r=>`<div class="row"><span style="white-space:nowrap">${SCHOOL_AR[r.school]||r.school}</span><span class="num"><span class="${r.mean_exam>=0?'up':'down'}">${pct(r.mean_exam)}</span> · ${Math.round(r.share_positive*100)}% رابحة (${r.charts})</span></div>`).join(''):'';
+  const RG={bull:'صاعد',bear:'هابط',side:'عرضي'},RGC={bull:'up',bear:'down',side:''};
+  const nowRg=resC&&resC.regime_now?Object.entries(resC.regime_now).filter(([,v])=>v).map(([k,v])=>`<span class="pill ${v==='bull'?'buy':v==='bear'?'sell':'hold'}">${k} ${RG[v]}</span>`).join(' '):'';
+  const mat=resC&&resC.regime_matrix?Object.entries(resC.regime_matrix).map(([k,v])=>({k,v,tot:Object.values(v).reduce((a,x)=>a+x.n,0)})).filter(x=>x.tot>=6).sort((a,b)=>b.tot-a.tot).slice(0,8):[];
+  const matTxt=mat.length?`<h3 style="margin:14px 0 6px">أداء الصفقة حسب حالة السوق</h3><div class="pc">${mat.map(({k,v})=>`<div class="row"><span style="white-space:nowrap">${SCHOOL_AR[k]||k}</span><span class="num">${['bull','bear','side'].map(r=>v[r]?`<span class="${v[r].mean>=0?'up':'down'}">${RG[r]} ${pct(v[r].mean)} (${v[r].n})</span>`:'').filter(Boolean).join(' · ')}</span></div>`).join('')}</div><div class="sub" style="margin-top:6px">متوسط ربح الصفقة الواحدة في فترة الامتحان، وبين القوسين عدد الصفقات. الحالة من EMA50 وEMA200 للرسم نفسه.</div>`:'';
+  const g=resC&&resC.regime_gate,w=resC&&resC.walk_forward,pf=resC&&resC.portfolio,ec=resC&&resC.execution;
+  const extra=[
+    nowRg?`<div class="note">حالة السوق الآن (رسم يومي): ${nowRg}</div>`:'',
+    g?`<div class="note">بوابة الحالة (تُدرَّب على فترات الاختيار وحدها): غيّرت نتيجة الامتحان بمتوسط <span class="num ${g.mean_delta>=0?'up':'down'}">${(g.mean_delta*100).toFixed(1)} نقطة</span>، وتحسّنت في <span class="num">${Math.round(g.share_improved*100)}%</span> من ${g.charts} حالة. ${g.mean_delta>0&&g.share_improved>0.55?'تستحق تجربة حية.':'لا تفيد، فلن أعتمدها.'}</div>`:'',
+    w?`<div class="note">اختبار المشي للأمام (5 فترات متتالية، يُعاد الاختيار قبل كل فترة): المتوسط <span class="num ${w.mean_chain>=0?'up':'down'}">${pct(w.mean_chain)}</span> مقابل <span class="num">${pct(w.mean_hold)}</span> للاحتفاظ، وربح في <span class="num">${Math.round(w.share_positive*100)}%</span> من ${w.charts} رسماً، و<span class="num">${Math.round(w.blocks_positive*100)}%</span> من الفترات. هذا أصدق مقياس لعملية الاختيار نفسها.</div>`:'',
+    pf?`<div class="note">العملات الـ ${pf.coins} تتحرك معاً بمعامل ارتباط <span class="num">${pf.avg_corr.toFixed(2)}</span>، فهي تعادل نحو <span class="num">${pf.n_eff.toFixed(1)}</span> رهانات مستقلة فقط. لذلك لا يتجاوز C ${Math.round((resC.max_exposure||0.6)*100)}% من رصيده في العملات معاً.</div>`:'',
+    ec&&Object.keys(ec).length?(()=>{const k=Object.keys(ec),bad=k.filter(c=>ec[c].slip_bps_1000!=null&&ec[c].slip_bps_1000>5);const worst=k.filter(c=>ec[c].slip_bps_1000!=null).sort((a,b)=>ec[b].slip_bps_1000-ec[a].slip_bps_1000)[0];
+      return `<div class="note">واقعية التنفيذ (لقطة دفتر الأوامر): الفرق بين الشراء والبيع في أوسع عملة <span class="num">${Math.max(...k.map(c=>ec[c].spread_bps)).toFixed(1)}</span> نقطة أساس. افترضت انزلاقاً 5 نقاط، ${bad.length?`وهو أقل من الواقع في ${bad.join('، ')} لأمر بألف دولار (الأسوأ ${worst} بنحو ${ec[worst].slip_bps_1000.toFixed(1)}).`:'وهو أعلى من الانزلاق الفعلي لأمر بألف دولار في كل العملات.'}</div>`})():''
+  ].join('');
   return `<section class="card"><div class="bar"><h2 style="margin:0">المختبر C · مدارس تحليل أكثر</h2><span class="pill hold">تجريبي</span></div>
     <div class="sub" style="margin:6px 0 12px">16 مدرسة تحليل (إيشيموكو، هيكل السوق، وايكوف، فيبوناتشي، بروفايل الحجم، VWAP وغيرها) بتحقق أشد: ثلاث فترات تدريب، وامتحان على فترة لم تُرَ، واختبار إعادة سحب لصفقاته. لا تدخل الحساب الرئيسي قبل أن تثبت.</div>
     <div class="tiles"><div class="tile"><div class="l">رصيد C</div><div class="v num">${usd(v)}</div></div>
       <div class="tile"><div class="l">الربح / الخسارة</div><div class="v num ${pl>=0?'up':'down'}">${pl>=0?'+':'-'}${usd(Math.abs(pl))} · ${pct(pl/5000)}</div></div></div>
     ${rows?`<div class="sub" style="margin-top:12px">${nact} عملات من ${ntot} اجتازت الامتحان وتتداول، والباقي نقد.</div><div class="pcards" style="margin-top:6px"><div class="pc">${rows}</div></div>`:''}
     ${mcTxt}
+    ${extra}
+    ${matTxt}
     ${lb?`<h3 style="margin:14px 0 6px">أي مدرسة صمدت في الامتحان؟</h3><div class="pc">${lb}</div><div class="sub" style="margin-top:6px">المتوسط على الفترة التي لم تُستخدم في الاختيار. هذه أرقام تاريخية لا وعد بالمستقبل.</div>`:''}
     ${flTxt}
   </section>`;
@@ -548,6 +564,17 @@ function renderWeekly(){
   el.innerHTML=`<div class="date">ملخص حي · آخر 7 أيام</div><h3>أرقام الأسبوع</h3>
     <div class="pc">${wk(eqA.map(p=>({t:p.t,e:p.e})),0,'الحساب A',paper.st)}${wk(paper.serB,0,'الحساب B',paper.stB)}${wk(paper.serC,0,'الحساب C',paper.stC)}</div>
     <div class="sub" style="margin-top:8px">يُحسب تلقائياً من البيانات الحية كل 5 دقائق. أسبوع واحد عينة صغيرة، فلا تحكم به على أي استراتيجية.</div>`;
+  el.hidden=false;
+}
+function renderPostmortems(){
+  const el=$('pm');if(!el||!paper||!paper.pm||!paper.pm.items||!paper.pm.items.length)return;
+  const KIND={late:'خرج متأخراً',gave_back:'أعاد الربح',early:'خرج مبكراً',good_exit:'خروج جيد',plain_loss:'خسارة عادية',plain_win:'ربح عادي'};
+  const sm=paper.pm.summary||{},cn=sm.counts||{};
+  const items=paper.pm.items.slice(-6).reverse().map(i=>`<div class="row"><span style="white-space:nowrap">${i.coin} · ${i.account}</span><span>${i.lesson}</span></div>`).join('');
+  el.innerHTML=`<div class="date">تشريح الصفقات المغلقة</div><h3>ماذا تعلّمت من صفقاتي؟</h3>
+    <div class="sub" style="margin-bottom:8px">${Object.entries(cn).map(([k,v])=>`${KIND[k]||k}: <span class="num">${v}</span>`).join(' · ')}${sm.avg_efficiency!=null?` · نسبة ما احتفظت به من أعلى ربح: <span class="num">${Math.round(sm.avg_efficiency*100)}%</span>`:''}</div>
+    <div class="pc">${items}</div>
+    <div class="sub" style="margin-top:8px">أقيس لكل صفقة أعلى ربح بلغته وأسوأ هبوط، وماذا فعل السعر بعد الخروج. لا أحكم على نمط قبل أن يتكرر.</div>`;
   el.hidden=false;
 }
 function renderPaper(){

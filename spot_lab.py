@@ -232,6 +232,7 @@ RISK_PER_TRADE = 0.03   # a 2.5-ATR adverse move may cost at most 3% of the coin
 ATR_RISK_MULT = 2.5
 MIN_FRAC, MAX_FRAC = 0.25, 1.0
 MAX_ACCOUNT_DD = 0.25   # whole account: sell everything and halt at -25% from its peak
+MAX_EXPOSURE = None      # optional cap on the share of equity held in coins (off for account A)
 
 
 def position_fraction(atr_val, price):
@@ -685,13 +686,21 @@ def cycle(cfg, st):
         elif en[-1] and bar != st["last_bar"][c]:
             frac = position_fraction(at[-1], px)
             invest = st["cash"][c] * frac
-            st["basis"][c], st["peak"][c], st["frac"][c] = invest, px, frac
-            st["qty"][c] = invest * (1 - FEE) / (px * (1 + SLIP))
-            st["cash"][c] -= invest
-            st["holding_key"][c] = key
-            st["trades"].append(dict(time=now, coin=c, side="BUY", price=px, key=key, gen=st["cfg_gen"], size=frac))
-            log_csv("paper_trades.csv", [now, c, "BUY", px, "", ""])
-            print(f"  BUY  {c} @ {px:g}  size {frac*100:.0f}% of slice")
+            if MAX_EXPOSURE:                                   # only account C sets this
+                held = sum(st["qty"][k] * prices[k] for k in COINS)
+                room = MAX_EXPOSURE * eq_now - held
+                invest = 0 if room < invest * 0.5 else min(invest, room)
+                frac = invest / st["cash"][c] if st["cash"][c] > 0 else 0
+                if invest <= 0:
+                    print(f"  skip {c}: exposure cap {MAX_EXPOSURE*100:.0f}% reached")
+            if invest > 0:
+                st["basis"][c], st["peak"][c], st["frac"][c] = invest, px, frac
+                st["qty"][c] = invest * (1 - FEE) / (px * (1 + SLIP))
+                st["cash"][c] -= invest
+                st["holding_key"][c] = key
+                st["trades"].append(dict(time=now, coin=c, side="BUY", price=px, key=key, gen=st["cfg_gen"], size=frac))
+                log_csv("paper_trades.csv", [now, c, "BUY", px, "", ""])
+                print(f"  BUY  {c} @ {px:g}  size {frac*100:.0f}% of slice")
         if en[-1]:
             st["last_bar"][c] = bar
         # ---- live performance check: pause or switch a strategy that is losing
