@@ -343,6 +343,11 @@ def cmd_backtest():
         cmd_momentum_backtest()
     except Exception as e:
         print("  momentum backtest failed:", e)
+    try:
+        import research
+        research.cmd_research()
+    except Exception as e:
+        print("  research backtest failed:", e)
 
 
 # ---------------------------------------------------------------- challenger B: momentum rotation
@@ -758,6 +763,11 @@ def cmd_paper():
                 cycle_b()
             except Exception as e:
                 print("  challenger B error:", e)
+            try:
+                import research
+                research.cycle_c()
+            except Exception as e:
+                print("  research account C error:", e)
         except KeyboardInterrupt:
             raise
         except Exception as e:
