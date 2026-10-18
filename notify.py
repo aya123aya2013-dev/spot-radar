@@ -36,6 +36,17 @@ def equity(st):
     return sum(st["cash"][c] + st["qty"][c] * px.get(c, 0) for c in st["cash"])
 
 
+LAST_ERR = [""]
+
+
+def status(msg):
+    """Tiny diagnostic file (never contains the token or chat id)."""
+    try:
+        json.dump({"time": datetime.now(timezone.utc).isoformat(), "status": msg}, open(os.path.join(OUT, "notify_status.json"), "w"))
+    except Exception:
+        pass
+
+
 def send(text):
     if DRY:
         print("DRY>", text.replace("\n", " | "))
@@ -45,7 +56,13 @@ def send(text):
         urllib.request.urlopen(f"https://api.telegram.org/bot{TOKEN}/sendMessage", data, timeout=20).read()
         return True
     except Exception as e:
-        print("telegram send failed:", str(e)[:100])
+        LAST_ERR[0] = type(e).__name__ + " " + str(getattr(e, "code", "")) + " " + str(getattr(e, "reason", ""))[:60]
+        try:
+            body = json.loads(e.read().decode())          # Telegram explains itself: "chat not found", "Unauthorized"
+            LAST_ERR[0] += " " + str(body.get("description", ""))[:80]
+        except Exception:
+            pass
+        print("telegram send failed:", LAST_ERR[0])
         return False
 
 
@@ -55,7 +72,9 @@ def pct(x):
 
 def main():
     if not DRY and not (TOKEN and CHAT):
-        print("telegram not configured (no TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID), skipping")
+        miss = [n for n, v in (("TELEGRAM_BOT_TOKEN", TOKEN), ("TELEGRAM_CHAT_ID", CHAT)) if not v]
+        print("telegram not configured, missing:", miss)
+        status("not configured, missing secret(s): " + ", ".join(miss))
         return
     ns = json.load(open(STATE)) if os.path.exists(STATE) else None
     first = ns is None
@@ -101,6 +120,9 @@ def main():
         ns["summary_day"] = today
         if send("✅ تنبيهات Spot Radar تعمل. ستصلك هنا الصفقات والقرارات وملخص يومي.\n" + (summary or "")):
             json.dump(ns, open(STATE, "w"))
+            status("ok, hello message sent")
+        else:
+            status("send failed: " + LAST_ERR[0])
         return
     for m in msgs[:15]:
         send(m)
