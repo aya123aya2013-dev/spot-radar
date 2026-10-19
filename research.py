@@ -332,11 +332,57 @@ def load_funding(coin):
             rnd = random.Random(sum(map(ord, coin)))
             now = int(__import__("time").time() * 1000)
             return [(now - (2000 - i) * 8 * 3600 * 1000, rnd.gauss(0.0001, 0.0002)) for i in range(2000)]
-        d = sl.http_json(f"https://fapi.binance.com/fapi/v1/fundingRate?symbol={coin}USDT&limit=1000")
-        return [(int(x["fundingTime"]), float(x["fundingRate"])) for x in d]
+        try:
+            d = sl.http_json(f"https://fapi.binance.com/fapi/v1/fundingRate?symbol={coin}USDT&limit=1000")
+            return [(int(x["fundingTime"]), float(x["fundingRate"])) for x in d]
+        except Exception as e:
+            print(f"  funding {coin}: Binance unreachable ({str(e)[:40]}), trying OKX public (about 3 months)")
+        out, after = [], ""
+        for _ in range(6):                                    # OKX serves 100 rows a page, newest first
+            d = sl.http_json(f"https://www.okx.com/api/v5/public/funding-rate-history?instId={coin}-USDT-SWAP&limit=100{after}")
+            rows = d.get("data") or []
+            if not rows:
+                break
+            out += [(int(x["fundingTime"]), float(x["fundingRate"])) for x in rows]
+            after = f"&after={rows[-1]['fundingTime']}"
+        return sorted(out)
     except Exception as e:
         print(f"  funding {coin} unavailable:", str(e)[:60])
         return []
+
+
+def load_stable():
+    """{YYYY-MM-DD: total stablecoin supply in USD} from DefiLlama (public), or {} when unreachable."""
+    try:
+        if sl.SYN:
+            rnd, v, out = random.Random(3), 1.5e11, {}
+            for i in range(1500):
+                v *= 1 + rnd.gauss(0.0003, 0.002)
+                out[datetime.fromtimestamp(int(__import__("time").time()) - (1500 - i) * 86400, timezone.utc).strftime("%Y-%m-%d")] = v
+            return out
+        d = sl.http_json("https://stablecoins.llama.fi/stablecoincharts/all")
+        out = {}
+        for x in d:
+            tot = (x.get("totalCirculatingUSD") or x.get("totalCirculating") or {}).get("peggedUSD")
+            if tot:
+                out[datetime.fromtimestamp(int(x["date"]), timezone.utc).strftime("%Y-%m-%d")] = float(tot)
+        return out
+    except Exception as e:
+        print("  stablecoin supply unavailable:", str(e)[:60])
+        return {}
+
+
+def mask_stable(rows, stable):
+    """True where entries stay allowed: stablecoin supply (dry powder) grew over the 7 days up to yesterday."""
+    if not stable:
+        return None
+    ok = []
+    for r in rows:
+        d1 = datetime.fromtimestamp(r[0] / 1000 - 86400, timezone.utc).strftime("%Y-%m-%d")
+        d8 = datetime.fromtimestamp(r[0] / 1000 - 8 * 86400, timezone.utc).strftime("%Y-%m-%d")
+        a_, b_ = stable.get(d1), stable.get(d8)
+        ok.append(True if a_ is None or b_ is None else a_ > b_)
+    return ok
 
 
 def mask_fng(rows, fng, limit):
@@ -453,7 +499,8 @@ def top_share(rets):
 def cmd_research():
     series, family_rows, family_sel = [], {}, {}
     fng = load_fng()
-    filt_rows = {"fng<75": [], "fng<60": [], "funding<0.03%": []}
+    filt_rows = {"fng<75": [], "fng<60": [], "funding<0.03%": [], "stable_growth_7d": []}
+    stable = load_stable()
     matrix, gate_rows, wf_rows, regime_now, daily = {}, [], [], {}, {}
     for coin in C_COINS:
         fund = load_funding(coin)
@@ -520,7 +567,8 @@ def cmd_research():
                 base = sim(rows, en, ex, top["stop"], at, sel, n)["ret"]
                 for label, mk in (("fng<75", mask_fng(rows, fng, 75) if fng else None),
                                   ("fng<60", mask_fng(rows, fng, 60) if fng else None),
-                                  ("funding<0.03%", mask_funding(rows, fund, 0.0003))):
+                                  ("funding<0.03%", mask_funding(rows, fund, 0.0003)),
+                                  ("stable_growth_7d", mask_stable(rows, stable))):
                     if mk is None:
                         continue
                     en2 = [a and b for a, b in zip(en, mk)]
