@@ -29,6 +29,8 @@ jobs:
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python notify.py || true
       - name: Post-mortem of closed trades (read-only)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python postmortem.py || true
+      - name: OKX vs Binance public check
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python okx_check.py || true
       - name: Save state (single commit, no history growth)
         run: |
           cd data

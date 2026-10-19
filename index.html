@@ -179,6 +179,7 @@ canvas{width:100%;max-width:100%;display:block}
       <div class="cleg"><span><b style="color:var(--accent)">EMA50</b></span><span><b>EMA200</b></span><span>الخط المتقطع: دعم ومقاومة</span><span><b class="up">▲</b> شراء <b class="down">▼</b> بيع في حسابي A وC</span><span>اسحب لتحريك الشارت واضغط لقراءة الشمعة</span></div>
       <canvas id="chart"></canvas><canvas id="chart2"></canvas></section>
 
+    <section class="card" id="okx" hidden></section>
     <section class="card" id="feecalc"><h2>حاسبة الرسوم (OKX سبوت)</h2>
       <div class="fc"><label>هدف الربح %<input id="fcTp" type="number" step="0.1" value="1" inputmode="decimal"></label>
         <label>وقف الخسارة %<input id="fcSl" type="number" step="0.1" value="3" inputmode="decimal"></label>
@@ -694,12 +695,12 @@ async function loadPaper(){
     const [stB,cfgB]=await Promise.all([
       fetch(base+'paper_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(base+'config_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null)]);
-    const [stC,cfgC,resC,pm]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json'].map(f=>
+    const [stC,cfgC,resC,pm,okx]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json','okx_check.json'].map(f=>
       fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
     const [csvB,csvC]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -776,6 +777,17 @@ function renderWeekly(){
     <div class="pc">${wk(eqA.map(p=>({t:p.t,e:p.e})),0,'الحساب A',paper.st)}${wk(paper.serB,0,'الحساب B',paper.stB)}${wk(paper.serC,0,'الحساب C',paper.stC)}</div>
     <div class="sub" style="margin-top:8px">يُحسب تلقائياً من البيانات الحية كل 5 دقائق. أسبوع واحد عينة صغيرة، فلا تحكم به على أي استراتيجية.</div>`;
   el.hidden=false;
+}
+function renderOkx(){
+  const el=$('okx');if(!el||!paper||!paper.okx||!paper.okx.now||!Object.keys(paper.okx.now).length)return;
+  const o=paper.okx,f=(x,d)=>x==null?'—':x.toFixed(d==null?1:d);
+  const rows=Object.keys(o.now).map(c=>{const n=o.now[c],a=(o.avg||{})[c]||{};
+    return `<div style="margin:10px 0"><b>${c}</b><div class="sub">فرق السعر عن Binance: ${f(n.gap_bps)} نقطة (متوسط مطلق ${f(a.gap_abs_bps)})</div><div class="sub">فارق العرض والطلب: ${f(n.okx_spread_bps)} نقطة · انزلاق شراء 1000$: ${f(n.okx_slip_bps)} نقطة</div></div>`}).join('');
+  const sl=Object.values(o.now).map(n=>n.okx_slip_bps).filter(x=>x!=null),mx=sl.length?Math.max(...sl):null;
+  el.hidden=false;
+  el.innerHTML=`<h2>OKX مقابل Binance (أسعار عامة)</h2><div class="sub">النقطة = 0.01%. آخر قراءة: ${(o.time||'').replace('T',' ').slice(0,16)} UTC</div>${rows}
+  <div class="note">${mx==null?'':'أسوأ انزلاق لشراء 1000$ بأمر سوق: '+f(mx)+' نقطة، والنموذج يفترض '+f(o.model_slip_bps,0)+' نقاط. '+(mx<=o.model_slip_bps?'الافتراض معقول.':'الافتراض متفائل: استخدم أوامر محددة.')}
+  أسعار OKX تُقرأ علناً بدون أي مفتاح، ولا يتم أي تداول.</div>`;
 }
 function renderPostmortems(){
   const el=$('pm');if(!el||!paper||!paper.pm||!paper.pm.items||!paper.pm.items.length)return;
