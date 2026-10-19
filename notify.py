@@ -76,6 +76,10 @@ def main():
         print("telegram not configured, missing:", miss)
         status("not configured, missing secret(s): " + ", ".join(miss))
         return
+    if os.environ.get("NOTIFY_TEST") == "true":
+        ok = send("🧪 اختبار تنبيهات Spot Radar: إذا وصلتك هذه الرسالة فالتوكن الجديد يعمل.")
+        status("test message sent" if ok else "test failed: " + LAST_ERR[0])
+        return
     ns = json.load(open(STATE)) if os.path.exists(STATE) else None
     first = ns is None
     ns = ns or {"sent": [], "summary_day": ""}
@@ -134,6 +138,7 @@ def main():
     ns["sent"] = list(sent | set(keys))[-800:]
     if not DRY:
         json.dump(ns, open(STATE, "w"))
+        status("last send failed: " + LAST_ERR[0] if LAST_ERR[0] else "ok, checked")
 
 
 if __name__ == "__main__":

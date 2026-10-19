@@ -22,6 +22,21 @@ jobs:
           git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
       - name: Backtest and pick strategies
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python spot_lab.py backtest
+      - name: Noise control (same research on random data, results discarded except a count)
+        run: |
+          mkdir -p "$RUNNER_TEMP/null"
+          SPOT_LAB_DATA="$RUNNER_TEMP/null" python research.py --synthetic > "$RUNNER_TEMP/null.log" 2>&1 || true
+          python - <<'PY'
+          import json, os
+          p = os.path.join(os.environ["RUNNER_TEMP"], "null", "config_C.json")
+          out = os.path.join(os.environ["GITHUB_WORKSPACE"], "data", "lab_data", "research_null.json")
+          try:
+              c = json.load(open(p))
+              act = [k for k, v in c.items() if k != "generated" and v.get("active")]
+              json.dump(dict(active=len(act), coins=len(c) - 1, generated=c.get("generated")), open(out, "w"))
+          except Exception as e:
+              print("noise control skipped:", e)
+          PY
       - name: Save state (single commit, no history growth)
         run: |
           cd data

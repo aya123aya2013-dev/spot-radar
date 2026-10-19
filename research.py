@@ -449,7 +449,7 @@ def top_share(rets):
 
 # ---------------------------------------------------------------- research backtest -> config_C.json
 def cmd_research():
-    series, family_rows = [], {}
+    series, family_rows, family_sel = [], {}, {}
     fng = load_fng()
     filt_rows = {"fng<75": [], "fng<60": [], "funding<0.03%": []}
     matrix, gate_rows, wf_rows, regime_now, daily = {}, [], [], {}, {}
@@ -508,6 +508,7 @@ def cmd_research():
             med = sorted(allhold)[len(allhold) // 2] if allhold else 0.0
             for name, c in fam_best.items():
                 family_rows.setdefault(name, []).append(c["hold"]["ret"])
+                family_sel.setdefault(name, []).append(c["score"])
             series.append(dict(coin=coin, tf=tf, cands=cands[:8], tests=tests, median_hold=med,
                                base_rate=(sum(x > 0 for x in allhold) / len(allhold)) if allhold else 0,
                                bh=cands[0]["hold"]["bh"] if cands else 0))
@@ -556,6 +557,12 @@ def cmd_research():
                   f"exam {top['hold']['ret']*100:+6.1f}%  (median of all {med*100:+5.1f}%)" if top else
                   f"{coin:4} {tf:3} tests {tests:4}  nothing passed selection")
 
+    # school-level prior: a school may be used on a coin only if, on the SELECTION folds, its best version was
+    # positive on average across all charts. The exam is never used for this, so it stays a clean test.
+    school_sel = {k: sum(v) / len(v) for k, v in family_sel.items() if v}
+    allowed_schools = {k for k, v in school_sel.items() if v > 0}
+    print("schools allowed by the selection-fold prior:", sorted(allowed_schools))
+    print("schools blocked:", sorted(set(school_sel) - allowed_schools))
     picks = {}
     for coin in C_COINS:
         good = []
@@ -563,7 +570,7 @@ def cmd_research():
             for c in s["cands"]:
                 h = c["hold"]
                 bp = boot_profit(h["rets"])
-                if (h["ret"] > 0 and h["n"] >= MIN_TRADES_EXAM and bp >= BOOT_P and h["ret"] > s["median_hold"]
+                if (c["strategy"] in allowed_schools and h["ret"] > 0 and h["n"] >= MIN_TRADES_EXAM and bp >= BOOT_P and h["ret"] > s["median_hold"]
                         and c.get("stress_ret", -1) > 0 and c.get("top_share", 1) <= MAX_TOP_SHARE):
                     good.append((c["score"], s, c, bp))
         good.sort(key=lambda x: x[0], reverse=True)
@@ -626,6 +633,7 @@ def cmd_research():
     json.dump(dict(generated=picks["generated"], leaderboard=board, filters=filters, account_mc=mc,
                    regime_now=regime_now, regime_matrix=reg_out, regime_gate=gate, walk_forward=wf_sum,
                    portfolio=port, execution=execr, max_exposure=C_MAX_EXPOSURE,
+                   school_prior={k: round(v, 4) for k, v in sorted(school_sel.items(), key=lambda x: -x[1])}, allowed_schools=sorted(allowed_schools),
                    n_coins=len(C_COINS),
                    note="best-by-selection pick of each school on each chart, judged on the unseen last 30%"),
               open(os.path.join(OUT, "research_C.json"), "w"), indent=1)

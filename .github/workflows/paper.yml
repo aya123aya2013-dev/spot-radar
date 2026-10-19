@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+    inputs:
+      telegram_test:
+        description: send a Telegram test message
+        required: false
+        default: "false"
 permissions:
   contents: write
 concurrency:
@@ -26,6 +31,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NOTIFY_TEST: ${{ github.event.inputs.telegram_test }}
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python notify.py || true
       - name: Post-mortem of closed trades (read-only)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python postmortem.py || true

@@ -193,6 +193,7 @@ canvas{width:100%;max-width:100%;display:block}
 
   <!-- ===== paper ===== -->
   <main id="tab-paper" class="stack" hidden>
+    <section class="card" id="riskmeter" hidden></section>
     <div id="paperBody"><div class="empty">جارٍ تحميل الحساب الوهمي…</div></div>
   </main>
 
@@ -700,7 +701,7 @@ async function loadPaper(){
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
     const [csvB,csvC]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderRisk();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -777,6 +778,20 @@ function renderWeekly(){
     <div class="pc">${wk(eqA.map(p=>({t:p.t,e:p.e})),0,'الحساب A',paper.st)}${wk(paper.serB,0,'الحساب B',paper.stB)}${wk(paper.serC,0,'الحساب C',paper.stC)}</div>
     <div class="sub" style="margin-top:8px">يُحسب تلقائياً من البيانات الحية كل 5 دقائق. أسبوع واحد عينة صغيرة، فلا تحكم به على أي استراتيجية.</div>`;
   el.hidden=false;
+}
+function renderRisk(){
+  const el=$('riskmeter');if(!el||!paper)return;
+  const one=(name,st)=>{if(!st||!st.cash||!st.qty)return '';
+    const px=st.prices||{};let eq=0,inv=0,n=0;
+    Object.keys(st.cash).forEach(c=>{const v=(st.qty[c]||0)*(px[c]||0);eq+=st.cash[c]+v;inv+=v;if((st.qty[c]||0)>0)n++});
+    if(!(eq>0))return '';
+    const f=x=>(x*100).toFixed(1)+'%';
+    return `<div style="margin:10px 0"><b>${name}</b><div class="sub">قيمة الحساب ${usd(eq)} · في السوق ${usd(inv)} (${f(inv/eq)}) في ${n} ${n===1?'صفقة':'صفقات'}</div>
+      <div class="fcr"><div>لو هبطت كل الصفقات 10% معاً<b class="down" dir="ltr">-${usd(inv*0.1)} (${f(inv*0.1/eq)})</b></div><div>لو هبطت 20% معاً<b class="down" dir="ltr">-${usd(inv*0.2)} (${f(inv*0.2/eq)})</b></div></div></div>`};
+  const html=one('حساب A',paper.st)+one('حساب C',paper.stC);
+  if(!html)return;
+  el.hidden=false;
+  el.innerHTML='<h2>الخطر الكلي لو هبطت العملات معاً</h2>'+html+'<div class="note">عملات الحساب تتحرك معاً غالباً (متوسط الارتباط نحو 0.68 في بحث C)، فنفترض هبوطها كلها في الوقت نفسه. هذه ليست أقصى خسارة ممكنة، والهبوط قد يتجاوز 20%.</div>';
 }
 function renderOkx(){
   const el=$('okx');if(!el||!paper||!paper.okx||!paper.okx.now||!Object.keys(paper.okx.now).length)return;
