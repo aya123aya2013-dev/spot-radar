@@ -682,7 +682,13 @@ def cmd_research():
                       blocks_positive=sum(r["pos"] for r in wf_rows) / max(1, sum(r["blocks"] for r in wf_rows)))
     port = portfolio_stats(daily)
     execr = exec_report()
-    json.dump(dict(generated=picks["generated"], leaderboard=board, filters=filters, account_mc=mc,
+    actp = [p for k, p in picks.items() if k != "generated" and p.get("active")]
+    bench = dict(active=len(actp),
+                 mean_pick=(sum(p["test_ret"] for p in actp) / len(actp)) if actp else None,
+                 mean_hold=(sum(p["test_bh"] for p in actp) / len(actp)) if actp else None,
+                 share_beat_hold=(sum(p["test_ret"] > p["test_bh"] for p in actp) / len(actp)) if actp else None,
+                 btc_hold=picks["BTC"].get("test_bh"), btc_pick=picks["BTC"].get("test_ret"), btc_active=bool(picks["BTC"].get("active")))
+    json.dump(dict(generated=picks["generated"], benchmark=bench, leaderboard=board, filters=filters, account_mc=mc,
                    regime_now=regime_now, regime_matrix=reg_out, regime_gate=gate, walk_forward=wf_sum,
                    portfolio=port, execution=execr, max_exposure=C_MAX_EXPOSURE,
                    school_prior={k: round(v, 4) for k, v in sorted(school_sel.items(), key=lambda x: -x[1])}, allowed_schools=sorted(allowed_schools),
