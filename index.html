@@ -131,6 +131,11 @@ canvas{width:100%;max-width:100%;display:block}
 .flash-up{color:var(--up)}.flash-down{color:var(--down)}
 .cleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.76rem;color:var(--muted);margin:8px 0 6px}
 [hidden]{display:none!important}
+.fc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.fc label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
+.fc input,.fc select{width:100%;box-sizing:border-box;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;min-width:0}
+.fcr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:6px 0}
+.fcr div{background:var(--panel2);border-radius:10px;padding:8px 10px;font-size:.86rem}.fcr b{display:block;font-size:1.05rem}
 </style>
 </head>
 <body>
@@ -174,6 +179,13 @@ canvas{width:100%;max-width:100%;display:block}
       <div class="cleg"><span><b style="color:var(--accent)">EMA50</b></span><span><b>EMA200</b></span><span>الخط المتقطع: دعم ومقاومة</span><span><b class="up">▲</b> شراء <b class="down">▼</b> بيع في حسابي A وC</span><span>اسحب لتحريك الشارت واضغط لقراءة الشمعة</span></div>
       <canvas id="chart"></canvas><canvas id="chart2"></canvas></section>
 
+    <section class="card" id="feecalc"><h2>حاسبة الرسوم (OKX سبوت)</h2>
+      <div class="fc"><label>هدف الربح %<input id="fcTp" type="number" step="0.1" value="1" inputmode="decimal"></label>
+        <label>وقف الخسارة %<input id="fcSl" type="number" step="0.1" value="3" inputmode="decimal"></label>
+        <label>نوع الأمر<select id="fcType"><option value="taker">سوق (Taker)</option><option value="maker">محدد (Maker)</option></select></label></div>
+      <div id="fcOut"></div>
+      <div class="note">الرسوم المستخدمة: Maker 0.08% وTaker 0.10% لكل جهة (الفئة العادية، تأكد من حسابك)، مع انزلاق تقديري 0.05% لكل جهة في أوامر السوق. هدف أصغر من تكلفة الدخول والخروج خسارة مضمونة.</div></section>
+
     <section class="card"><h2>اختبار القاعدة على الماضي</h2><div id="bt"></div>
       <div class="note">القاعدة: شراء عند الدرجة +30 أو أكثر، وبيع عند −20 أو أقل، بعمولة 0.1% لكل عملية. نتائج الماضي لا تضمن المستقبل.</div></section>
   </main>
@@ -187,6 +199,24 @@ canvas{width:100%;max-width:100%;display:block}
   <main id="tab-journal" class="stack jr" hidden>
     <section class="card" id="weekly" hidden></section>
     <section class="card" id="pm" hidden></section>
+    <section class="card">
+      <div class="date">19 أكتوبر 2026 · بحث نسبة النجاح 70%</div>
+      <h3>ما وجدته على بيانات Binance الحقيقية</h3>
+      <ul>
+        <li>اختبرت 11,664 تركيبة «ضربات سريعة» (هدف صغير، وقف محدد، خروج زمني) على 12 عملة. نسبة نجاح 70% وأكثر ظهرت بسهولة، لكن بعد الامتحان النهائي لم تبق إلا 3 تركيبات متقاربة على BNB 4h بهامش +0.05% للصفقة بعد التكاليف ×3.</li>
+        <li>نفس الاختبار على بيانات عشوائية أعطى 31 تركيبة «ناجحة»، أي أن ما وجدناه لا يتميز عن الحظ. لا ميزة مثبتة، ولا ترقية لأي شيء إلى A.</li>
+        <li>الدرس: نسبة النجاح العالية لا تعني ربحاً. أغلب العملات حققت أكثر من 70% نجاح مع متوسط صفقة سالب بعد الرسوم.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <div class="date">19 أكتوبر 2026 · الرسوم</div>
+      <h3>رسوم OKX سبوت</h3>
+      <ul>
+        <li>الفئة العادية: Maker 0.08% وTaker 0.10%. صفقة كاملة بأوامر السوق تكلف نحو 0.3–0.4% مع الانزلاق، وبأوامر محددة نحو 0.16%.</li>
+        <li>نموذج الاختبار (0.10% رسم + 0.05% انزلاق لكل جهة) يطابق أوامر السوق على OKX، فلم يتغير شيء في حسابي A وC. أضفت حاسبة رسوم في تبويب الإشارات.</li>
+        <li>القاعدة العملية: لا تدخل صفقة هدفها أقل من نحو 0.8%، والصفقات القليلة الأطول أرحم بالرسوم من الكثيرة القصيرة.</li>
+      </ul>
+    </section>
     <section class="card">
       <div class="date">17 أكتوبر 2026 · اليوم الأول</div>
       <h3>ما بنيته</h3>
@@ -864,6 +894,22 @@ window.addEventListener('resize',()=>{if(!$('tab-signals').hidden&&data[focus]&&
 setTab(location.hash.slice(1),false);
 loadAll();loadPaper();loadMood();
 setInterval(liveStep,1000);setInterval(loadAll,120000);setInterval(loadPaper,300000);setInterval(loadMood,1800000);
+
+(function(){
+  const $=id=>document.getElementById(id);
+  function calc(){
+    const tp=parseFloat($('fcTp').value),sl=parseFloat($('fcSl').value),type=$('fcType').value;
+    if(!(tp>0)||!(sl>0)){$('fcOut').innerHTML='<div class="sub">أدخل هدفاً ووقف خسارة موجبين.</div>';return}
+    const fee=type==='maker'?0.08:0.10,slip=type==='maker'?0:0.05,cost=2*(fee+slip);
+    const net=tp-cost,loss=sl+cost,be=net>0?loss/(net+loss)*100:null;
+    const f=x=>x.toFixed(2);
+    $('fcOut').innerHTML='<div class="fcr"><div>تكلفة الدخول والخروج<b>'+f(cost)+'%</b></div><div>الربح الصافي عند الهدف<b class="'+(net>0?'up':'down')+'">'+f(net)+'%</b></div>'+
+      '<div>الخسارة الفعلية عند الوقف<b>'+f(loss)+'%</b></div><div>نسبة النجاح اللازمة للتعادل<b>'+(be==null?'مستحيلة':f(be)+'%')+'</b></div></div>'+
+      '<div class="sub">'+(net<=0?'الهدف لا يغطي الرسوم: خسارة مؤكدة حتى لو نجحت الصفقة.':net<0.5?'هامش صافٍ ضعيف: أي انزلاق إضافي يمحوه.':be>80?'تحتاج نسبة نجاح فوق 80% لتتعادل، وهذا نادر عملياً.':'الحساب قبل أي تحيّز: لا يعني أن الصفقة ستنجح.')+'</div>';
+  }
+  ['fcTp','fcSl','fcType'].forEach(i=>{const e=$(i);if(e){e.addEventListener('input',calc);e.addEventListener('change',calc)}});
+  if($('fcOut'))calc();
+})();
 </script>
 </body>
 </html>
