@@ -27,6 +27,8 @@ MIN_TRADES_SEL, MIN_TRADES_EXAM, BOOT_P = 8, 5, 0.7
 C_COINS = ["BTC", "ETH", "SOL", "OP", "POL", "BNB", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC"]
 MAX_TOP_SHARE = 0.7        # the best single trade may not be more than 70% of the exam profit
 COST_STRESS = 3.0          # profit must survive fees and slippage multiplied by this
+TREND_SCHOOLS = ("ema_cross", "donchian", "macd_trend", "supertrend", "ichimoku", "squeeze_break", "obv_trend",
+                 "structure_bos", "composite", "vote")
 C_MAX_EXPOSURE = 0.6       # account C never holds more than 60% of its equity in coins at once
 WF_K = 5                   # walk-forward: 5 consecutive test blocks, training always expands from the start
 
@@ -557,12 +559,14 @@ def cmd_research():
                   f"exam {top['hold']['ret']*100:+6.1f}%  (median of all {med*100:+5.1f}%)" if top else
                   f"{coin:4} {tf:3} tests {tests:4}  nothing passed selection")
 
-    # school-level prior: a school may be used on a coin only if, on the SELECTION folds, its best version was
-    # positive on average across all charts. The exam is never used for this, so it stays a clean test.
+    # School-level prior fixed IN ADVANCE from the literature, not from our data (our own selection-fold scores
+    # are positive for almost every school, because the best of many versions always looks good in-sample, and
+    # the exam period is shared by all coins, so using it would leak). Spot is long-only: momentum / trend
+    # schools are eligible for account C; mean-reversion ones are still tested and reported but not picked.
     school_sel = {k: sum(v) / len(v) for k, v in family_sel.items() if v}
-    allowed_schools = {k for k, v in school_sel.items() if v > 0}
-    print("schools allowed by the selection-fold prior:", sorted(allowed_schools))
-    print("schools blocked:", sorted(set(school_sel) - allowed_schools))
+    allowed_schools = set(TREND_SCHOOLS) & set(school_sel)
+    print("schools eligible for account C (trend prior):", sorted(allowed_schools))
+    print("schools tested but not eligible:", sorted(set(school_sel) - allowed_schools))
     picks = {}
     for coin in C_COINS:
         good = []
