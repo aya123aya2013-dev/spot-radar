@@ -22,6 +22,8 @@ jobs:
           git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
       - name: Backtest and pick strategies
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python spot_lab.py backtest
+      - name: OKX vs Binance candle comparison
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python okx_candles.py || true
       - name: Noise control (same research on random data, results discarded except a count)
         run: |
           mkdir -p "$RUNNER_TEMP/null"

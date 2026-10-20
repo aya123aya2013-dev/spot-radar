@@ -180,6 +180,7 @@ canvas{width:100%;max-width:100%;display:block}
       <canvas id="chart"></canvas><canvas id="chart2"></canvas></section>
 
     <section class="card" id="okx" hidden></section>
+    <section class="card" id="okxc" hidden></section>
     <section class="card" id="feecalc"><h2>حاسبة الرسوم (OKX سبوت)</h2>
       <div class="fc"><label>هدف الربح %<input id="fcTp" type="number" step="0.1" value="1" inputmode="decimal"></label>
         <label>وقف الخسارة %<input id="fcSl" type="number" step="0.1" value="3" inputmode="decimal"></label>
@@ -706,12 +707,12 @@ async function loadPaper(){
     const [stB,cfgB]=await Promise.all([
       fetch(base+'paper_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(base+'config_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null)]);
-    const [stC,cfgC,resC,pm,okx]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json','okx_check.json'].map(f=>
+    const [stC,cfgC,resC,pm,okx,okxc]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json','okx_check.json','okx_candles.json'].map(f=>
       fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
     const [csvB,csvC]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderRisk();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderRisk();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -803,6 +804,17 @@ function renderRisk(){
   if(!html)return;
   el.hidden=false;
   el.innerHTML='<h2>الخطر الكلي لو هبطت العملات معاً</h2>'+html+'<div class="note">عملات الحساب تتحرك معاً غالباً (متوسط الارتباط نحو 0.68 في بحث C)، فنفترض هبوطها كلها في الوقت نفسه. هذه ليست أقصى خسارة ممكنة، والهبوط قد يتجاوز 20%.</div>';
+}
+function renderOkxCandles(){
+  const el=$('okxc');if(!el||!paper||!paper.okxc||!paper.okxc.pairs)return;
+  const P=paper.okxc.pairs,ks=Object.keys(P);if(!ks.length)return;
+  const coins=[...new Set(ks.map(k=>k.split('|')[0]))],f=(x,d)=>x==null?'—':x.toFixed(d==null?1:d);
+  const rows=coins.map(c=>{const v=ks.filter(k=>k.startsWith(c+'|')).map(k=>P[k]);
+    const med=v.reduce((a,x)=>a+x.median_bps,0)/v.length,worst=Math.max(...v.map(x=>x.worst_bps)),ag=Math.min(...v.map(x=>x.signal_agree))*100;
+    return `<div style="margin:8px 0"><b>${c}</b><div class="sub">فرق الإغلاق (وسيط): ${f(med)} نقطة · أسوأ فرق: ${f(worst)} نقطة · اتفاق إشارة الاتجاه: ${f(ag)}%</div></div>`}).join('');
+  el.hidden=false;
+  el.innerHTML=`<h2>هل شموع OKX تطابق شموع الاختبار؟</h2><div class="sub">آخر 300 شمعة مغلقة، أطر 1h و4h و1d. النقطة = 0.01%. آخر مقارنة: ${(paper.okxc.time||'').replace('T',' ').slice(0,16)} UTC</div>${rows}
+  <div class="note">الفروق صغيرة، فنتائج الاختبار على Binance تنطبق على OKX. العملات الأقل سيولة (OP وPOL) أقل تطابقاً. يقيس هذا تطابق الأسعار فقط، لا الربح.</div>`;
 }
 function renderOkx(){
   const el=$('okx');if(!el||!paper||!paper.okx||!paper.okx.now||!Object.keys(paper.okx.now).length)return;
