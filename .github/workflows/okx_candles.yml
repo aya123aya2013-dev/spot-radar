@@ -1,0 +1,29 @@
+name: okx-candles
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: lab-state
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Load state branch
+        run: |
+          URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
+      - name: Compare OKX and Binance candles
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python okx_candles.py
+      - name: Save state (single commit, no history growth)
+        run: |
+          cd data
+          git config user.name github-actions && git config user.email actions@github.com
+          git add -A
+          git commit -q --amend -m "state" 2>/dev/null || git commit -q -m "state"
+          git push -q -f origin data
