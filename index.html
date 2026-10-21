@@ -211,6 +211,28 @@ h2{font-size:1.02rem}
 .jr a{color:var(--link)}
 .fc input,.fc select{background:rgba(255,255,255,.85);border-radius:14px}
 .chips,.card.plan,#acctD,.pc,#hero,.chip{color:var(--fg)}
+
+/* ---- home + accounts layout ---- */
+.seg.acc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%}
+#moreSeg{grid-template-columns:repeat(2,minmax(0,1fr))}
+.seg.acc button{padding:9px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rows{display:grid;gap:6px}
+.rw{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 14px;border-radius:16px;background:var(--panel2);font:inherit;color:inherit;border:0;text-align:right;width:100%;cursor:default}
+button.rw{cursor:pointer}
+button.rw:hover{background:rgba(255,255,255,.95)}
+.rw .k{font-weight:700;display:flex;align-items:center;gap:8px}
+.rw .k .sub{font-weight:400}
+.rw .m{text-align:left;direction:ltr;display:grid;line-height:1.3}
+.rw .m .sub{font-size:.78rem}
+.tag{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;font-size:.78rem;font-weight:700;color:#fff;background:var(--ac,var(--ink))}
+.tag.A{--ac:var(--link)}.tag.B{--ac:var(--b)}.tag.C{--ac:var(--c)}.tag.D{--ac:var(--d)}
+.hl{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hl .tile{padding:12px 14px}
+.hl .tile .v{font-size:1.05rem}
+.ev{display:grid;gap:8px}
+.ev div{padding:10px 14px;border-radius:16px;background:var(--panel2);font-size:.88rem}
+.ev .sub{display:block;margin-bottom:2px}
+.sb::before{inset-inline-start:16px}
 </style>
 </head>
 <body>
@@ -218,19 +240,23 @@ h2{font-size:1.02rem}
 <header class="rail">
   <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l5-5"/></svg><h1>رادار السبوت</h1></div>
   <nav class="tabs" role="tablist" aria-label="الأقسام">
-    <button role="tab" data-tab="signals" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>الإشارات</span></button>
-    <button role="tab" data-tab="paper" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14.5h2"/></svg><span>الحساب</span></button>
-    <button role="tab" data-tab="journal" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span>السجل</span></button>
-    <button role="tab" data-tab="info" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>الشرح</span></button>
+    <button role="tab" data-tab="home" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg><span>الرئيسية</span></button>
+    <button role="tab" data-tab="market" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>السوق</span></button>
+    <button role="tab" data-tab="accounts" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14.5h2"/></svg><span>الحسابات</span></button>
+    <button role="tab" data-tab="more" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span>السجل</span></button>
   </nav>
   <div id="status"><i></i><span>جارٍ التحميل…</span></div>
-  <div class="railnote">حسابات ورقية للتعلّم فقط. لا مال حقيقي ولا وعد بالربح.</div>
 </header>
 <div class="wrap">
-  <div class="sumbar" id="sumbar" hidden></div>
 
-  <!-- ===== signals ===== -->
-  <main id="tab-signals" class="stack">
+  <!-- ===== home: everything that matters today, in one screen ===== -->
+  <main id="tab-home" class="stack">
+    <div class="sumbar" id="sumbar" hidden></div>
+    <div id="homeBody" class="two"><section class="card"><div class="empty">جارٍ تحميل الحسابات…</div></section></div>
+  </main>
+
+  <!-- ===== market ===== -->
+  <main id="tab-market" class="stack" hidden>
     <div class="bar">
       <div class="seg" id="tfSeg" role="group" aria-label="الإطار الزمني">
         <button data-tf="1h">ساعة</button><button data-tf="4h" aria-pressed="true">4 ساعات</button><button data-tf="1d">يومي</button><button data-tf="1w">أسبوعي</button>
@@ -238,44 +264,51 @@ h2{font-size:1.02rem}
       <button class="ghost" id="refresh">تحديث</button>
     </div>
     <div class="chips" id="strip"></div>
-
     <section class="card" id="hero"></section>
-    <section class="card" id="mood" hidden></section>
-
+    <section class="card" id="chartCard">
+      <div class="bar"><h2 style="margin:0">الشارت <span class="live off" id="liveBadge">يتصل…</span></h2>
+        <div class="seg zoom" id="zoomSeg" role="group" aria-label="تكبير الشارت"><button data-z="out" aria-label="تصغير">−</button><button data-z="in" aria-label="تكبير">+</button><button data-z="now">الآن</button></div></div>
+      <canvas id="chart"></canvas><canvas id="chart2"></canvas>
+      <div class="cleg"><span><b style="color:var(--link)">EMA50</b></span><span><b>EMA200</b></span><span>الخط المتقطع: دعم ومقاومة</span><span><b class="up">▲</b> شراء <b class="down">▼</b> بيع في حسابي A وC</span><span>اسحب لتحريك الشارت واضغط لقراءة الشمعة</span></div>
+    </section>
     <div class="two">
       <section class="card plan"><h2>خطة السبوت المقترحة</h2><div id="plan"></div>
         <div class="note">الخطة من مستويات تاريخية ومؤشرات، وليست توصية. ادخل على دفعات وحدّد الخسارة التي تتحملها قبل الدخول.</div></section>
       <section class="card"><h2>مناطق الشراء والبيع</h2><div class="lvs" id="levels"></div></section>
     </div>
-
-    <section class="card">
-      <div class="bar"><h2 style="margin:0">الشارت <span class="live off" id="liveBadge">يتصل…</span></h2>
-        <div class="seg zoom" id="zoomSeg" role="group" aria-label="تكبير الشارت"><button data-z="out" aria-label="تصغير">−</button><button data-z="in" aria-label="تكبير">+</button><button data-z="now">الآن</button></div></div>
-      <div class="cleg"><span><b style="color:var(--accent)">EMA50</b></span><span><b>EMA200</b></span><span>الخط المتقطع: دعم ومقاومة</span><span><b class="up">▲</b> شراء <b class="down">▼</b> بيع في حسابي A وC</span><span>اسحب لتحريك الشارت واضغط لقراءة الشمعة</span></div>
-      <canvas id="chart"></canvas><canvas id="chart2"></canvas></section>
-
-    <section class="card" id="okx" hidden></section>
-    <section class="card" id="okxc" hidden></section>
+    <section class="card" id="mood" hidden></section>
+    <section class="card"><h2>اختبار القاعدة على الماضي</h2><div id="bt"></div>
+      <div class="note">القاعدة: شراء عند الدرجة +30 أو أكثر، وبيع عند −20 أو أقل، بعمولة 0.1% لكل عملية. نتائج الماضي لا تضمن المستقبل.</div></section>
     <section class="card" id="feecalc"><h2>حاسبة الرسوم (OKX سبوت)</h2>
       <div class="fc"><label>هدف الربح %<input id="fcTp" type="number" step="0.1" value="1" inputmode="decimal"></label>
         <label>وقف الخسارة %<input id="fcSl" type="number" step="0.1" value="3" inputmode="decimal"></label>
         <label>نوع الأمر<select id="fcType"><option value="taker">سوق (Taker)</option><option value="maker">محدد (Maker)</option></select></label></div>
       <div id="fcOut"></div>
       <div class="note">الرسوم المستخدمة: Maker 0.08% وTaker 0.10% لكل جهة (الفئة العادية، تأكد من حسابك)، مع انزلاق تقديري 0.05% لكل جهة في أوامر السوق. هدف أصغر من تكلفة الدخول والخروج خسارة مضمونة.</div></section>
-
-    <section class="card"><h2>اختبار القاعدة على الماضي</h2><div id="bt"></div>
-      <div class="note">القاعدة: شراء عند الدرجة +30 أو أكثر، وبيع عند −20 أو أقل، بعمولة 0.1% لكل عملية. نتائج الماضي لا تضمن المستقبل.</div></section>
+    <section class="card" id="okx" hidden></section>
+    <section class="card" id="okxc" hidden></section>
   </main>
 
-  <!-- ===== paper ===== -->
-  <main id="tab-paper" class="stack" hidden>
-    <section class="card" id="riskmeter" hidden></section>
-    <section class="card" id="acctD" hidden></section>
-    <div id="paperBody"><div class="empty">جارٍ تحميل الحساب الوهمي…</div></div>
+  <!-- ===== accounts: one account at a time ===== -->
+  <main id="tab-accounts" class="stack" hidden>
+    <section class="card" id="eqCard"><h2>منحنى الحسابات منذ البداية</h2>
+      <div class="legend" id="eqLegend"></div><div id="eqWrap"><canvas id="eqChart"></canvas></div>
+      <div class="sub" id="eqNote" hidden>الرسم يظهر بعد جمع عدة قراءات (كل 5 دقائق).</div></section>
+    <div class="seg acc" id="accSeg" role="group" aria-label="اختر الحساب">
+      <button data-acc="A" aria-pressed="true">A · الرئيسي</button><button data-acc="B" aria-pressed="false">B · الزخم</button><button data-acc="C" aria-pressed="false">C · المختبر</button><button data-acc="D" aria-pressed="false">D · المضاربة</button>
+    </div>
+    <div id="acc-A" class="stack"><section class="card"><div class="empty">جارٍ تحميل الحساب…</div></section></div>
+    <div id="acc-B" class="stack" hidden></div>
+    <div id="acc-C" class="stack" hidden></div>
+    <div id="acc-D" class="stack" hidden><section class="card" id="acctD"><div class="empty">لا بيانات لحساب D بعد.</div></section></div>
   </main>
 
-  <!-- ===== journal ===== -->
-  <main id="tab-journal" class="stack jr" hidden>
+  <!-- ===== journal + guide ===== -->
+  <main id="tab-more" class="stack" hidden>
+    <div class="seg acc" id="moreSeg" role="group" aria-label="القسم">
+      <button data-more="journal" aria-pressed="true">سجل التعلّم</button><button data-more="info" aria-pressed="false">كيف تقرأ اللوحة</button>
+    </div>
+    <div id="more-journal" class="stack jr">
     <section class="card" id="weekly" hidden></section>
     <section class="card" id="pm" hidden></section>
     <section class="card">
@@ -391,10 +424,8 @@ h2{font-size:1.02rem}
         <a href="https://github.com/aya123aya2013-dev/spot-radar/commits/main" target="_blank" rel="noopener">كل التغييرات</a>
       </div>
     </section>
-  </main>
-
-  <!-- ===== info ===== -->
-  <main id="tab-info" class="stack" hidden>
+  </div>
+    <div id="more-info" class="stack" hidden>
     <section class="card gl">
       <h2>كيف تقرأ اللوحة</h2>
       <div><b>منطقة شراء / حياد / بيع</b><span class="sub">درجة مجمّعة من −100 إلى +100 تجمع الاتجاه والزخم والتشبّع والحجم. +30 أو أكثر شراء، و−30 أو أقل بيع، وما بينهما حياد.</span></div>
@@ -420,6 +451,7 @@ h2{font-size:1.02rem}
       <div><b>كل أسبوع (مراجعة Claude)</b><span class="sub">تُراجَع النتائج وتُقترح تحسينات كطلب تعديل على GitHub، ولا تُطبَّق إلا بموافقتك.</span></div>
     </section>
     <section class="card"><div class="sub">هذه اللوحة للتعلّم والمتابعة وليست نصيحة مالية. أداء الماضي والحساب الوهمي لا يضمنان نتائج حقيقية، والتنفيذ الفعلي يختلف بسبب الانزلاق والرسوم والسيولة.</div></section>
+  </div>
   </main>
 </div>
 </div>
@@ -510,14 +542,17 @@ function localTime(s){ // runner writes "YYYY-MM-DD HH:MM" in UTC
 function setStatus(text,cls){const el=$('status');el.className=cls||'';el.querySelector('span').textContent=text}
 
 /* ---------- tabs ---------- */
-const TABS=['signals','paper','journal','info'];
+const TABS=['home','market','accounts','more'];
+const TAB_ALIAS={signals:'market',paper:'accounts',journal:'more',info:'more'};
 function setTab(name,push){
-  if(!TABS.includes(name))name='signals';
+  name=TAB_ALIAS[name]||name;if(!TABS.includes(name))name='home';
   TABS.forEach(t=>{$('tab-'+t).hidden=t!==name});
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===name)));
   if(push){try{history.replaceState(null,'','#'+name)}catch(e){}}
-  if(name==='signals'&&data[focus]&&!data[focus].err)drawChart(data[focus]);
-  if(name==='paper')drawEquity();
+  if(name==='market'&&data[focus]&&!data[focus].err)drawChart(data[focus]);
+  if(name==='accounts')drawEquity();
+  if(name==='home')renderHome();
+  window.scrollTo({top:0});
 }
 
 /* ---------- signals ---------- */
@@ -602,7 +637,7 @@ function renderFocus(){
 const TFMS={'1h':3600e3,'4h':14400e3,'1d':864e5,'1w':6048e5};
 const view={n:null,off:0,hover:null,geom:null};
 let redrawQ=false;
-function redraw(){if(redrawQ)return;redrawQ=true;requestAnimationFrame(()=>{redrawQ=false;const d=data[focus];if(d&&!d.err&&!$('tab-signals').hidden)drawChart(d)})}
+function redraw(){if(redrawQ)return;redrawQ=true;requestAnimationFrame(()=>{redrawQ=false;const d=data[focus];if(d&&!d.err&&!$('tab-market').hidden)drawChart(d)})}
 
 function tradeMarks(sym){
   const out=[];
@@ -657,7 +692,7 @@ function drawChart(d){
   rows.forEach((r,i)=>{const u=r.c>=r.o;g.strokeStyle=g.fillStyle=u?up:down;g.beginPath();g.moveTo(x(i),y(r.h));g.lineTo(x(i),y(r.l));g.stroke();
     g.fillRect(x(i)-cw/2,y(Math.max(r.o,r.c)),cw,Math.max(1,Math.abs(y(r.o)-y(r.c))))});
   const ln=(arr,c,w)=>{g.strokeStyle=c;g.lineWidth=w;g.beginPath();rows.forEach((_,i)=>{const v=arr[start+i];i===0?g.moveTo(x(i),y(v)):g.lineTo(x(i),y(v))});g.stroke()};
-  ln(a.e50,acc,1.5);ln(a.e200,fg,1.2);
+  ln(a.e50,cssv('--link')||acc,1.5);ln(a.e200,fg,1.2);
   // support / resistance
   g.setLineDash([5,4]);g.lineWidth=1;
   const used=[];const lvl=(p,c,t)=>{g.strokeStyle=c;g.beginPath();g.moveTo(padL,y(p));g.lineTo(W-padR,y(p));g.stroke();if(used.some(u=>Math.abs(u-y(p))<12))return;used.push(y(p));g.fillStyle=c;g.textAlign='left';g.fillText(t,padL+3,y(p)-3)};
@@ -747,8 +782,8 @@ function liveStep(){
   const now=Date.now();
   for(const co of COINS){const d=data[co.s];if(!d||d.err||!d.dirty)continue;
     if(now-(d.anAt||0)>(co.s===focus?2000:10000)){d.an=analyze(d.rows);d.anAt=now;d.dirty=false;d.fresh=true}}
-  updateStrip();
-  const d=data[focus];if(!d||d.err||$('tab-signals').hidden)return;
+  updateStrip();updateHome();
+  const d=data[focus];if(!d||d.err||$('tab-market').hidden)return;
   const p=d.price;
   if(p!=null){const el=$('heroPrice');if(el){el.textContent='$'+fmt(p);if(lastShown!=null&&p!==lastShown){el.classList.remove('flash-up','flash-down');void el.offsetWidth;el.classList.add(p>lastShown?'flash-up':'flash-down');setTimeout(()=>el.classList.remove('flash-up','flash-down'),450)}lastShown=p}
     const ch=$('heroCh');if(ch){const v=p/d.an.c[d.an.n-barsPerDay[tf]]-1;ch.className='num sub '+(v>=0?'up':'down');ch.textContent=pct(v)+' خلال 24 ساعة'}}
@@ -790,7 +825,7 @@ function renderSummary(){
 /* ---------- paper account (state is written by the GitHub Actions job to branch "data") ---------- */
 let paper=null;
 async function loadPaper(){
-  const body=$('paperBody');
+  const body=$('acc-A');
   const owner=location.hostname.split('.')[0],repo=location.pathname.split('/')[1]||'';
   const base=`https://raw.githubusercontent.com/${owner}/${repo}/data/lab_data/`;
   try{
@@ -806,8 +841,8 @@ async function loadPaper(){
       fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
-    const [csvB,csvC]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderRisk();renderD();
+    const [csvB,csvC,csvD]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv','paper_equity_D.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderHome();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -882,12 +917,11 @@ function renderWeekly(){
     return `<div class="row"><span style="white-space:nowrap">${label}</span><span class="num"><span class="${net>=0?'up':'down'}">${pct(net)}</span> · أقصى هبوط ${(dd*100).toFixed(1)}% · ${buys} شراء / ${sells.length} بيع</span></div>`};
   const eqA=paper.series;
   el.innerHTML=`<div class="date">ملخص حي · آخر 7 أيام</div><h3>أرقام الأسبوع</h3>
-    <div class="pc">${wk(eqA.map(p=>({t:p.t,e:p.e})),0,'الحساب A',paper.st)}${wk(paper.serB,0,'الحساب B',paper.stB)}${wk(paper.serC,0,'الحساب C',paper.stC)}</div>
+    <div class="pc">${wk(eqA.map(p=>({t:p.t,e:p.e})),0,'الحساب A',paper.st)}${wk(paper.serB,0,'الحساب B',paper.stB)}${wk(paper.serC,0,'الحساب C',paper.stC)}${wk(paper.serD,0,'الحساب D',paper.stD)}</div>
     <div class="sub" style="margin-top:8px">يُحسب تلقائياً من البيانات الحية كل 5 دقائق. أسبوع واحد عينة صغيرة، فلا تحكم به على أي استراتيجية.</div>`;
   el.hidden=false;
 }
-function renderRisk(){
-  const el=$('riskmeter');if(!el||!paper)return;
+function riskHtml(st){
   const one=(name,st)=>{if(!st||!st.cash||!st.qty)return '';
     const px=st.prices||{};let eq=0,inv=0,n=0;
     Object.keys(st.cash).forEach(c=>{const v=(st.qty[c]||0)*(px[c]||0);eq+=st.cash[c]+v;inv+=v;if((st.qty[c]||0)>0)n++});
@@ -895,10 +929,9 @@ function renderRisk(){
     const f=x=>(x*100).toFixed(1)+'%';
     return `<div style="margin:10px 0"><b>${name}</b><div class="sub">قيمة الحساب ${usd(eq)} · في السوق ${usd(inv)} (${f(inv/eq)}) في ${n} ${n===1?'صفقة':'صفقات'}</div>
       <div class="fcr"><div>لو هبطت كل الصفقات 10% معاً<b class="down" dir="ltr">-${usd(inv*0.1)} (${f(inv*0.1/eq)})</b></div><div>لو هبطت 20% معاً<b class="down" dir="ltr">-${usd(inv*0.2)} (${f(inv*0.2/eq)})</b></div></div></div>`};
-  const html=one('حساب A',paper.st)+one('حساب C',paper.stC);
-  if(!html)return;
-  el.hidden=false;
-  el.innerHTML='<h2>الخطر الكلي لو هبطت العملات معاً</h2>'+html+'<div class="note">عملات الحساب تتحرك معاً غالباً (متوسط الارتباط نحو 0.68 في بحث C)، فنفترض هبوطها كلها في الوقت نفسه. هذه ليست أقصى خسارة ممكنة، والهبوط قد يتجاوز 20%.</div>';
+  const html=one('',st);
+  if(!html)return '';
+  return '<section class="card"><h2>الخطر لو هبطت العملات معاً</h2>'+html+'<div class="note">عملات الحساب تتحرك معاً غالباً (متوسط الارتباط نحو 0.68 في بحث C)، فنفترض هبوطها كلها في الوقت نفسه. هذه ليست أقصى خسارة ممكنة، والهبوط قد يتجاوز 20%.</div></section>';
 }
 function renderD(){
   const el=$('acctD');if(!el||!paper||!paper.stD||paper.stD.equity==null)return;
@@ -970,9 +1003,9 @@ function renderPaper(){
   const evs=(st.events||[]).slice(-6).reverse().map(e=>`<li><span class="num sub">${localTime(e.time)}</span><br>${e.text}</li>`).join('');
   const trades=(st.trades||[]).slice(-8).reverse().map(t=>`<li><span><span class="pill ${t.side==='BUY'?'buy':'sell'}">${t.side==='BUY'?'شراء':'بيع'}</span> ${t.coin} <span class="num sub">${t.price<1?t.price:fmt(t.price)}</span></span>
       <span class="num sub">${t.ret!==undefined?`<span class="${t.ret>=0?'up':'down'}">${pct(t.ret)}</span> · `:''}${localTime(t.time)}</span></li>`).join('');
-  $('paperBody').innerHTML=`<div class="stack">
+  $('acc-A').innerHTML=`
     ${st.halted?'<section class="card" style="border-color:var(--down)"><b class="down">التداول متوقف</b><div class="sub">قاطع الحساب أغلق كل الصفقات بعد هبوط 25% من القمة، ويُستأنف تلقائياً بعد الاختبار الأسبوعي القادم.</div></section>':''}
-    <section class="card"><div class="sub">رصيد الحساب الوهمي</div>
+    <section class="card"><div class="sub">الحساب A · الرئيسي · 6 استراتيجيات مختبرة على 5 عملات</div>
       <div class="big ${eqv>=5000?'up':'down'}">${usd(eqv)}</div>
       <div class="num sub">${pct(eqv/5000-1)} منذ ${localTime(st.start.slice(0,16).replace('T',' '))}</div>
       <div class="cmp">
@@ -984,15 +1017,13 @@ function renderPaper(){
         <div class="tile"><div class="l">الفرق عن الانتظار</div><div class="v num ${diff>=0?'up':'down'}">${diff>=0?'+':'-'}${usd(Math.abs(diff))}</div></div>
         <div class="tile"><div class="l">صفقات مغلقة</div><div class="v num">${sells.length}</div></div>
         <div class="tile"><div class="l">الرابحة منها</div><div class="v num">${sells.length?Math.round(wins/sells.length*100)+'%':'—'}</div></div>
-      </div>
-      <div class="legend" id="eqLegend"></div><div id="eqWrap" style="margin-top:6px"><canvas id="eqChart"></canvas></div>
-      <div class="sub" id="eqNote" hidden>الرسم يظهر بعد جمع عدة قراءات (كل 5 دقائق).</div></section>
-    <div><h2>العملات الخمس</h2><div class="pcards">${cards}</div></div>
-    ${cardB()}
-    ${cardC()}
+      </div></section>
+    <section class="card"><h2>العملات الخمس</h2><div class="pcards">${cards}</div></section>
+    ${riskHtml(st)}
     ${evs?`<section class="card"><h2>قرارات النظام</h2><ul class="list ev">${evs}</ul></section>`:''}
-    ${trades?`<section class="card"><h2>آخر الصفقات</h2><ul class="list">${trades}</ul></section>`:'<section class="card"><div class="empty">لا صفقات بعد. الاستراتيجيات اليومية بطيئة وقد تمر أيام قبل أول إشارة.</div></section>'}
-  </div>`;
+    ${trades?`<section class="card"><h2>آخر الصفقات</h2><ul class="list">${trades}</ul></section>`:'<section class="card"><div class="empty">لا صفقات بعد. الاستراتيجيات اليومية بطيئة وقد تمر أيام قبل أول إشارة.</div></section>'}`;
+  $('acc-B').innerHTML=cardB()||'<section class="card"><div class="empty">لا بيانات لحساب B بعد.</div></section>';
+  $('acc-C').innerHTML=(cardC()||'<section class="card"><div class="empty">لا بيانات لحساب C بعد.</div></section>')+riskHtml(paper.stC);
   drawEquity();
 }
 
@@ -1001,11 +1032,11 @@ function drawEquity(){
   const tm=p=>new Date(String(p.t).replace(' ','T')+':00Z').getTime();
   const sm=a=>{if(a.length>300){const k=Math.ceil(a.length/300);return a.filter((_,i)=>i%k===0||i===a.length-1)}return a};
   const A=sm(paper.series.map(p=>({t:tm(p),v:p.e/5000-1}))),H=sm(paper.series.map(p=>({t:tm(p),v:p.b/5000-1}))),
-    B=sm((paper.serB||[]).map(p=>({t:tm(p),v:p.e/5000-1}))),C=sm((paper.serC||[]).map(p=>({t:tm(p),v:p.e/5000-1})));
+    B=sm((paper.serB||[]).map(p=>({t:tm(p),v:p.e/5000-1}))),C=sm((paper.serC||[]).map(p=>({t:tm(p),v:p.e/5000-1}))),D=sm((paper.serD||[]).map(p=>({t:tm(p),v:p.e/5000-1})));
   const note=$('eqNote');
-  if(A.length<2){cv.parentElement.hidden=true;note.hidden=false;return}
-  cv.parentElement.hidden=false;note.hidden=true;
-  const lines=[['A',A,cssv('--accent'),2.2,[]],['B',B,cssv('--b'),1.5,[]],['C',C,cssv('--c'),1.5,[]],['انتظار',H,cssv('--muted'),1.2,[4,4]]].filter(l=>l[1].length>1);
+  if(A.length<2){$('eqWrap').hidden=true;note.hidden=false;return}
+  $('eqWrap').hidden=false;note.hidden=true;
+  const lines=[['A',A,cssv('--link'),2.2,[]],['B',B,cssv('--b'),1.5,[]],['C',C,cssv('--c'),1.5,[]],['D',D,cssv('--d'),1.5,[]],['انتظار',H,cssv('--muted'),1.2,[4,4]]].filter(l=>l[1].length>1);
   const dpr=window.devicePixelRatio||1,W=cv.clientWidth,Hh=170;
   cv.style.height=Hh+'px';cv.width=W*dpr;cv.height=Hh*dpr;
   const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,Hh);g.direction='ltr';
@@ -1030,7 +1061,7 @@ async function loadMood(){
   try{const arr=await fetch('https://fapi.binance.com/fapi/v1/premiumIndex').then(r=>r.json());fund={};
     COINS.forEach(c=>{const x=arr.find(a=>a.symbol===c.s+'USDT');if(x)fund[c.s]=+x.lastFundingRate});if(!Object.keys(fund).length)fund=null}catch(e){}
   if(!fng&&!fund){box.hidden=true;return}
-  let h='<h2>مزاج السوق <span class="sub">للعلم فقط، لا يدخل في قرارات التداول</span></h2>';
+  let h='<h2>مزاج السوق</h2><div class="sub" style="margin:-6px 0 12px">للعلم فقط، لا يدخل في قرارات التداول.</div>';
   if(fng&&fng.length){const n=fng[fng.length-1],cls=n.v>=55?'buy':n.v<=45?'sell':'hold';
     h+=`<div class="mood-top"><div><div class="sub">مؤشر الخوف والطمع</div><div class="price" style="font-size:1.7rem">${n.v}</div><span class="pill ${cls}">${FNG_AR[n.c]||n.c}</span></div>
       <div style="flex:1;max-width:190px"><div class="spark">${fng.map(d=>`<i style="height:${Math.max(d.v,4)}%" title="${d.v}"></i>`).join('')}</div><div class="sub" style="text-align:center">آخر 8 أيام</div></div></div>`}
@@ -1040,6 +1071,60 @@ async function loadMood(){
   box.innerHTML=h;box.hidden=false;
 }
 
+
+/* ---------- home: today in one screen ---------- */
+function trendOf(a){const n=a.n;return a.px>a.e200[n]&&a.e50[n]>a.e200[n]?['صاعد','up']:a.px<a.e200[n]&&a.e50[n]<a.e200[n]?['هابط','down']:['متذبذب','warn']}
+function renderHome(){
+  const el=$('homeBody');if(!el||$('tab-home').hidden)return;
+  const L=t=>`<bdi dir="ltr">${t}</bdi>`;
+  // open positions across the paper accounts
+  const pos=[];
+  [['A',paper&&paper.st],['C',paper&&paper.stC]].forEach(([acct,s])=>{if(!s||!s.qty)return;
+    Object.keys(s.qty).forEach(c=>{if(!(s.qty[c]>0))return;const b=[...(s.trades||[])].reverse().find(t=>t.coin===c&&t.side==='BUY'),p=(s.prices||{})[c];
+      pos.push({acct,c,entry:b&&b.price,pnl:b&&p?p/b.price-1:null,since:b&&b.time,note:((s.perf||{})[c]||{}).strategy||''})})});
+  if(paper&&paper.stD&&paper.stD.holdings)Object.entries(paper.stD.holdings).forEach(([c,h])=>pos.push({acct:'D',c,entry:h.entry,pnl:h.pnl,note:`هدف ${L(h.tp.toPrecision(5))} · وقف ${L(h.sl.toPrecision(5))}`}));
+  const posHtml=pos.length?`<div class="rows">${pos.map(p=>`<div class="rw"><span class="tag ${p.acct}">${p.acct}</span><span class="k">${p.c}<span class="sub">${p.note||''}</span></span><span class="m"><span class="num ${p.pnl==null?'':p.pnl>=0?'up':'down'}">${p.pnl==null?'—':pct(p.pnl)}</span><span class="sub num">${p.entry?'دخول '+(p.entry<1?p.entry:fmt(p.entry)):''}</span></span></div>`).join('')}</div>`
+    :`<div class="empty">لا صفقات مفتوحة في أي حساب الآن. الحسابات نقد وتنتظر إشارة.</div>`;
+  // market now
+  const rows=COINS.map(co=>{const d=data[co.s];
+    if(!d||d.err)return `<div class="rw"><span class="k">${co.s}<span class="sub">${co.n}</span></span><span class="sub">${d?'غير متاح':'…'}</span><span></span></div>`;
+    const a=d.an,s=a.score[a.n],z=zone(s),p=d.price??a.px,ch=p/a.c[a.n-barsPerDay[tf]]-1,tr=trendOf(a);
+    return `<button class="rw" data-coin="${co.s}"><span class="k">${co.s}<span class="sub">${co.n} · <span class="${tr[1]}">${tr[0]}</span></span></span><span class="m"><span class="num" id="hp-${co.s}">$${fmt(p)}</span><span class="sub num ${ch>=0?'up':'down'}" id="hc-${co.s}">${pct(ch)}</span></span><span class="pill ${z}">${zoneAr[z]}</span></button>`}).join('');
+  // latest decisions (A + D)
+  const evs=[];
+  if(paper&&paper.st&&paper.st.events)paper.st.events.slice(-4).forEach(e=>evs.push({acct:'A',...e}));
+  if(paper&&paper.stD&&paper.stD.events)paper.stD.events.slice(-3).forEach(e=>evs.push({acct:'D',...e}));
+  if(paper&&paper.stC&&paper.stC.events)paper.stC.events.slice(-3).forEach(e=>evs.push({acct:'C',...e}));
+  evs.sort((a,b)=>String(b.time).localeCompare(String(a.time)));
+  const evHtml=evs.length?`<div class="ev">${evs.slice(0,4).map(e=>`<div><span class="sub"><span class="tag ${e.acct}" style="width:20px;height:20px;font-size:.7rem">${e.acct}</span> <span class="num">${localTime(e.time)}</span></span>${e.text}</div>`).join('')}</div>`:'<div class="empty">لا قرارات مسجلة بعد.</div>';
+  // system health
+  let upd='—',late=false;
+  if(paper&&paper.series&&paper.series.length){const d=new Date(String(paper.series[paper.series.length-1].t).replace(' ','T')+':00Z'),m=Math.round((Date.now()-d)/60000);if(!isNaN(m)){late=m>45;upd=m<60?`قبل ${Math.max(m,0)} دقيقة`:`قبل ${Math.round(m/60)} ساعة`}}
+  const live=Date.now()-Live.lastMsg<15000;
+  const nD=paper&&paper.stD&&paper.stD.stats?paper.stD.stats.trades||0:0;
+  const health=`<div class="hl">
+    <div class="tile"><div class="l">آخر فحص للحسابات</div><div class="v ${late?'warn':''}">${upd}</div></div>
+    <div class="tile"><div class="l">الأسعار</div><div class="v ${live?'up':''}" id="hLive">${live?'مباشرة':'كل دقيقتين'}</div></div>
+    <div class="tile"><div class="l">بوابة حساب D</div><div class="v num">${nD} / 30</div></div>
+    <div class="tile"><div class="l">المراجعة الأسبوعية</div><div class="v">الجمعة 19:47</div></div></div>`;
+  el.innerHTML=`
+    <div class="stack">
+      <section class="card"><h2>الصفقات المفتوحة الآن</h2>${posHtml}</section>
+      <section class="card"><h2>آخر القرارات</h2>${evHtml}</section>
+    </div>
+    <div class="stack">
+      <section class="card"><h2>السوق الآن <span class="sub">إطار ${TFNAME[tf]} · اضغط العملة للتفاصيل</span></h2><div class="rows">${rows}</div></section>
+      <section class="card"><h2>حالة النظام</h2>${health}<div class="note">كل الحسابات ورقية بلا مال حقيقي. الأرقام هنا تُقاس ولا تُجمَّل، ولا وعد بالربح.</div></section>
+    </div>`;
+  el.querySelectorAll('button.rw[data-coin]').forEach(b=>b.onclick=()=>{focus=b.dataset.coin;view.off=0;view.hover=null;lastShown=null;renderStrip();setTab('market',true);renderFocus()});
+}
+function updateHome(){
+  if($('tab-home').hidden)return;
+  const hl=$('hLive');if(hl){const live=Date.now()-Live.lastMsg<15000;hl.textContent=live?'مباشرة':'كل دقيقتين';hl.className='v '+(live?'up':'')}
+  for(const co of COINS){const d=data[co.s];if(!d||d.err)continue;const a=d.an,p=d.price??a.px,ch=p/a.c[a.n-barsPerDay[tf]]-1;
+    const e1=$('hp-'+co.s),e2=$('hc-'+co.s);if(e1)e1.textContent='$'+fmt(p);if(e2){e2.textContent=pct(ch);e2.className='sub num '+(ch>=0?'up':'down')}}
+}
+
 /* ---------- control ---------- */
 async function loadAll(){
   setStatus('جارٍ التحديث…','');
@@ -1047,12 +1132,15 @@ async function loadAll(){
   const ok=COINS.filter(c=>!data[c.s].err).length;
   if(ok)setStatus(`محدَّث ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} · ${ok}/${COINS.length}`,'ok');
   else setStatus('تعذر الوصول لمصادر الأسعار. تحقق من الاتصال، وقد تكون Binance محجوبة عندك.','bad');
-  renderStrip();renderFocus();Live.ensure();
+  renderStrip();renderFocus();renderHome();Live.ensure();
 }
 document.querySelectorAll('#tfSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tfSeg button').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');tf=b.dataset.tf;loadAll()});
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab,true));
+function showAcc(k){document.querySelectorAll('#accSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.acc===k)));['A','B','C','D'].forEach(a=>{$('acc-'+a).hidden=a!==k})}
+document.querySelectorAll('#accSeg button').forEach(b=>b.onclick=()=>showAcc(b.dataset.acc));
+document.querySelectorAll('#moreSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#moreSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('more-journal').hidden=b.dataset.more!=='journal';$('more-info').hidden=b.dataset.more!=='info'});
 $('refresh').onclick=()=>{loadAll();loadPaper()};
-window.addEventListener('resize',()=>{if(!$('tab-signals').hidden&&data[focus]&&!data[focus].err)drawChart(data[focus]);if(!$('tab-paper').hidden)drawEquity()});
+window.addEventListener('resize',()=>{if(!$('tab-market').hidden&&data[focus]&&!data[focus].err)drawChart(data[focus]);if(!$('tab-accounts').hidden)drawEquity()});
 setTab(location.hash.slice(1),false);
 loadAll();loadPaper();loadMood();
 setInterval(liveStep,1000);setInterval(loadAll,120000);setInterval(loadPaper,300000);setInterval(loadMood,1800000);
@@ -1075,7 +1163,7 @@ setInterval(liveStep,1000);setInterval(loadAll,120000);setInterval(loadPaper,300
 
 /* ---- collapsible cards (professional layout: overview first, details on demand) ---- */
 (function(){
-  const CLOSED=['OKX','يطابق','حاسبة','اختبار القاعدة','قرارات النظام','آخر الصفقات','نفس القواعد','الطريق إلى','الخطر الكلي'];
+  const CLOSED=['OKX','يطابق','حاسبة','اختبار القاعدة','قرارات النظام','آخر الصفقات','نفس القواعد','الطريق إلى','الخطر لو','مزاج السوق','مناطق الشراء'];
   const seen=new Map();
   function fold(root){
     root.querySelectorAll('.card').forEach(c=>{
@@ -1091,9 +1179,9 @@ setInterval(liveStep,1000);setInterval(loadAll,120000);setInterval(loadPaper,300
         c.classList.toggle('closed');seen.set(key,c.classList.contains('closed'))});
     });
   }
-  function run(){['tab-signals','tab-paper'].forEach(id=>{const m=document.getElementById(id);if(m)fold(m)})}
+  function run(){['tab-market','tab-accounts'].forEach(id=>{const m=document.getElementById(id);if(m)fold(m)})}
   let t;const mo=new MutationObserver(()=>{clearTimeout(t);t=setTimeout(run,60)});
-  ['tab-signals','tab-paper'].forEach(id=>{const m=document.getElementById(id);if(m)mo.observe(m,{childList:true,subtree:true})});
+  ['tab-market','tab-accounts'].forEach(id=>{const m=document.getElementById(id);if(m)mo.observe(m,{childList:true,subtree:true})});
   run();
 })();
 </script>
