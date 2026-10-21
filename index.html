@@ -195,6 +195,7 @@ canvas{width:100%;max-width:100%;display:block}
   <!-- ===== paper ===== -->
   <main id="tab-paper" class="stack" hidden>
     <section class="card" id="riskmeter" hidden></section>
+    <section class="card" id="acctD" hidden></section>
     <div id="paperBody"><div class="empty">جارٍ تحميل الحساب الوهمي…</div></div>
   </main>
 
@@ -716,12 +717,12 @@ async function loadPaper(){
     const [stB,cfgB]=await Promise.all([
       fetch(base+'paper_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(base+'config_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null)]);
-    const [stC,cfgC,resC,pm,okx,okxc]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json','okx_check.json','okx_candles.json'].map(f=>
+    const [stC,cfgC,resC,pm,okx,okxc,stD,btD]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json','okx_check.json','okx_candles.json','paper_D.json','backtest_D.json'].map(f=>
       fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
     const [csvB,csvC]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderRisk();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,serB:parse(csvB),serC:parse(csvC)};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderRisk();renderD();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -813,6 +814,23 @@ function renderRisk(){
   if(!html)return;
   el.hidden=false;
   el.innerHTML='<h2>الخطر الكلي لو هبطت العملات معاً</h2>'+html+'<div class="note">عملات الحساب تتحرك معاً غالباً (متوسط الارتباط نحو 0.68 في بحث C)، فنفترض هبوطها كلها في الوقت نفسه. هذه ليست أقصى خسارة ممكنة، والهبوط قد يتجاوز 20%.</div>';
+}
+function renderD(){
+  const el=$('acctD');if(!el||!paper||!paper.stD||paper.stD.equity==null)return;
+  const s=paper.stD,sx=s.stats||{},bt=paper.btD,r=s.rules||{},eq=s.equity,pl=eq-5000,L=t=>`<bdi dir="ltr">${t}</bdi>`,p1=x=>x==null?'—':L((x*100).toFixed(1)+'%'),p2=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(2)+'%');
+  const hold=Object.entries(s.holdings||{}).map(([c,h])=>`<div class="row"><span><b>${c}</b> <span class="sub">${h.signal}</span></span><span class="num">دخول ${L(h.entry.toPrecision(6))} · هدف ${L(h.tp.toPrecision(6))} · وقف ${L(h.sl.toPrecision(6))} · <span class="${h.pnl>=0?'up':'down'}">${p2(h.pnl)}</span></span></div>`).join('')||'<div class="sub">لا صفقات مفتوحة الآن.</div>';
+  const n=sx.trades||0,pct=Math.min(100,n/30*100);
+  const st=n?`<div class="fcr"><div>نسبة النجاح<b>${p1(sx.win_rate)}</b><span class="sub">نطاق 95%: ${p1(sx.win_ci[0])}–${p1(sx.win_ci[1])}</span></div><div>متوسط الصفقة<b class="${sx.expectancy>=0?'up':'down'}">${p2(sx.expectancy)}</b></div><div>متوسط الربح / الخسارة<b>${p2(sx.avg_win)} / ${p2(sx.avg_loss)}</b></div><div>نجاح التعادل المطلوب<b>${p1(sx.breakeven_win)}</b></div></div>`:'';
+  const b=bt&&bt.exam_all?`<h3 style="margin:14px 0 6px">نفس القواعد على التاريخ (الامتحان النهائي)</h3><div class="sub">${bt.exam_all.n} صفقة: نجاح ${p1(bt.exam_all.win)}، متوسط الصفقة ${p2(bt.exam_all.mean)}. دخول عشوائي بنفس الخروج: ${p2(bt.random_all.mean)}. بتكاليف ×3: ${p2(bt.exam_x3_all.mean)}. احتمال أن المتوسط موجب: ${p1(bt.boot_p)}.</div>`:'';
+  el.hidden=false;
+  el.innerHTML=`<h2>حساب D: جلسة المضاربة اليومية (ورقي)</h2>
+    <div class="sub">هدف +${(r.tp*100||2).toFixed(0)}% ووقف -${(r.stop*100||3).toFixed(0)}% أو ${r.hold_hours||24} ساعة، على ${(r.coins||[]).join(' و')}. حتى ${r.max_day||3} صفقات يومياً ووقف اليوم عند -${((r.day_loss_cap||0.01)*100).toFixed(0)}%.</div>
+    <div class="fcr"><div>الرصيد<b>${usd(eq)}</b></div><div>الربح والخسارة<b class="${pl>=0?'up':'down'}">${L((pl>=0?'+':'-')+usd(Math.abs(pl)))} · ${p2(pl/5000)}</b></div></div>
+    <h3 style="margin:10px 0 6px">الصفقات المفتوحة</h3>${hold}
+    <h3 style="margin:14px 0 6px">الطريق إلى بوابة الـ 30 صفقة</h3>
+    <div style="background:var(--panel2);border-radius:8px;height:10px;overflow:hidden"><div style="width:${pct}%;height:10px;background:var(--accent)"></div></div>
+    <div class="sub" style="margin-top:6px">${sx.gate||'لا صفقات مغلقة بعد'}</div>${st}${b}
+    <div class="note">القواعد ثابتة مسبقاً ولا تُعدَّل على نتائج الحساب. لا يُنظر في مال حقيقي قبل 30 صفقة مغلقة ومتوسط موجب بعد الرسوم، ولا ضمان بعد ذلك. أي رقم هنا تجريبي ورقي.</div>`;
 }
 function renderOkxCandles(){
   const el=$('okxc');if(!el||!paper||!paper.okxc||!paper.okxc.pairs)return;

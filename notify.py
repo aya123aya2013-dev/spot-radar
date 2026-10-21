@@ -20,7 +20,7 @@ TOKEN, CHAT = os.environ.get("TELEGRAM_BOT_TOKEN", ""), os.environ.get("TELEGRAM
 DRY = "--dry" in sys.argv
 STATE = os.path.join(OUT, "notify_state.json")
 CAPITAL = 5000.0
-ACCOUNTS = [("A", "paper.json"), ("B", "paper_B.json"), ("C", "paper_C.json")]
+ACCOUNTS = [("A", "paper.json"), ("B", "paper_B.json"), ("C", "paper_C.json"), ("D", "paper_D.json")]
 SUMMARY_HOUR_UTC = 6
 
 

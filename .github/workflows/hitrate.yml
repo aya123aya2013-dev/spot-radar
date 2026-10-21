@@ -22,6 +22,8 @@ jobs:
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python hitrate.py
       - name: Same pipeline on random noise (luck yardstick)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python hitrate.py --synthetic
+      - name: Backtest account D rules
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python scalp.py backtest || true
       - name: Save state (single commit, no history growth)
         run: |
           cd data

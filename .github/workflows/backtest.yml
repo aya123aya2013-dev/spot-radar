@@ -39,6 +39,8 @@ jobs:
           except Exception as e:
               print("noise control skipped:", e)
           PY
+      - name: Backtest account D rules
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python scalp.py backtest || true
       - name: Save state (single commit, no history growth)
         run: |
           cd data
