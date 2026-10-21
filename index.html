@@ -136,6 +136,15 @@ canvas{width:100%;max-width:100%;display:block}
 .fc input,.fc select{width:100%;box-sizing:border-box;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;min-width:0}
 .fcr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:6px 0}
 .fcr div{background:var(--panel2);border-radius:10px;padding:8px 10px;font-size:.86rem}.fcr b{display:block;font-size:1.05rem}
+
+.card.fold>.fh{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;-webkit-tap-highlight-color:transparent}
+.card.fold>.fh>h2,.card.fold>.fh .bar{margin:0}
+.card.fold>.fh::after{content:"";flex:none;width:8px;height:8px;border-right:2px solid var(--muted,#8a94a6);border-bottom:2px solid var(--muted,#8a94a6);transform:rotate(-135deg);transition:transform .2s;margin-inline-start:6px}
+.card.fold.closed>.fh::after{transform:rotate(45deg)}
+.card.fold>.fh:hover{opacity:.85}
+.card.fold>.fh+*{margin-top:12px}
+.card.fold.closed>*:not(.fh){display:none!important}
+.card.fold.closed{padding-block:12px}
 </style>
 </head>
 <body>
@@ -707,7 +716,7 @@ function renderSummary(){
     if(!isNaN(m)){const late=m>45,txt=m<60?`${Math.max(m,0)} دقيقة`:`${Math.round(m/60)} ساعة`;
       fresh=`<div class="fresh ${late?'late':''}">آخر تحديث للحسابات: قبل ${txt}${late?' · متأخر، فجدولة GitHub تتأخر أحياناً':''}</div>`}}
   const eqC=equityC();
-  el.innerHTML=card('الحساب A · الرئيسي',eqA)+(stB?card('الحساب B · المنافس',stB.equity):'')+(eqC!=null?card('الحساب C · المختبر',eqC):'')+fresh;
+  el.innerHTML=card('الحساب A · الرئيسي',eqA)+(stB?card('الحساب B · المنافس',stB.equity):'')+(eqC!=null?card('الحساب C · المختبر',eqC):'')+(paper.stD&&paper.stD.equity!=null?card('الحساب D · المضاربة',paper.stD.equity):'')+fresh;
   el.hidden=false;
 }
 
@@ -995,6 +1004,30 @@ setInterval(liveStep,1000);setInterval(loadAll,120000);setInterval(loadPaper,300
   }
   ['fcTp','fcSl','fcType'].forEach(i=>{const e=$(i);if(e){e.addEventListener('input',calc);e.addEventListener('change',calc)}});
   if($('fcOut'))calc();
+})();
+
+/* ---- collapsible cards (professional layout: overview first, details on demand) ---- */
+(function(){
+  const CLOSED=['OKX','يطابق','حاسبة','اختبار القاعدة','قرارات النظام','آخر الصفقات','نفس القواعد','الطريق إلى','الخطر الكلي'];
+  const seen=new Map();
+  function fold(root){
+    root.querySelectorAll('.card').forEach(c=>{
+      if(c.dataset.fold)return;
+      const h2=c.querySelector(':scope>h2,:scope>.bar>h2');
+      if(!h2||c.querySelector('canvas'))return;
+      const head=h2.parentElement===c?h2:h2.parentElement;
+      head.classList.add('fh');c.classList.add('fold');c.dataset.fold='1';
+      const key=h2.textContent.trim().slice(0,30);
+      const closed=seen.has(key)?seen.get(key):CLOSED.some(k=>key.includes(k));
+      c.classList.toggle('closed',closed);
+      head.addEventListener('click',e=>{if(e.target.closest('button,select,input,a,label'))return;
+        c.classList.toggle('closed');seen.set(key,c.classList.contains('closed'))});
+    });
+  }
+  function run(){['tab-signals','tab-paper'].forEach(id=>{const m=document.getElementById(id);if(m)fold(m)})}
+  let t;const mo=new MutationObserver(()=>{clearTimeout(t);t=setTimeout(run,60)});
+  ['tab-signals','tab-paper'].forEach(id=>{const m=document.getElementById(id);if(m)mo.observe(m,{childList:true,subtree:true})});
+  run();
 })();
 </script>
 </body>
