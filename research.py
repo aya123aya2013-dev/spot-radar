@@ -496,7 +496,25 @@ def top_share(rets):
 
 
 # ---------------------------------------------------------------- research backtest -> config_C.json
+def coin_slip(coin, base, okx):
+    """Slippage per side for this coin: the model default, or 1.5x the live OKX measurement for 1000$ when that is higher
+    (only coins that okx_check.py measures, and only with at least 50 samples). Costs can only go up, never down."""
+    try:
+        a = ((okx or {}).get("avg") or {}).get(coin) or {}
+        if a.get("samples", 0) >= 50 and a.get("okx_slip_bps") is not None:
+            return max(base, 1.5 * a["okx_slip_bps"] / 1e4)
+    except Exception:
+        pass
+    return base
+
+
 def cmd_research():
+    base_slip = sl.SLIP
+    okx = None
+    try:
+        okx = json.load(open(os.path.join(OUT, "okx_check.json")))
+    except Exception:
+        pass
     series, family_rows, family_sel = [], {}, {}
     fng = load_fng()
     filt_rows = {"fng<75": [], "fng<60": [], "funding<0.03%": [], "stable_growth_7d": []}
@@ -504,6 +522,9 @@ def cmd_research():
     matrix, gate_rows, wf_rows, regime_now, daily = {}, [], [], {}, {}
     for coin in C_COINS:
         fund = load_funding(coin)
+        sl.SLIP = coin_slip(coin, base_slip, okx)
+        if sl.SLIP != base_slip:
+            print(f"  {coin}: slippage assumption raised to {sl.SLIP*1e4:.1f} bps per side (live OKX measurement)")
         for tf in sl.TFS:
             try:
                 rows = sl.klines(coin, tf)
@@ -607,6 +628,7 @@ def cmd_research():
                   f"exam {top['hold']['ret']*100:+6.1f}%  (median of all {med*100:+5.1f}%)" if top else
                   f"{coin:4} {tf:3} tests {tests:4}  nothing passed selection")
 
+    sl.SLIP = base_slip
     # School-level prior fixed IN ADVANCE from the literature, not from our data (our own selection-fold scores
     # are positive for almost every school, because the best of many versions always looks good in-sample, and
     # the exam period is shared by all coins, so using it would leak). Spot is long-only: momentum / trend
