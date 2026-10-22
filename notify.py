@@ -8,11 +8,11 @@ Needs two GitHub secrets (repository Settings > Secrets and variables > Actions)
 Without them this script prints a note and does nothing.
 
 Sends: every new buy/sell, every system decision (strategy paused/switched, circuit breaker),
-and one balance summary per day (about 09:00 Jerusalem time).
+and one morning summary per day (06:00 UTC, about 08:00-09:00 Jerusalem): balances, open positions, last 24h.
 Flag --dry prints the messages instead of sending them.
 """
 import json, os, sys, urllib.parse, urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.environ.get("SPOT_LAB_DATA") or os.path.join(HERE, "lab_data")
@@ -66,6 +66,61 @@ def send(text):
         return False
 
 
+def holdings(name, st):
+    """[(coin, pnl or None)] for the open positions of one account."""
+    out = []
+    px = st.get("prices") or {}
+    if name == "D":
+        return [(c, h.get("pnl")) for c, h in (st.get("holdings") or {}).items()]
+    if name == "B":
+        return [(c, None) for c in (st.get("hold") or {})]
+    for c, q in (st.get("qty") or {}).items():
+        if q > 0:
+            buy = next((t for t in reversed(st.get("trades", [])) if t.get("coin") == c and t.get("side") == "BUY"), None)
+            out.append((c, (px[c] / buy["price"] - 1) if buy and px.get(c) else None))
+    return out
+
+
+def morning_summary(now):
+    """One message every morning: balances, open positions, what closed and what was decided in the last 24h."""
+    cutoff = (now - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M")
+    lines, opened, closed, decided = [], [], [], []
+    for name, fn in ACCOUNTS:
+        st = load(fn)
+        if not st:
+            continue
+        v = equity(st)
+        hs = holdings(name, st)
+        held = "، ".join(c + (f" {pct(p)}" if p is not None else "") for c, p in hs) if hs else "نقد"
+        extra = ""
+        if name == "D":
+            n_closed = (st.get("stats") or {}).get("trades", 0)
+            extra = f" · بوابة {n_closed}/30"
+        lines.append(f"{name}: ${v:,.2f} ({pct(v / CAPITAL - 1)}) · {held}{extra}")
+        for t in st.get("trades", []):
+            if str(t.get("time", "")) >= cutoff and t.get("side") == "SELL" and t.get("ret") is not None:
+                why = {"stop": "وقف", "target": "هدف", "time": "وقت", "signal": "إشارة", "halt": "قاطع", "pause": "إيقاف", "policy": "سياسة"}.get(t.get("why"), t.get("why") or "")
+                closed.append(f"{name} {t.get('coin')} {pct(t['ret'])}" + (f" ({why})" if why else ""))
+            elif str(t.get("time", "")) >= cutoff and t.get("side") == "BUY":
+                opened.append(f"{name} {t.get('coin')} @ {(t.get('price') or 0):g}")
+        for e in st.get("events", []):
+            if str(e.get("time", "")) >= cutoff:
+                decided.append(e.get("text", ""))
+    if not lines:
+        return None
+    msg = "☀️ صباح الخير · ملخص " + now.strftime("%d/%m") + "\n" + "\n".join(lines)
+    if opened:
+        msg += "\n\nدخول خلال 24 ساعة:\n" + "\n".join(opened[:8])
+    if closed:
+        msg += "\n\nإغلاق خلال 24 ساعة:\n" + "\n".join(closed[:8])
+    if decided:
+        msg += "\n\nقرارات:\n" + "\n".join(d[:120] for d in decided[:5])
+    if not (opened or closed or decided):
+        msg += "\n\nلا صفقات ولا قرارات خلال 24 ساعة."
+    msg += "\n\nحسابات ورقية، لا مال حقيقي."
+    return msg
+
+
 def pct(x):
     return f"{x*100:+.2f}%"
 
@@ -110,14 +165,7 @@ def main():
     today = now.strftime("%Y-%m-%d")
     summary = None
     if now.hour >= SUMMARY_HOUR_UTC and ns["summary_day"] != today:
-        lines = []
-        for name, fn in ACCOUNTS:
-            st = load(fn)
-            if st:
-                v = equity(st)
-                lines.append(f"{name}: ${v:,.2f} ({pct(v / CAPITAL - 1)})")
-        if lines:
-            summary = "📊 ملخص اليوم\n" + "\n".join(lines)
+        summary = morning_summary(now)
     if first:
         # first run: remember what already exists so history is not replayed, and say hello
         ns["sent"] = list(sent | set(keys))[-800:]

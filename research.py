@@ -24,7 +24,7 @@ import spot_lab as sl
 OUT = sl.OUT
 FOLDS, SEL_FRAC = 3, 0.7
 MIN_TRADES_SEL, MIN_TRADES_EXAM, BOOT_P = 8, 5, 0.7
-C_COINS = ["BTC", "ETH", "SOL", "OP", "POL", "BNB", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC"]
+C_COINS = ["BTC", "ETH", "SOL", "OP", "POL", "BNB", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC"]   # state keys; excluded coins stay cash (policy.py)
 MAX_TOP_SHARE = 0.7        # the best single trade may not be more than 70% of the exam profit
 COST_STRESS = 3.0          # profit must survive fees and slippage multiplied by this
 TREND_SCHOOLS = ("ema_cross", "donchian", "macd_trend", "supertrend", "ichimoku", "squeeze_break", "obv_trend",

@@ -22,7 +22,8 @@ import hitrate as hr
 OUT = sl.OUT
 STATE = os.path.join(OUT, "paper_D.json")
 CAPITAL = 5000.0
-COINS = ["BTC", "ETH", "SOL"]
+import policy
+COINS = policy.allowed(["BTC", "ETH", "SOL"])
 TP, SL_, HOLD_H = 0.02, 0.03, 24
 SIZE_FRAC, MAX_OPEN, MAX_DAY = 0.20, 3, 3
 DAY_LOSS_CAP, HALT_DD = 0.01, 0.10
@@ -119,7 +120,8 @@ def cycle():
     now_ms = int(time.time() * 1000)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     data = {}
-    for c in COINS:
+    held = list(json.load(open(STATE)).get("pos", {})) if os.path.exists(STATE) else []
+    for c in sorted(set(COINS) | set(held)):
         rows = sl.klines(c, "1h", 400, closed_only=False)
         closed = rows[:-1] if rows[-1][0] + 3600 * 1000 > now_ms else rows
         b5 = bars5(c, rows)
@@ -158,6 +160,12 @@ def cycle():
                 break
         if not done and now_ms - p["entry_ms"] >= HOLD_H * 3600000:
             close(c, price[c], "time")
+
+    # ---- owner's coin policy: close anything that became excluded
+    for c in list(st["pos"]):
+        if c in policy.EXCLUDED:
+            close(c, price.get(c, st["pos"][c]["entry"]), "policy")
+            st["events"].append(dict(time=stamp, text=f"D: أُغلقت صفقة {c} لأن العملة مستبعدة بسياسة العملات"))
 
     # ---- account breaker
     if not st["halted"] and value() <= CAPITAL * (1 - HALT_DD):

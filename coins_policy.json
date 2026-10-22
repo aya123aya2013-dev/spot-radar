@@ -1,0 +1,7 @@
+{
+  "note": "Coins the owner does not want traded (religious compliance). Source and date are filled in by the owner's chosen screening site. Excluded coins are never bought by any account; an open position in an excluded coin is closed at the next cycle.",
+  "source": "",
+  "checked": "",
+  "excluded": [],
+  "reviewed": {}
+}

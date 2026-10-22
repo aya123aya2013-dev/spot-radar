@@ -11,7 +11,8 @@ Needs only Python 3.8+ and an internet connection. No API key, no real orders.
 import csv, itertools, json, math, os, random, sys, time, urllib.request
 from datetime import datetime, timezone
 
-COINS = ["BTC", "ETH", "SOL", "OP", "POL"]
+import policy
+COINS = ["BTC", "ETH", "SOL", "OP", "POL"]   # state keys; excluded coins stay as cash, see policy.py
 CAPITAL = 5000.0
 SLEEVE = CAPITAL / len(COINS)      # each coin gets its own slice of the account
 FEE, SLIP = 0.001, 0.0005          # per side: 0.1% exchange fee, 0.05% slippage
@@ -524,7 +525,7 @@ def cycle_b():
         st["events"].append(dict(time=now, text=f"B: قاطع الحساب أغلق كل المراكز بعد هبوط {MAX_ACCOUNT_DD*100:.0f}% وتوقف أسبوعاً"))
     bar = days[t]
     if not st["halted_until"] and bar != st["last_bar"]:
-        tgt = mom_targets(close, e50, e100b, t, p) if active else []
+        tgt = [c for c in (mom_targets(close, e50, e100b, t, p) if active else []) if c not in policy.EXCLUDED]
         if set(tgt) != set(st["hold"]):
             st["cash"], st["hold"], fills = rebalance(st["cash"], st["hold"], tgt, price, expo=p.get("expo", 1.0))
             for side, c, px, _ in fills:
@@ -670,6 +671,11 @@ def cycle(cfg, st):
         st["halted"] = now
         event(st, now, f"قاطع الحساب: هبط الرصيد {MAX_ACCOUNT_DD*100:.0f}% من قمته، أُغلقت كل الصفقات وتوقف التداول حتى الاختبار الأسبوعي القادم")
     for c in COINS:
+        if c in policy.EXCLUDED:                           # owner's coin policy: never buy, close what is open
+            if st["qty"][c] > 0:
+                sell(st, c, prices[c], now, "policy")
+                event(st, now, f"{c}: أُغلقت الصفقة لأن العملة مستبعدة بسياسة العملات")
+            continue
         p = None if st["halted"] else effective(cfg, st, c)
         if not p:
             continue
@@ -736,7 +742,7 @@ def cycle(cfg, st):
             status = "بديلة" if c in st["override"] else "نشطة"
         else:
             ls = dict(n=0, win=0, ret=0)
-            status = "موقوفة" if c in st["paused"] else "نقد"
+            status = "مستبعدة" if c in policy.EXCLUDED else ("موقوفة" if c in st["paused"] else "نقد")
         perf[c] = dict(status=status, strategy=(p or base).get("strategy"), tf=(p or base).get("tf"),
                        live_n=ls["n"], live_win=ls["win"], live_ret=ls["ret"],
                        sleeve_ret=v / SLEEVE - 1, sleeve_dd=1 - v / st["sleeve_peak"].get(c, SLEEVE),
