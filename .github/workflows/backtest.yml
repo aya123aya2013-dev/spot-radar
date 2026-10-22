@@ -11,7 +11,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,6 +39,13 @@ jobs:
           except Exception as e:
               print("noise control skipped:", e)
           PY
+      - name: Experiments (learning loop, real data)
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 900 python experiments.py || true
+      - name: Experiments on noise (yardstick)
+        run: |
+          mkdir -p "$RUNNER_TEMP/xnull"
+          SPOT_LAB_DATA="$RUNNER_TEMP/xnull" timeout 600 python experiments.py --synthetic || true
+          cp "$RUNNER_TEMP/xnull/experiments_null.json" data/lab_data/ 2>/dev/null || true
       - name: Backtest account D rules
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python scalp.py backtest || true
       - name: Save state (single commit, no history growth)

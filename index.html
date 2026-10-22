@@ -308,7 +308,7 @@ button.rw:hover{background:rgba(255,255,255,.95)}
     <div class="seg acc" id="moreSeg" role="group" aria-label="القسم">
       <button data-more="journal" aria-pressed="true">سجل التعلّم</button><button data-more="info" aria-pressed="false">كيف تقرأ اللوحة</button>
     </div>
-    <div id="more-journal" class="stack jr">
+    <div id="more-journal" class="stack jr"><section class="card" id="learn" hidden></section>
     <section class="card" id="weekly" hidden></section>
     <section class="card" id="pm" hidden></section>
     <section class="card">
@@ -841,9 +841,10 @@ async function loadPaper(){
       fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
-    const policy=await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/coins_policy.json`+bust).then(r=>r.ok?r.json():null).catch(()=>null);
+    const [policy,backlog]=await Promise.all(['coins_policy.json','research_backlog.json'].map(f=>fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/`+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
+    const [xp,xpn]=await Promise.all(['experiments.json','experiments_null.json'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const [csvB,csvC,csvD]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv','paper_equity_D.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),policy};renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderHome();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),policy,backlog,xp,xpn};renderLearn();renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderHome();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -1132,6 +1133,23 @@ function updateHome(){
   const hl=$('hLive');if(hl){const live=Date.now()-Live.lastMsg<15000;hl.textContent=live?'مباشرة':'كل دقيقتين';hl.className='v '+(live?'up':'')}
   for(const co of COINS){const d=data[co.s];if(!d||d.err)continue;const a=d.an,p=d.price??a.px,ch=p/a.c[a.n-barsPerDay[tf]]-1;
     const e1=$('hp-'+co.s),e2=$('hc-'+co.s);if(e1)e1.textContent='$'+fmt(p);if(e2){e2.textContent=pct(ch);e2.className='sub num '+(ch>=0?'up':'down')}}
+}
+
+/* ---------- learning loop: the idea backlog and what the weekly experiments found ---------- */
+function renderLearn(){
+  const el=$('learn');if(!el||!paper||!paper.backlog||!paper.backlog.items)return;
+  const ST={pending:['في الانتظار','hold'],tested:['اختُبرت','hold'],rejected:['مرفوضة','sell'],candidate:['مرشحة لحساب C','buy'],adopted:['معتمدة','buy'],blocked:['متوقفة: تنقص بيانات','hold']};
+  const xp=(paper.xp&&paper.xp.results)||{},xn=(paper.xpn&&paper.xpn.results)||{},L=t=>`<bdi dir="ltr">${t}</bdi>`,f=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(1)+' نقطة');
+  const order={candidate:0,pending:1,tested:2,blocked:3,rejected:4,adopted:0};
+  const items=[...paper.backlog.items].sort((a,b)=>(order[a.status]??9)-(order[b.status]??9));
+  const rows=items.map(it=>{const s=ST[it.status]||[it.status,'hold'],x=xp[it.id],n=xn[it.id];
+    const res=x&&x.mean_delta!=null?`<div class="sub" style="margin-top:4px">آخر اختبار حقيقي: أثر ${f(x.mean_delta)} على ${x.charts} رسماً${x.share_improved!=null?`، تحسّن ${Math.round(x.share_improved*100)}%`:''}${x.mean_delta_x3!=null?`، بتكاليف ×3 ${f(x.mean_delta_x3)}`:''}${n&&n.mean_delta!=null?` · على الضوضاء: ${f(n.mean_delta)}`:''}</div>`:'';
+    return `<div style="padding:10px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><b>${it.title}</b><span class="pill ${s[1]}">${s[0]}</span></div><div class="sub">${it.idea||''}</div>${it.result?`<div class="sub" style="margin-top:4px"><b>النتيجة:</b> ${it.result}</div>`:''}${res}</div>`}).join('');
+  const gen=paper.xp&&paper.xp.generated?`آخر تشغيل للتجارب: ${String(paper.xp.generated).replace('T',' ').slice(0,16)} UTC`:'لم تُشغَّل التجارب بعد (تعمل كل أحد).';
+  el.hidden=false;
+  el.innerHTML=`<div class="date">حلقة التعلّم</div><h3>قائمة الأفكار وما أثبتته الأرقام</h3>
+    <div class="sub">كل فكرة تُختبر على التاريخ بامتحان لم يُستخدم في الضبط، ثم يُعاد نفس الاختبار على بيانات عشوائية. لا تُقبل فكرة إلا إذا تفوقت على الضوضاء وصمدت بتكاليف ×3، وحتى حينها تدخل حساب C فقط. ${gen}</div>
+    <div style="margin-top:8px">${rows}</div>`;
 }
 
 /* ---------- control ---------- */
