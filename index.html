@@ -233,6 +233,8 @@ button.rw:hover{background:rgba(255,255,255,.95)}
 .ev div{padding:10px 14px;border-radius:16px;background:var(--panel2);font-size:.88rem}
 .ev .sub{display:block;margin-bottom:2px}
 .sb::before{inset-inline-start:16px}
+.held{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:6px}
+.sb .held .pill{font-size:.72rem;padding:2px 8px}
 </style>
 </head>
 <body>
@@ -805,20 +807,35 @@ function liveStep(){
     view.hover=null;redraw()});
 })();
 
+function openPositions(){
+  const pos=[];if(!paper)return pos;
+  [['A',paper.st],['C',paper.stC]].forEach(([acct,s])=>{if(!s||!s.qty)return;
+    Object.keys(s.qty).forEach(c=>{if(!(s.qty[c]>0))return;const b=[...(s.trades||[])].reverse().find(t=>t.coin===c&&t.side==='BUY'),p=(s.prices||{})[c];
+      pos.push({acct,c,entry:b&&b.price,pnl:b&&p?p/b.price-1:null,since:b&&b.time,note:((s.perf||{})[c]||{}).strategy||''})})});
+  if(paper.stB&&paper.stB.holdings)Object.keys(paper.stB.holdings).forEach(c=>pos.push({acct:'B',c,entry:null,pnl:null,note:'تدوير زخم'}));
+  if(paper.stD&&paper.stD.holdings)Object.entries(paper.stD.holdings).forEach(([c,h])=>pos.push({acct:'D',c,entry:h.entry,pnl:h.pnl,note:`هدف ${h.tp.toPrecision(5)} · وقف ${h.sl.toPrecision(5)}`}));
+  return pos;
+}
+function heldPills(acct){
+  const L=t=>`<bdi dir="ltr">${t}</bdi>`;
+  const h=openPositions().filter(p=>p.acct===acct);
+  if(!h.length)return '<span class="sub">نقد · لا صفقات</span>';
+  return h.map(p=>`<span class="pill ${p.pnl==null?'hold':p.pnl>=0?'buy':'sell'}">${p.c}${p.pnl!=null?' '+L(pct(p.pnl)):''}</span>`).join(' ');
+}
 function renderSummary(){
   const el=$('sumbar');
   if(!paper){el.hidden=true;return}
   const {st,stB}=paper,px=st.prices||{};
   const eqA=COINS.reduce((a,c)=>a+st.cash[c.s]+st.qty[c.s]*(px[c.s]||0),0);
-  const card=(name,v)=>{const pl=v-5000,cls=pl>0.005?'up':pl<-0.005?'down':'',ar=pl>0.005?'▲':pl<-0.005?'▼':'■';
-    return `<div class="sb"><div class="sub">${name}</div><div class="num sbv">${usd(v)}</div><div class="num ${cls}">${ar} ${pl>=0?'+':'-'}${usd(Math.abs(pl))} · ${pct(pl/5000)}</div></div>`};
+  const card=(name,v,acct)=>{const pl=v-5000,cls=pl>0.005?'up':pl<-0.005?'down':'',ar=pl>0.005?'▲':pl<-0.005?'▼':'■';
+    return `<div class="sb"><div class="sub">${name}</div><div class="num sbv">${usd(v)}</div><div class="num ${cls}">${ar} ${pl>=0?'+':'-'}${usd(Math.abs(pl))} · ${pct(pl/5000)}</div><div class="held">${heldPills(acct)}</div></div>`};
   let fresh='';
   const last=paper.series.length?paper.series[paper.series.length-1].t:null;
   if(last){const d=new Date(String(last).replace(' ','T')+':00Z'),m=Math.round((Date.now()-d)/60000);
     if(!isNaN(m)){const late=m>45,txt=m<60?`${Math.max(m,0)} دقيقة`:`${Math.round(m/60)} ساعة`;
       fresh=`<div class="fresh ${late?'late':''}">آخر تحديث للحسابات: قبل ${txt}${late?' · متأخر، فجدولة GitHub تتأخر أحياناً':''}</div>`}}
   const eqC=equityC();
-  el.innerHTML=card('الحساب A · الرئيسي',eqA)+(stB?card('الحساب B · المنافس',stB.equity):'')+(eqC!=null?card('الحساب C · المختبر',eqC):'')+(paper.stD&&paper.stD.equity!=null?card('الحساب D · المضاربة',paper.stD.equity):'')+fresh;
+  el.innerHTML=card('الحساب A · الرئيسي',eqA,'A')+(stB?card('الحساب B · المنافس',stB.equity,'B'):'')+(eqC!=null?card('الحساب C · المختبر',eqC,'C'):'')+(paper.stD&&paper.stD.equity!=null?card('الحساب D · المضاربة',paper.stD.equity,'D'):'')+fresh;
   el.hidden=false;
 }
 
@@ -886,6 +903,7 @@ function cardC(){
     <div class="sub" style="margin:6px 0 12px">16 مدرسة تحليل (إيشيموكو، هيكل السوق، وايكوف، فيبوناتشي، بروفايل الحجم، VWAP وغيرها) بتحقق أشد: ثلاث فترات تدريب، وامتحان على فترة لم تُرَ، واختبار إعادة سحب لصفقاته. لا تدخل الحساب الرئيسي قبل أن تثبت.</div>
     <div class="tiles"><div class="tile"><div class="l">رصيد C</div><div class="v num">${usd(v)}</div></div>
       <div class="tile"><div class="l">الربح / الخسارة</div><div class="v num ${pl>=0?'up':'down'}">${pl>=0?'+':'-'}${usd(Math.abs(pl))} · ${pct(pl/5000)}</div></div></div>
+    <div class="held" style="margin-top:10px"><span class="sub">صفقات مفتوحة: </span>${heldPills('C')}</div>
     ${rows?`<div class="sub" style="margin-top:12px">${nact} عملات من ${ntot} اجتازت الامتحان وتتداول، والباقي نقد.</div><div class="pcards" style="margin-top:6px"><div class="pc">${rows}</div></div>`:''}
     ${mcTxt}
     ${extra}
@@ -1015,6 +1033,7 @@ function renderPaper(){
   $('acc-A').innerHTML=`
     ${st.halted?'<section class="card" style="border-color:var(--down)"><b class="down">التداول متوقف</b><div class="sub">قاطع الحساب أغلق كل الصفقات بعد هبوط 25% من القمة، ويُستأنف تلقائياً بعد الاختبار الأسبوعي القادم.</div></section>':''}
     <section class="card"><div class="sub">الحساب A · الرئيسي · 6 استراتيجيات مختبرة على 5 عملات</div>
+      <div class="held" style="margin:6px 0 2px"><span class="sub">صفقات مفتوحة: </span>${heldPills('A')}</div>
       <div class="big ${eqv>=5000?'up':'down'}">${usd(eqv)}</div>
       <div class="num sub">${pct(eqv/5000-1)} منذ ${localTime(st.start.slice(0,16).replace('T',' '))}</div>
       <div class="cmp">
@@ -1086,12 +1105,7 @@ function trendOf(a){const n=a.n;return a.px>a.e200[n]&&a.e50[n]>a.e200[n]?['صا
 function renderHome(){
   const el=$('homeBody');if(!el||$('tab-home').hidden)return;
   const L=t=>`<bdi dir="ltr">${t}</bdi>`;
-  // open positions across the paper accounts
-  const pos=[];
-  [['A',paper&&paper.st],['C',paper&&paper.stC]].forEach(([acct,s])=>{if(!s||!s.qty)return;
-    Object.keys(s.qty).forEach(c=>{if(!(s.qty[c]>0))return;const b=[...(s.trades||[])].reverse().find(t=>t.coin===c&&t.side==='BUY'),p=(s.prices||{})[c];
-      pos.push({acct,c,entry:b&&b.price,pnl:b&&p?p/b.price-1:null,since:b&&b.time,note:((s.perf||{})[c]||{}).strategy||''})})});
-  if(paper&&paper.stD&&paper.stD.holdings)Object.entries(paper.stD.holdings).forEach(([c,h])=>pos.push({acct:'D',c,entry:h.entry,pnl:h.pnl,note:`هدف ${L(h.tp.toPrecision(5))} · وقف ${L(h.sl.toPrecision(5))}`}));
+  const pos=openPositions();
   const posHtml=pos.length?`<div class="rows">${pos.map(p=>`<div class="rw"><span class="tag ${p.acct}">${p.acct}</span><span class="k">${p.c}<span class="sub">${p.note||''}</span></span><span class="m"><span class="num ${p.pnl==null?'':p.pnl>=0?'up':'down'}">${p.pnl==null?'—':pct(p.pnl)}</span><span class="sub num">${p.entry?'دخول '+(p.entry<1?p.entry:fmt(p.entry)):''}</span></span></div>`).join('')}</div>`
     :`<div class="empty">لا صفقات مفتوحة في أي حساب الآن. الحسابات نقد وتنتظر إشارة.</div>`;
   // market now
