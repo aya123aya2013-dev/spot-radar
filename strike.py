@@ -36,6 +36,9 @@ TRAIL_TRIGGER, TRAIL = 0.015, 0.010      # after +1.5%: stop trails 1% under the
 SIZE_FRAC, MAX_OPEN, MAX_DAY = 0.15, 4, 5
 DAY_LOSS_CAP, HALT_DD = 0.015, 0.10
 GATE_TRADES, GATE_BOOT = 30, 0.90
+# learning rule, fixed in advance: a coin or a signal type with >= PAUSE_MIN closed trades, a negative average and
+# bootstrap P(average > 0) < PAUSE_P is paused for PAUSE_DAYS, then gets another chance.  Nothing else adapts.
+PAUSE_MIN, PAUSE_P, PAUSE_DAYS = 12, 0.15, 7
 FEE, SLIP = sl.FEE, sl.SLIP
 
 
@@ -165,10 +168,29 @@ def cycle():
         st["halted"] = True
         st["events"].append(dict(time=stamp, text=f"E: توقف الحساب بعد هبوط {HALT_DD*100:.0f}% من البداية"))
 
+    # ---- learning rule: pause coins / signal types that are losing with confidence (see PAUSE_* above)
+    st.setdefault("paused", {})
+    sells = [t for t in st["trades"] if t["side"] == "SELL" and t.get("ret") is not None]
+    for field in ("coin", "signal"):
+        groups = {}
+        for t in sells:
+            groups.setdefault(t.get(field), []).append(t["ret"])
+        for k, r in groups.items():
+            key = f"{field}:{k}"
+            until = st["paused"].get(key, 0)
+            if until and now_ms < until:
+                continue
+            if len(r) >= PAUSE_MIN and sum(r) / len(r) < 0 and boot_mean_pos(r) < PAUSE_P and not until:
+                st["paused"][key] = now_ms + PAUSE_DAYS * 86400000
+                st["events"].append(dict(time=stamp, text=f"E: إيقاف {('العملة' if field == 'coin' else 'الإشارة')} {k} لمدة {PAUSE_DAYS} أيام: متوسط {sum(r)/len(r)*100:+.2f}% في {len(r)} صفقة"))
+            elif until and now_ms >= until:
+                st["paused"][key] = 0
+    paused_now = {k for k, v in st["paused"].items() if v and now_ms < v}
+
     # ---- entries, once per new closed 1h bar per coin
     day_ok = (value() / st["day"]["start_eq"] - 1) > -DAY_LOSS_CAP
     for c in COINS:
-        if c not in data:
+        if c not in data or f"coin:{c}" in paused_now:
             continue
         rows = data[c]["rows"]
         bar = rows[-1][0]
@@ -188,6 +210,8 @@ def cycle():
         qty = invest * (1 - FEE) / (px * (1 + SLIP))
         st["cash"] -= invest
         sig = "strong" if score >= 2 else "single"
+        if f"signal:{sig}" in paused_now:
+            continue
         st["pos"][c] = dict(qty=qty, basis=invest, entry=px, tp=px * (1 + TP), sl=px * (1 - SL_), entry_ms=now_ms, signal=sig, high=px)
         st["day"]["n"] += 1
         st["day"]["traded"].append(c)
@@ -203,7 +227,8 @@ def cycle():
     st["equity"], st["btc_hold"] = v, st["btc_qty"] * price["BTC"]
     st["rules"] = dict(coins=COINS, tp=TP, stop=SL_, hold_hours=HOLD_H, size=SIZE_FRAC, max_open=MAX_OPEN, max_day=MAX_DAY,
                        day_loss_cap=DAY_LOSS_CAP, halt_dd=HALT_DD, fee=FEE, slip=SLIP,
-                       protect=dict(be_trigger=BE_TRIGGER, be_lock=BE_LOCK, trail_trigger=TRAIL_TRIGGER, trail=TRAIL), reentry="strong signal only")
+                       protect=dict(be_trigger=BE_TRIGGER, be_lock=BE_LOCK, trail_trigger=TRAIL_TRIGGER, trail=TRAIL), reentry="strong signal only",
+                       learn=dict(min_trades=PAUSE_MIN, p=PAUSE_P, days=PAUSE_DAYS), paused=sorted(paused_now))
     st["stats"] = make_stats(st["trades"])
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, "paper_equity_E.csv")

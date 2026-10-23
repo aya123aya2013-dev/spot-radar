@@ -22,6 +22,7 @@ STATE = os.path.join(OUT, "notify_state.json")
 CAPITAL = 5000.0
 ACCOUNTS = [("A", "paper.json"), ("B", "paper_B.json"), ("C", "paper_C.json"), ("D", "paper_D.json"), ("E", "paper_E.json")]
 SUMMARY_HOUR_UTC = 6
+LESSON_HOUR_UTC = 20        # evening lesson, about 22:00-23:00 Jerusalem
 
 
 def load(name):
@@ -137,7 +138,7 @@ def main():
         return
     ns = json.load(open(STATE)) if os.path.exists(STATE) else None
     first = ns is None
-    ns = ns or {"sent": [], "summary_day": ""}
+    ns = ns or {"sent": [], "summary_day": "", "lesson_day": ""}
     sent = set(ns["sent"])
     msgs, keys = [], []
     for name, fn in ACCOUNTS:
@@ -183,6 +184,13 @@ def main():
     if summary:
         send(summary)
         ns["summary_day"] = today
+    if now.hour >= LESSON_HOUR_UTC and ns.get("lesson_day") != today:
+        les = load("lessons.json")
+        if les and les.get("daily"):
+            d = les["daily"][-1]
+            if d.get("date") == today:
+                send("📚 درس اليوم\n" + d["text"][:3500])
+                ns["lesson_day"] = today
     ns["sent"] = list(sent | set(keys))[-800:]
     if not DRY:
         json.dump(ns, open(STATE, "w"))

@@ -312,7 +312,7 @@ button.rw:hover{background:rgba(255,255,255,.95)}
     <div class="seg acc" id="moreSeg" role="group" aria-label="القسم">
       <button data-more="journal" aria-pressed="true">سجل التعلّم</button><button data-more="info" aria-pressed="false">كيف تقرأ اللوحة</button>
     </div>
-    <div id="more-journal" class="stack jr"><section class="card" id="learn" hidden></section><section class="card" id="monthly" hidden></section>
+    <div id="more-journal" class="stack jr"><section class="card" id="lesson" hidden></section><section class="card" id="learn" hidden></section><section class="card" id="monthly" hidden></section>
     <section class="card" id="weekly" hidden></section>
     <section class="card" id="pm" hidden></section>
     <section class="card">
@@ -861,9 +861,9 @@ async function loadPaper(){
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
     const [policy,backlog]=await Promise.all(['coins_policy.json','research_backlog.json'].map(f=>fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/`+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
-    const [xp,xpn,monthly]=await Promise.all(['experiments.json','experiments_null.json','monthly.json'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
+    const [xp,xpn,monthly,lessons]=await Promise.all(['experiments.json','experiments_null.json','monthly.json','lessons.json'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const [csvB,csvC,csvD,csvE]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv','paper_equity_D.csv','paper_equity_E.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,stE,btE,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),serE:parse(csvE),policy,backlog,xp,xpn,monthly};renderLearn();renderMonthly();renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderE();renderHome();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,stE,btE,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),serE:parse(csvE),policy,backlog,xp,xpn,monthly,lessons};renderLearn();renderMonthly();renderLesson();renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderE();renderHome();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -971,9 +971,9 @@ function renderStrike(acct){
   const byHtml=sx.by?['why','signal','coin'].map(k=>{const o=sx.by[k]||{};const ks=Object.keys(o);if(!ks.length)return '';const lab={why:'حسب سبب الخروج',signal:'حسب الإشارة',coin:'حسب العملة'}[k];
     return `<div class="sub" style="margin-top:8px"><b>${lab}:</b> ${ks.map(x=>`${WHY[x]||x} ${o[x].n} (${p1(o[x].win)}، ${p2(o[x].mean)})`).join(' · ')}</div>`}).join(''):'';
   el.hidden=false;
-  const pr=r.protect;
+  const pr=r.protect,paused=(r.paused||[]).map(k=>k.replace('coin:','العملة ').replace('signal:','الإشارة '));
   el.innerHTML=`<h2>${acct==='D'?'حساب D: جلسة المضاربة اليومية (ورقي)':'حساب E: 2% وخروج مع حماية الربح (ورقي)'}</h2>
-    <div class="sub">هدف +${(r.tp*100||2).toFixed(0)}% ووقف -${(r.stop*100||3).toFixed(0)}% أو ${r.hold_hours||24} ساعة، على ${(r.coins||[]).join('، ')}. حتى ${r.max_day||3} صفقات يومياً ووقف اليوم عند -${((r.day_loss_cap||0.01)*100).toFixed(1)}%.${pr?` بعد +${(pr.be_trigger*100).toFixed(0)}% ينتقل الوقف فوق الدخول، وبعد +${(pr.trail_trigger*100).toFixed(1)}% يتبع السعر بفارق ${(pr.trail*100).toFixed(0)}%. العودة إلى عملة تداولت اليوم بإشارة قوية فقط.`:''}</div>
+    <div class="sub">هدف +${(r.tp*100||2).toFixed(0)}% ووقف -${(r.stop*100||3).toFixed(0)}% أو ${r.hold_hours||24} ساعة، على ${(r.coins||[]).join('، ')}. حتى ${r.max_day||3} صفقات يومياً ووقف اليوم عند -${((r.day_loss_cap||0.01)*100).toFixed(1)}%.${pr?` بعد +${(pr.be_trigger*100).toFixed(0)}% ينتقل الوقف فوق الدخول، وبعد +${(pr.trail_trigger*100).toFixed(1)}% يتبع السعر بفارق ${(pr.trail*100).toFixed(0)}%. العودة إلى عملة تداولت اليوم بإشارة قوية فقط.`:''}${r.learn?` قاعدة التعلّم: ما يخسر بثقة بعد ${r.learn.min_trades} صفقة يتوقف ${r.learn.days} أيام.`:''}${paused.length?` <b class="warn">موقوف الآن: ${paused.join('، ')}</b>`:''}</div>
     <div class="fcr"><div>الرصيد<b>${usd(eq)}</b></div><div>الربح والخسارة<b class="${pl>=0?'up':'down'}">${L((pl>=0?'+':'-')+usd(Math.abs(pl)))} · ${p2(pl/5000)}</b></div></div>
     <h3 style="margin:10px 0 6px">الصفقات المفتوحة</h3>${hold}
     <h3 style="margin:14px 0 6px">الطريق إلى بوابة الـ 30 صفقة</h3>
@@ -1180,6 +1180,19 @@ function renderMonthly(){
   el.hidden=false;
   el.innerHTML=`<div class="date">تقرير شهري · ${m.month}</div><h3>كل حساب مقابل أبسط سلوكين</h3><div style="margin-top:8px">${rows}</div>
     <div class="sub" style="margin-top:8px">المسطرتان محسوبتان على نفس أيام كل حساب. أي حساب لا يتفوق على أبسط سلوك مع الوقت لا يستحق مالاً حقيقياً. يُحدَّث في 17 من كل شهر.</div>`;
+}
+
+function renderLesson(){
+  const el=$('lesson');if(!el||!paper||!paper.lessons||!paper.lessons.daily||!paper.lessons.daily.length)return;
+  const L=paper.lessons,d=L.daily[L.daily.length-1],ag=L.aggregates||{},lab=L.labels||{},B=t=>`<bdi dir="ltr">${t}</bdi>`;
+  const byLabel=Object.entries(ag.by_label||{}).sort((a,b)=>b[1].n-a[1].n).map(([k,v])=>`<div class="row"><span>${lab[k]||k}</span><span class="num">${v.n} · ${B((v.mean*100).toFixed(2)+'%')}</span></div>`).join('');
+  const hyps=(L.suggested||[]).map(h=>`<li><b>${h.title}:</b> ${h.idea}</li>`).join('');
+  el.hidden=false;
+  el.innerHTML=`<div class="date">درس اليوم · ${d.date}</div><h3>ماذا تعلّمنا من صفقات D وE؟</h3>
+    <div style="white-space:pre-line;line-height:1.8">${d.text}</div>
+    ${byLabel?`<h3 style="margin:14px 0 6px;font-size:.92rem">كل الصفقات المغلقة حسب ما حدث بعدها (${ag.n})</h3><div class="pc">${byLabel}</div>`:''}
+    ${hyps?`<h3 style="margin:14px 0 6px;font-size:.92rem">فرضيات اقترحتها الدروس (تنتظر الاختبار)</h3><ul>${hyps}</ul>`:''}
+    <div class="sub" style="margin-top:8px">يُحسب كل دورة من الشموع الحقيقية بعد الخروج، ويصلك في تلغرام مساء كل يوم.</div>`;
 }
 
 /* ---------- control ---------- */
