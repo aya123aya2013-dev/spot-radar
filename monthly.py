@@ -10,7 +10,8 @@ import spot_lab as sl
 OUT = sl.OUT
 CAPITAL = 5000.0
 ACCOUNTS = [("A", "paper.json", "paper_equity.csv"), ("B", "paper_B.json", "paper_equity_B.csv"),
-            ("C", "paper_C.json", "paper_equity_C.csv"), ("D", "paper_D.json", "paper_equity_D.csv")]
+            ("C", "paper_C.json", "paper_equity_C.csv"), ("D", "paper_D.json", "paper_equity_D.csv"),
+            ("E", "paper_E.json", "paper_equity_E.csv")]
 
 
 def load(name):

@@ -119,10 +119,10 @@ canvas{width:100%;max-width:100%;display:block}
 
 /* ---- accounts strip: the first thing you see ---- */
 .sumbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-@media (min-width:700px){.sumbar{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:700px){.sumbar{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .sb{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px 12px;display:grid;gap:2px;min-width:0;position:relative;overflow:hidden}
 .sb::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;background:var(--ac,var(--accent))}
-.sb:nth-child(1){--ac:var(--accent)} .sb:nth-child(2){--ac:var(--b)} .sb:nth-child(3){--ac:var(--c)} .sb:nth-child(4){--ac:var(--d)}
+.sb:nth-child(1){--ac:var(--accent)} .sb:nth-child(2){--ac:var(--b)} .sb:nth-child(3){--ac:var(--c)} .sb:nth-child(4){--ac:var(--d)} .sb:nth-child(5){--ac:#d2457a}
 .sb .sub{font-size:.78rem}
 .sbv{font-size:1.5rem;font-weight:500;line-height:1.25;letter-spacing:-.01em}
 .sb .num:last-child{font-size:.84rem;font-weight:500}
@@ -181,7 +181,7 @@ h2{font-size:1.02rem}
 .sb .sub{margin-top:8px}
 .sbv{font-size:1.7rem;font-weight:500}
 @media (min-width:700px){.sb+.sb{border-inline-start:1px solid var(--line);border-radius:0}}
-@media (max-width:699px){.sb:nth-child(n+3){border-top:1px solid var(--line);border-radius:0}.sb:nth-child(even){border-inline-start:1px solid var(--line);border-radius:0}}
+@media (max-width:699px){.sb:nth-child(n+3){border-top:1px solid var(--line);border-radius:0}.sb:nth-child(even){border-inline-start:1px solid var(--line);border-radius:0}.sb:nth-child(5){grid-column:1/-1}}
 .fresh{padding:4px 16px 8px}
 .seg{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.95);box-shadow:0 4px 14px rgba(50,80,140,.07)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);box-shadow:none}
@@ -192,12 +192,12 @@ h2{font-size:1.02rem}
 .pill.buy{background:rgba(13,138,92,.14)} .pill.sell{background:rgba(207,51,66,.13)} .pill.hold{background:rgba(180,117,10,.16)}
 .gauge{height:10px}
 /* ink panels */
-.chips,.card.plan,#acctD,.pc{--panel:var(--ink);--panel2:var(--ink2);--line:rgba(255,255,255,.11);--fg:#f3f5f7;--muted:#a3abb5;--up:#58e0a6;--down:#ff808b;--warn:#f1bb55}
+.chips,.card.plan,#acctD,#acctE,.pc{--panel:var(--ink);--panel2:var(--ink2);--line:rgba(255,255,255,.11);--fg:#f3f5f7;--muted:#a3abb5;--up:#58e0a6;--down:#ff808b;--warn:#f1bb55}
 .chips{background:var(--ink);border-radius:var(--r);padding:12px;gap:8px;box-shadow:0 14px 34px rgba(20,30,50,.22)}
 .chip{background:var(--ink2);border:0;box-shadow:none;border-radius:20px}
 .chip[aria-pressed="true"]{background:var(--accent);--fg:#141806;--muted:rgba(20,24,6,.66);--up:#0a5c3c;--down:#8f1b27;--warn:#6f4a05}
 .chip[aria-pressed="true"] .dot{box-shadow:0 0 0 2px rgba(20,24,6,.25)}
-.card.plan,#acctD{background:var(--ink);border-color:transparent;box-shadow:0 14px 34px rgba(20,30,50,.22);backdrop-filter:none}
+.card.plan,#acctD,#acctE{background:var(--ink);border-color:transparent;box-shadow:0 14px 34px rgba(20,30,50,.22);backdrop-filter:none}
 .pc{background:var(--ink);border:0;box-shadow:0 14px 34px rgba(20,30,50,.18);border-radius:var(--r);padding:18px}
 /* slate panel for the selected coin */
 #hero{--panel:#8aa3b8;--panel2:rgba(255,255,255,.22);--line:rgba(10,24,40,.18);--fg:#0a1520;--muted:rgba(10,21,32,.7);--up:#06543a;--down:#8a1422;--warn:#6a4300;
@@ -207,15 +207,16 @@ h2{font-size:1.02rem}
 #hero .pill.buy{background:rgba(255,255,255,.45)} #hero .pill.sell{background:rgba(255,255,255,.45)}
 #hero .gauge i{box-shadow:0 0 0 2px #8aa3b8}
 .card.fold>.fh:hover h2{color:var(--link)}
-.card.plan.fold>.fh:hover h2,#acctD.fold>.fh:hover h2{color:var(--accent)}
+.card.plan.fold>.fh:hover h2,#acctD.fold>.fh:hover h2,#acctE.fold>.fh:hover h2{color:var(--accent)}
 .jr a{color:var(--link)}
 .fc input,.fc select{background:rgba(255,255,255,.85);border-radius:14px}
-.chips,.card.plan,#acctD,.pc,#hero,.chip{color:var(--fg)}
+.chips,.card.plan,#acctD,#acctE,.pc,#hero,.chip{color:var(--fg)}
 
 /* ---- home + accounts layout ---- */
-.seg.acc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%}
+.seg.acc{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%}
 #moreSeg{grid-template-columns:repeat(2,minmax(0,1fr))}
-.seg.acc button{padding:9px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg.acc button{padding:9px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.78rem}
+#moreSeg button{font-size:.86rem}
 .rows{display:grid;gap:6px}
 .rw{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 14px;border-radius:16px;background:var(--panel2);font:inherit;color:inherit;border:0;text-align:right;width:100%;cursor:default}
 button.rw{cursor:pointer}
@@ -225,7 +226,7 @@ button.rw:hover{background:rgba(255,255,255,.95)}
 .rw .m{text-align:left;direction:ltr;display:grid;line-height:1.3}
 .rw .m .sub{font-size:.78rem}
 .tag{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;font-size:.78rem;font-weight:700;color:#fff;background:var(--ac,var(--ink))}
-.tag.A{--ac:var(--link)}.tag.B{--ac:var(--b)}.tag.C{--ac:var(--c)}.tag.D{--ac:var(--d)}
+.tag.A{--ac:var(--link)}.tag.B{--ac:var(--b)}.tag.C{--ac:var(--c)}.tag.D{--ac:var(--d)}.tag.E{--ac:#d2457a}
 .hl{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hl .tile{padding:12px 14px}
 .hl .tile .v{font-size:1.05rem}
@@ -297,12 +298,13 @@ button.rw:hover{background:rgba(255,255,255,.95)}
       <div class="legend" id="eqLegend"></div><div id="eqWrap"><canvas id="eqChart"></canvas></div>
       <div class="sub" id="eqNote" hidden>الرسم يظهر بعد جمع عدة قراءات (كل 5 دقائق).</div></section>
     <div class="seg acc" id="accSeg" role="group" aria-label="اختر الحساب">
-      <button data-acc="A" aria-pressed="true">A · الرئيسي</button><button data-acc="B" aria-pressed="false">B · الزخم</button><button data-acc="C" aria-pressed="false">C · المختبر</button><button data-acc="D" aria-pressed="false">D · المضاربة</button>
+      <button data-acc="A" aria-pressed="true">A · رئيسي</button><button data-acc="B" aria-pressed="false">B · زخم</button><button data-acc="C" aria-pressed="false">C · مختبر</button><button data-acc="D" aria-pressed="false">D · يومي</button><button data-acc="E" aria-pressed="false">E · 2%</button>
     </div>
     <div id="acc-A" class="stack"><section class="card"><div class="empty">جارٍ تحميل الحساب…</div></section></div>
     <div id="acc-B" class="stack" hidden></div>
     <div id="acc-C" class="stack" hidden></div>
     <div id="acc-D" class="stack" hidden><section class="card" id="acctD"><div class="empty">لا بيانات لحساب D بعد.</div></section></div>
+    <div id="acc-E" class="stack" hidden><section class="card" id="acctE"><div class="empty">لا بيانات لحساب E بعد.</div></section></div>
   </main>
 
   <!-- ===== journal + guide ===== -->
@@ -813,7 +815,7 @@ function openPositions(){
     Object.keys(s.qty).forEach(c=>{if(!(s.qty[c]>0))return;const b=[...(s.trades||[])].reverse().find(t=>t.coin===c&&t.side==='BUY'),p=(s.prices||{})[c];
       pos.push({acct,c,entry:b&&b.price,pnl:b&&p?p/b.price-1:null,since:b&&b.time,note:((s.perf||{})[c]||{}).strategy||''})})});
   if(paper.stB&&paper.stB.holdings)Object.keys(paper.stB.holdings).forEach(c=>pos.push({acct:'B',c,entry:null,pnl:null,note:'تدوير زخم'}));
-  if(paper.stD&&paper.stD.holdings)Object.entries(paper.stD.holdings).forEach(([c,h])=>pos.push({acct:'D',c,entry:h.entry,pnl:h.pnl,note:`هدف ${h.tp.toPrecision(5)} · وقف ${h.sl.toPrecision(5)}`}));
+  [['D',paper.stD],['E',paper.stE]].forEach(([acct,s])=>{if(s&&s.holdings)Object.entries(s.holdings).forEach(([c,h])=>pos.push({acct,c,entry:h.entry,pnl:h.pnl,note:`هدف ${h.tp.toPrecision(5)} · وقف ${h.sl.toPrecision(5)}${h.protected?' (محمي)':''}`}))});
   return pos;
 }
 function heldPills(acct){
@@ -835,7 +837,7 @@ function renderSummary(){
     if(!isNaN(m)){const late=m>45,txt=m<60?`${Math.max(m,0)} دقيقة`:`${Math.round(m/60)} ساعة`;
       fresh=`<div class="fresh ${late?'late':''}">آخر تحديث للحسابات: قبل ${txt}${late?' · متأخر، فجدولة GitHub تتأخر أحياناً':''}</div>`}}
   const eqC=equityC();
-  el.innerHTML=card('الحساب A · الرئيسي',eqA,'A')+(stB?card('الحساب B · المنافس',stB.equity,'B'):'')+(eqC!=null?card('الحساب C · المختبر',eqC,'C'):'')+(paper.stD&&paper.stD.equity!=null?card('الحساب D · المضاربة',paper.stD.equity,'D'):'')+fresh;
+  el.innerHTML=card('الحساب A · الرئيسي',eqA,'A')+(stB?card('الحساب B · المنافس',stB.equity,'B'):'')+(eqC!=null?card('الحساب C · المختبر',eqC,'C'):'')+(paper.stD&&paper.stD.equity!=null?card('الحساب D · المضاربة',paper.stD.equity,'D'):'')+(paper.stE&&paper.stE.equity!=null?card('الحساب E · 2% وخروج',paper.stE.equity,'E'):'')+fresh;
   el.hidden=false;
 }
 
@@ -854,14 +856,14 @@ async function loadPaper(){
     const [stB,cfgB]=await Promise.all([
       fetch(base+'paper_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(base+'config_B.json'+bust).then(r=>r.ok?r.json():null).catch(()=>null)]);
-    const [stC,cfgC,resC,pm,okx,okxc,stD,btD]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json','okx_check.json','okx_candles.json','paper_D.json','backtest_D.json'].map(f=>
+    const [stC,cfgC,resC,pm,okx,okxc,stD,btD,stE,btE]=await Promise.all(['paper_C.json','config_C.json','research_C.json','postmortems.json','okx_check.json','okx_candles.json','paper_D.json','backtest_D.json','paper_E.json','backtest_E.json'].map(f=>
       fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
     const [policy,backlog]=await Promise.all(['coins_policy.json','research_backlog.json'].map(f=>fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/`+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const [xp,xpn,monthly]=await Promise.all(['experiments.json','experiments_null.json','monthly.json'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
-    const [csvB,csvC,csvD]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv','paper_equity_D.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),policy,backlog,xp,xpn,monthly};renderLearn();renderMonthly();renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderHome();
+    const [csvB,csvC,csvD,csvE]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv','paper_equity_D.csv','paper_equity_E.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,stE,btE,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),serE:parse(csvE),policy,backlog,xp,xpn,monthly};renderLearn();renderMonthly();renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderE();renderHome();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -937,7 +939,7 @@ function renderWeekly(){
     return `<div class="row"><span style="white-space:nowrap">${label}</span><span class="num"><span class="${net>=0?'up':'down'}">${pct(net)}</span> · أقصى هبوط ${(dd*100).toFixed(1)}% · ${buys} شراء / ${sells.length} بيع</span></div>`};
   const eqA=paper.series;
   el.innerHTML=`<div class="date">ملخص حي · آخر 7 أيام</div><h3>أرقام الأسبوع</h3>
-    <div class="pc">${wk(eqA.map(p=>({t:p.t,e:p.e})),0,'الحساب A',paper.st)}${wk(paper.serB,0,'الحساب B',paper.stB)}${wk(paper.serC,0,'الحساب C',paper.stC)}${wk(paper.serD,0,'الحساب D',paper.stD)}</div>
+    <div class="pc">${wk(eqA.map(p=>({t:p.t,e:p.e})),0,'الحساب A',paper.st)}${wk(paper.serB,0,'الحساب B',paper.stB)}${wk(paper.serC,0,'الحساب C',paper.stC)}${wk(paper.serD,0,'الحساب D',paper.stD)}${wk(paper.serE,0,'الحساب E',paper.stE)}</div>
     <div class="sub" style="margin-top:8px">يُحسب تلقائياً من البيانات الحية كل 5 دقائق. أسبوع واحد عينة صغيرة، فلا تحكم به على أي استراتيجية.</div>`;
   el.hidden=false;
 }
@@ -953,22 +955,25 @@ function riskHtml(st){
   if(!html)return '';
   return '<section class="card"><h2>الخطر لو هبطت العملات معاً</h2>'+html+'<div class="note">عملات الحساب تتحرك معاً غالباً (متوسط الارتباط نحو 0.68 في بحث C)، فنفترض هبوطها كلها في الوقت نفسه. هذه ليست أقصى خسارة ممكنة، والهبوط قد يتجاوز 20%.</div></section>';
 }
-function renderD(){
-  const el=$('acctD');if(!el||!paper||!paper.stD||paper.stD.equity==null)return;
-  const s=paper.stD,sx=s.stats||{},bt=paper.btD,r=s.rules||{},eq=s.equity,pl=eq-5000,L=t=>`<bdi dir="ltr">${t}</bdi>`,p1=x=>x==null?'—':L((x*100).toFixed(1)+'%'),p2=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(2)+'%');
+function renderD(){renderStrike('D')}
+function renderE(){renderStrike('E')}
+function renderStrike(acct){
+  const el=$('acct'+acct),s=acct==='D'?paper&&paper.stD:paper&&paper.stE,bt=acct==='D'?paper&&paper.btD:paper&&paper.btE;if(!el||!s||s.equity==null)return;
+  const sx=s.stats||{},r=s.rules||{},eq=s.equity,pl=eq-5000,L=t=>`<bdi dir="ltr">${t}</bdi>`,p1=x=>x==null?'—':L((x*100).toFixed(1)+'%'),p2=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(2)+'%');
   const hold=Object.entries(s.holdings||{}).map(([c,h])=>`<div class="row"><span><b>${c}</b> <span class="sub">${h.signal}</span></span><span class="num">دخول ${L(h.entry.toPrecision(6))} · هدف ${L(h.tp.toPrecision(6))} · وقف ${L(h.sl.toPrecision(6))} · <span class="${h.pnl>=0?'up':'down'}">${p2(h.pnl)}</span></span></div>`).join('')||'<div class="sub">لا صفقات مفتوحة الآن.</div>';
   const n=sx.trades||0,pct=Math.min(100,n/30*100);
   const st=n?`<div class="fcr"><div>نسبة النجاح<b>${p1(sx.win_rate)}</b><span class="sub">نطاق 95%: ${p1(sx.win_ci[0])}–${p1(sx.win_ci[1])}</span></div><div>متوسط الصفقة<b class="${sx.expectancy>=0?'up':'down'}">${p2(sx.expectancy)}</b></div><div>متوسط الربح / الخسارة<b>${p2(sx.avg_win)} / ${p2(sx.avg_loss)}</b></div><div>نجاح التعادل المطلوب<b>${p1(sx.breakeven_win)}</b></div></div>`:'';
-  const b=bt&&bt.exam_all?`<h3 style="margin:14px 0 6px">نفس القواعد على التاريخ (الامتحان النهائي)</h3><div class="sub">${bt.exam_all.n} صفقة: نجاح ${p1(bt.exam_all.win)}، متوسط الصفقة ${p2(bt.exam_all.mean)}. دخول عشوائي بنفس الخروج: ${p2(bt.random_all.mean)}. بتكاليف ×3: ${p2(bt.exam_x3_all.mean)}. احتمال أن المتوسط موجب: ${p1(bt.boot_p)}.</div>`:'';
-  const WHY={stop:'وقف',target:'هدف',time:'انتهى الوقت',halt:'قاطع',policy:'سياسة'};
+  const b=bt&&bt.exam_all?`<h3 style="margin:14px 0 6px">نفس القواعد على التاريخ (الامتحان النهائي)</h3><div class="sub">${bt.exam_all.n} صفقة: نجاح ${p1(bt.exam_all.win)}، متوسط الصفقة ${p2(bt.exam_all.mean)}. دخول عشوائي بنفس الخروج: ${p2(bt.random_all.mean)}. بتكاليف ×3: ${p2(bt.exam_x3_all.mean)}. احتمال أن المتوسط موجب: ${p1(bt.boot_p)}.${bt.plain_all?` بلا حماية الربح (نفس الدخول، هدف ووقف ثابتان): نجاح ${p1(bt.plain_all.win)}، متوسط ${p2(bt.plain_all.mean)}.`:''}</div>`:'';
+  const WHY={stop:'وقف',target:'هدف',time:'انتهى الوقت',halt:'قاطع',policy:'سياسة',protect:'حماية ربح'};
   const log=[...(s.trades||[])].reverse().slice(0,20).map(t=>t.side==='BUY'
     ?`<li><span><span class="pill buy">دخول</span> ${t.coin} <span class="sub">${t.signal||''}</span></span><span class="num sub">${L(t.price<1?t.price:fmt(t.price))} · ${localTime(t.time)}</span></li>`
     :`<li><span><span class="pill ${t.ret>=0?'buy':'sell'}">${WHY[t.why]||t.why||'خروج'}</span> ${t.coin} <span class="sub">${t.signal||''}${t.hours!=null?' · '+L(t.hours+' س'):''}</span></span><span class="num sub"><span class="${t.ret>=0?'up':'down'}">${p2(t.ret)}</span> · ${L(t.price<1?t.price:fmt(t.price))} · ${localTime(t.time)}</span></li>`).join('');
   const byHtml=sx.by?['why','signal','coin'].map(k=>{const o=sx.by[k]||{};const ks=Object.keys(o);if(!ks.length)return '';const lab={why:'حسب سبب الخروج',signal:'حسب الإشارة',coin:'حسب العملة'}[k];
     return `<div class="sub" style="margin-top:8px"><b>${lab}:</b> ${ks.map(x=>`${WHY[x]||x} ${o[x].n} (${p1(o[x].win)}، ${p2(o[x].mean)})`).join(' · ')}</div>`}).join(''):'';
   el.hidden=false;
-  el.innerHTML=`<h2>حساب D: جلسة المضاربة اليومية (ورقي)</h2>
-    <div class="sub">هدف +${(r.tp*100||2).toFixed(0)}% ووقف -${(r.stop*100||3).toFixed(0)}% أو ${r.hold_hours||24} ساعة، على ${(r.coins||[]).join(' و')}. حتى ${r.max_day||3} صفقات يومياً ووقف اليوم عند -${((r.day_loss_cap||0.01)*100).toFixed(0)}%.</div>
+  const pr=r.protect;
+  el.innerHTML=`<h2>${acct==='D'?'حساب D: جلسة المضاربة اليومية (ورقي)':'حساب E: 2% وخروج مع حماية الربح (ورقي)'}</h2>
+    <div class="sub">هدف +${(r.tp*100||2).toFixed(0)}% ووقف -${(r.stop*100||3).toFixed(0)}% أو ${r.hold_hours||24} ساعة، على ${(r.coins||[]).join('، ')}. حتى ${r.max_day||3} صفقات يومياً ووقف اليوم عند -${((r.day_loss_cap||0.01)*100).toFixed(1)}%.${pr?` بعد +${(pr.be_trigger*100).toFixed(0)}% ينتقل الوقف فوق الدخول، وبعد +${(pr.trail_trigger*100).toFixed(1)}% يتبع السعر بفارق ${(pr.trail*100).toFixed(0)}%. العودة إلى عملة تداولت اليوم بإشارة قوية فقط.`:''}</div>
     <div class="fcr"><div>الرصيد<b>${usd(eq)}</b></div><div>الربح والخسارة<b class="${pl>=0?'up':'down'}">${L((pl>=0?'+':'-')+usd(Math.abs(pl)))} · ${p2(pl/5000)}</b></div></div>
     <h3 style="margin:10px 0 6px">الصفقات المفتوحة</h3>${hold}
     <h3 style="margin:14px 0 6px">الطريق إلى بوابة الـ 30 صفقة</h3>
@@ -1060,11 +1065,11 @@ function drawEquity(){
   const tm=p=>new Date(String(p.t).replace(' ','T')+':00Z').getTime();
   const sm=a=>{if(a.length>300){const k=Math.ceil(a.length/300);return a.filter((_,i)=>i%k===0||i===a.length-1)}return a};
   const A=sm(paper.series.map(p=>({t:tm(p),v:p.e/5000-1}))),H=sm(paper.series.map(p=>({t:tm(p),v:p.b/5000-1}))),
-    B=sm((paper.serB||[]).map(p=>({t:tm(p),v:p.e/5000-1}))),C=sm((paper.serC||[]).map(p=>({t:tm(p),v:p.e/5000-1}))),D=sm((paper.serD||[]).map(p=>({t:tm(p),v:p.e/5000-1})));
+    B=sm((paper.serB||[]).map(p=>({t:tm(p),v:p.e/5000-1}))),C=sm((paper.serC||[]).map(p=>({t:tm(p),v:p.e/5000-1}))),D=sm((paper.serD||[]).map(p=>({t:tm(p),v:p.e/5000-1}))),E=sm((paper.serE||[]).map(p=>({t:tm(p),v:p.e/5000-1})));
   const note=$('eqNote');
   if(A.length<2){$('eqWrap').hidden=true;note.hidden=false;return}
   $('eqWrap').hidden=false;note.hidden=true;
-  const lines=[['A',A,cssv('--link'),2.2,[]],['B',B,cssv('--b'),1.5,[]],['C',C,cssv('--c'),1.5,[]],['D',D,cssv('--d'),1.5,[]],['انتظار',H,cssv('--muted'),1.2,[4,4]]].filter(l=>l[1].length>1);
+  const lines=[['A',A,cssv('--link'),2.2,[]],['B',B,cssv('--b'),1.5,[]],['C',C,cssv('--c'),1.5,[]],['D',D,cssv('--d'),1.5,[]],['E',E,'#d2457a',1.5,[]],['انتظار',H,cssv('--muted'),1.2,[4,4]]].filter(l=>l[1].length>1);
   const dpr=window.devicePixelRatio||1,W=cv.clientWidth,Hh=170;
   cv.style.height=Hh+'px';cv.width=W*dpr;cv.height=Hh*dpr;
   const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,Hh);g.direction='ltr';
@@ -1118,6 +1123,7 @@ function renderHome(){
   if(paper&&paper.st&&paper.st.events)paper.st.events.slice(-4).forEach(e=>evs.push({acct:'A',...e}));
   if(paper&&paper.stD&&paper.stD.events)paper.stD.events.slice(-3).forEach(e=>evs.push({acct:'D',...e}));
   if(paper&&paper.stC&&paper.stC.events)paper.stC.events.slice(-3).forEach(e=>evs.push({acct:'C',...e}));
+  if(paper&&paper.stE&&paper.stE.events)paper.stE.events.slice(-3).forEach(e=>evs.push({acct:'E',...e}));
   evs.sort((a,b)=>String(b.time).localeCompare(String(a.time)));
   const evHtml=evs.length?`<div class="ev">${evs.slice(0,4).map(e=>`<div><span class="sub"><span class="tag ${e.acct}" style="width:20px;height:20px;font-size:.7rem">${e.acct}</span> <span class="num">${localTime(e.time)}</span></span>${e.text}</div>`).join('')}</div>`:'<div class="empty">لا قرارات مسجلة بعد.</div>';
   // system health
@@ -1187,7 +1193,7 @@ async function loadAll(){
 }
 document.querySelectorAll('#tfSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tfSeg button').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');tf=b.dataset.tf;loadAll()});
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab,true));
-function showAcc(k){document.querySelectorAll('#accSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.acc===k)));['A','B','C','D'].forEach(a=>{$('acc-'+a).hidden=a!==k})}
+function showAcc(k){document.querySelectorAll('#accSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.acc===k)));['A','B','C','D','E'].forEach(a=>{$('acc-'+a).hidden=a!==k})}
 document.querySelectorAll('#accSeg button').forEach(b=>b.onclick=()=>showAcc(b.dataset.acc));
 document.querySelectorAll('#moreSeg button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#moreSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('more-journal').hidden=b.dataset.more!=='journal';$('more-info').hidden=b.dataset.more!=='info'});
 $('refresh').onclick=()=>{loadAll();loadPaper()};

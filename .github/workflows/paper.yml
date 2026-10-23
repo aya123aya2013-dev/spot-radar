@@ -29,6 +29,8 @@ jobs:
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python spot_lab.py paper --once
       - name: Account D (daily quick-strike session, paper)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python scalp.py || true
+      - name: Account E (take 2% and leave, profit protection, paper)
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python strike.py || true
       - name: Telegram alerts (does nothing until the two secrets exist)
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
