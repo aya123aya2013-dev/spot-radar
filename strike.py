@@ -5,10 +5,11 @@
   entry      closed 1h bar, at least ONE of: RSI(14) < 30 in an uptrend (price > EMA200); pullback to EMA20 inside an
              EMA50 > EMA200 uptrend with RSI < 50; long lower wick (>= 60% of the range) rejected in an uptrend.
              A coin that already traded today is only re-entered on a STRONG signal: two of the three at once.
-  exits      +2% target: take it and leave.  Initial stop -3%.  Profit protection: once the trade has been +1% the stop
-             moves to entry +0.2% (fees covered); from +1.5% it trails 1% below the highest price seen.  24h time exit.
-             On a 5-minute candle that touches both stop and target, the stop is assumed first.
-  size       15% of the account per trade, at most 4 open positions and 5 new trades per UTC day
+  exits      the owner's rule: 2% is the box.  Initial stop -3%.  At +1% the stop moves to entry +0.2% (fees covered).
+             When the price reaches +2% the stop is LOCKED at +2% and the trade is left to run; from +3% the stop trails
+             1% below the highest price seen (the "sell at a suitable time").  48h time exit.  No fixed take-profit.
+  size       15% of the account per trade, at most 5 open positions and 6 new trades per UTC day; when several coins
+             signal on the same bar, the ones with the stronger signal and the better 7-day momentum go first
   guards     no new trades after -1.5% of the day's starting equity; account halts at -10% from the start
   costs      OKX taker fee 0.10% + slippage 0.05% per side
   gate       no real money considered before 30 closed trades AND a positive average AND bootstrap P(average > 0) >= 0.9
@@ -29,11 +30,14 @@ from scalp import wilson, boot_mean_pos, streak, bars5
 OUT = sl.OUT
 STATE = os.path.join(OUT, "paper_E.json")
 CAPITAL = 5000.0
-COINS = policy.allowed(["BTC", "ETH", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC", "OP"])
-TP, SL_, HOLD_H = 0.02, 0.03, 24
+# every coin the screening site marks permissible AND that trades on Binance spot (data source); policy applied on top
+COINS = policy.allowed(["BTC", "ETH", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC", "OP", "DOT", "TRX", "ATOM", "NEAR",
+                        "XLM", "HBAR", "SUI", "APT", "ARB", "ALGO", "FIL", "ICP", "ETC", "BCH", "ZRO", "TAO", "RENDER", "QNT", "WLD", "ZEC"])
+TP, SL_, HOLD_H = 0.02, 0.03, 48         # TP is the LOCK level, not a take-profit
 BE_TRIGGER, BE_LOCK = 0.010, 0.002       # after +1.0%: stop to entry +0.2%
-TRAIL_TRIGGER, TRAIL = 0.015, 0.010      # after +1.5%: stop trails 1% under the high
-SIZE_FRAC, MAX_OPEN, MAX_DAY = 0.15, 4, 5
+LOCK_TRIGGER, LOCK = 0.020, 0.020        # after +2.0%: stop locked at +2.0%
+TRAIL_TRIGGER, TRAIL = 0.030, 0.010      # after +3.0%: stop trails 1% under the high
+SIZE_FRAC, MAX_OPEN, MAX_DAY = 0.15, 5, 6
 DAY_LOSS_CAP, HALT_DD = 0.015, 0.10
 GATE_TRADES, GATE_BOOT = 30, 0.90
 # learning rule, fixed in advance: a coin or a signal type with >= PAUSE_MIN closed trades, a negative average and
@@ -57,6 +61,8 @@ def protected_stop(entry, high_seen, stop):
     gain = high_seen / entry - 1
     if gain >= TRAIL_TRIGGER:
         stop = max(stop, high_seen * (1 - TRAIL))
+    if gain >= LOCK_TRIGGER:
+        stop = max(stop, entry * (1 + LOCK))
     if gain >= BE_TRIGGER:
         stop = max(stop, entry * (1 + BE_LOCK))
     return stop
@@ -144,12 +150,8 @@ def cycle():
             if t < p["entry_ms"] - 300000:
                 continue
             if lo <= p["sl"]:
-                why = "protect" if p["sl"] > p["entry"] else "stop"
+                why = "locked" if p["sl"] >= p["entry"] * (1 + LOCK) - 1e-9 else ("protect" if p["sl"] > p["entry"] else "stop")
                 close(c, min(p["sl"], o) if why == "stop" else p["sl"], why)
-                done = True
-                break
-            if h >= p["tp"]:
-                close(c, p["tp"], "target")
                 done = True
                 break
             p["high"] = max(p.get("high", p["entry"]), h)
@@ -189,6 +191,7 @@ def cycle():
 
     # ---- entries, once per new closed 1h bar per coin
     day_ok = (value() / st["day"]["start_eq"] - 1) > -DAY_LOSS_CAP
+    cands = []
     for c in COINS:
         if c not in data or f"coin:{c}" in paused_now:
             continue
@@ -197,12 +200,17 @@ def cycle():
         if bar == st["last_bar"].get(c):
             continue
         st["last_bar"][c] = bar
-        if st["halted"] or c in st["pos"] or len(st["pos"]) >= MAX_OPEN or st["day"]["n"] >= MAX_DAY or not day_ok:
+        if st["halted"] or c in st["pos"]:
             continue
         score = signal_score(rows)[-1]
         need = 2 if c in st["day"]["traded"] else 1
         if score < need:
             continue
+        mom7 = rows[-1][4] / rows[-168][4] - 1 if len(rows) > 168 else 0.0
+        cands.append((score, mom7, c))
+    for score, mom7, c in sorted(cands, reverse=True):
+        if len(st["pos"]) >= MAX_OPEN or st["day"]["n"] >= MAX_DAY or not day_ok:
+            break
         invest = min(st["cash"], value() * SIZE_FRAC)
         if invest < 50:
             continue
@@ -216,7 +224,7 @@ def cycle():
         st["day"]["n"] += 1
         st["day"]["traded"].append(c)
         st["trades"].append(dict(time=stamp, coin=c, side="BUY", price=px, signal=sig))
-        print(f"  E BUY {c} @ {px:g} ({sig}), target {px*(1+TP):g}, stop {px*(1-SL_):g}")
+        print(f"  E BUY {c} @ {px:g} ({sig}, 7d {mom7*100:+.1f}%), lock at {px*(1+LOCK):g}, stop {px*(1-SL_):g}")
 
     st["trades"], st["events"] = st["trades"][-400:], st["events"][-20:]
     v = value()
@@ -227,7 +235,7 @@ def cycle():
     st["equity"], st["btc_hold"] = v, st["btc_qty"] * price["BTC"]
     st["rules"] = dict(coins=COINS, tp=TP, stop=SL_, hold_hours=HOLD_H, size=SIZE_FRAC, max_open=MAX_OPEN, max_day=MAX_DAY,
                        day_loss_cap=DAY_LOSS_CAP, halt_dd=HALT_DD, fee=FEE, slip=SLIP,
-                       protect=dict(be_trigger=BE_TRIGGER, be_lock=BE_LOCK, trail_trigger=TRAIL_TRIGGER, trail=TRAIL), reentry="strong signal only",
+                       protect=dict(be_trigger=BE_TRIGGER, be_lock=BE_LOCK, lock_trigger=LOCK_TRIGGER, lock=LOCK, trail_trigger=TRAIL_TRIGGER, trail=TRAIL), reentry="strong signal only", take_profit=False,
                        learn=dict(min_trades=PAUSE_MIN, p=PAUSE_P, days=PAUSE_DAYS), paused=sorted(paused_now))
     st["stats"] = make_stats(st["trades"])
     os.makedirs(OUT, exist_ok=True)
@@ -255,12 +263,12 @@ def run_protected(rows, score, start, end, cost_mult=1.0, min_score=1, protect=T
             continue
         px = rows[i + 1][1] * (1 + slip)
         tgt, stp, high, exit_px, j = px * (1 + TP), px * (1 - SL_), px, None, i + 1
-        for j in range(i + 1, min(end, i + 1 + HOLD_H)):
+        for j in range(i + 1, min(end, i + 1 + (HOLD_H if protect else 24))):
             lo, hi = rows[j][3], rows[j][2]
             if lo <= stp:
                 exit_px = stp * (1 - slip)
                 break
-            if hi >= tgt:
+            if not protect and hi >= tgt:                 # plain variant: fixed +2% take-profit, -3% stop, 24h
                 exit_px = tgt * (1 - slip)
                 break
             high = max(high, hi)
@@ -300,9 +308,9 @@ def backtest():
         print(f"  {c}: exam {hr.stats(r_ex)}  no-protection {hr.stats(r_pl)}  random {hr.stats(r_rn)}  x3 {hr.stats(r_st)}")
     ex, rn, s3, pl = hr.stats(ex_all), hr.stats(rn_all), hr.stats(st_all), hr.stats(plain_all)
     out = dict(generated=datetime.now(timezone.utc).isoformat(),
-               rules=dict(tp=TP, stop=SL_, hold_hours=HOLD_H, be_trigger=BE_TRIGGER, be_lock=BE_LOCK, trail_trigger=TRAIL_TRIGGER, trail=TRAIL),
+               rules=dict(lock=LOCK, stop=SL_, hold_hours=HOLD_H, be_trigger=BE_TRIGGER, be_lock=BE_LOCK, lock_trigger=LOCK_TRIGGER, trail_trigger=TRAIL_TRIGGER, trail=TRAIL, take_profit=False),
                per_coin=res, exam_all=ex, random_all=rn, exam_x3_all=s3, plain_all=pl, boot_p=boot_mean_pos(ex_all),
-               note="signals and parameters fixed in advance; exam = last 30% of each chart; plain_all = same entries with fixed exits only")
+               note="signals and parameters fixed in advance; exam = last 30% of each chart; plain_all = same entries with a fixed +2% take-profit / -3% stop / 24h")
     json.dump(out, open(os.path.join(OUT, "backtest_E.json"), "w"), indent=1)
     print(f"ALL exam: n={ex['n']} win {ex['win']*100:.0f}% avg {ex['mean']*100:+.2f}% | without protection: win {pl['win']*100:.0f}% avg {pl['mean']*100:+.2f}% "
           f"| random: avg {rn['mean']*100:+.2f}% | costs x3: avg {s3['mean']*100:+.2f}% | P(avg>0) {out['boot_p']:.2f}")

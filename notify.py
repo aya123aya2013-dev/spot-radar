@@ -100,7 +100,7 @@ def morning_summary(now):
         lines.append(f"{name}: ${v:,.2f} ({pct(v / CAPITAL - 1)}) · {held}{extra}")
         for t in st.get("trades", []):
             if str(t.get("time", "")) >= cutoff and t.get("side") == "SELL" and t.get("ret") is not None:
-                why = {"stop": "وقف", "target": "هدف", "protect": "حماية ربح", "time": "وقت", "signal": "إشارة", "halt": "قاطع", "pause": "إيقاف", "policy": "سياسة"}.get(t.get("why"), t.get("why") or "")
+                why = {"stop": "وقف", "target": "هدف", "protect": "حماية ربح", "locked": "قفل 2%+", "time": "وقت", "signal": "إشارة", "halt": "قاطع", "pause": "إيقاف", "policy": "سياسة"}.get(t.get("why"), t.get("why") or "")
                 closed.append(f"{name} {t.get('coin')} {pct(t['ret'])}" + (f" ({why})" if why else ""))
             elif str(t.get("time", "")) >= cutoff and t.get("side") == "BUY":
                 opened.append(f"{name} {t.get('coin')} @ {(t.get('price') or 0):g}")

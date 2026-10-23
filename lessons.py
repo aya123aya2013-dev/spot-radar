@@ -19,7 +19,7 @@ PATH = os.path.join(OUT, "lessons.json")
 ACCOUNTS = [("D", "paper_D.json"), ("E", "paper_E.json")]
 HOUR = 3600 * 1000
 MIN_CASES = 5          # no pattern is called a lesson before this many cases
-WHY_AR = {"stop": "وقف", "target": "هدف", "time": "وقت", "protect": "حماية ربح", "halt": "قاطع", "policy": "سياسة"}
+WHY_AR = {"stop": "وقف", "target": "هدف", "time": "وقت", "protect": "حماية ربح", "locked": "قفل 2%+", "halt": "قاطع", "policy": "سياسة"}
 LABEL_AR = {
     "stop_recovered": "ضُرب الوقف ثم ارتد السعر فوق الدخول خلال 24 ساعة",
     "stop_continued": "ضُرب الوقف واستمر الهبوط",
@@ -27,6 +27,8 @@ LABEL_AR = {
     "target_clean": "تحقق الهدف ثم تراجع السعر: خروج جيد",
     "protect_early": "حماية الربح أخرجت الصفقة ثم بلغ السعر الهدف",
     "protect_good": "حماية الربح أنقذت ربحاً لم يبلغ الهدف",
+    "locked_ran": "خرج عند قفل 2%+ ثم صعد السعر 2% إضافية على الأقل",
+    "locked_good": "خرج عند قفل 2%+ ولم يصعد السعر أكثر: خروج جيد",
     "time_up": "انتهى الوقت ثم صعد السعر",
     "time_down": "انتهى الوقت ثم هبط السعر",
     "other": "أخرى",
@@ -64,6 +66,8 @@ def label(sell, mfe, post_max, post_min, tp):
         return "target_ran" if post_max >= tp else "target_clean"
     if why == "protect":
         return "protect_early" if post_max >= tp else "protect_good"
+    if why == "locked":
+        return "locked_ran" if post_max >= ret + 0.02 else "locked_good"
     if why == "time":
         return "time_up" if post_max > 0.01 and post_max > -post_min else "time_down"
     return "other"
