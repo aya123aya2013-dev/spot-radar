@@ -353,7 +353,7 @@ def cmd_backtest():
 
 
 # ---------------------------------------------------------------- challenger B: momentum rotation
-UNIVERSE = ["BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "DOT", "LTC", "TRX", "ATOM", "NEAR", "OP", "POL"]
+UNIVERSE = policy.allowed(["BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "DOT", "LTC", "TRX", "ATOM", "NEAR", "OP", "POL"])
 MOM_GRID = [dict(lookback=l, top=n, regime=r, expo=x) for l in (30, 60, 90) for n in (2, 3, 5) for r in (0, 1) for x in (0.4, 0.7, 1.0)]
 MOM_MAX_DD = 0.35     # a candidate whose training drawdown exceeds this is rejected outright
 DAY_MS = 86400 * 1000

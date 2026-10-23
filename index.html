@@ -310,7 +310,7 @@ button.rw:hover{background:rgba(255,255,255,.95)}
     <div class="seg acc" id="moreSeg" role="group" aria-label="القسم">
       <button data-more="journal" aria-pressed="true">سجل التعلّم</button><button data-more="info" aria-pressed="false">كيف تقرأ اللوحة</button>
     </div>
-    <div id="more-journal" class="stack jr"><section class="card" id="learn" hidden></section>
+    <div id="more-journal" class="stack jr"><section class="card" id="learn" hidden></section><section class="card" id="monthly" hidden></section>
     <section class="card" id="weekly" hidden></section>
     <section class="card" id="pm" hidden></section>
     <section class="card">
@@ -859,9 +859,9 @@ async function loadPaper(){
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
     const [policy,backlog]=await Promise.all(['coins_policy.json','research_backlog.json'].map(f=>fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/`+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
-    const [xp,xpn]=await Promise.all(['experiments.json','experiments_null.json'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
+    const [xp,xpn,monthly]=await Promise.all(['experiments.json','experiments_null.json','monthly.json'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const [csvB,csvC,csvD]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv','paper_equity_D.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),policy,backlog,xp,xpn};renderLearn();renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderHome();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),policy,backlog,xp,xpn,monthly};renderLearn();renderMonthly();renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderHome();
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -1164,6 +1164,16 @@ function renderLearn(){
   el.innerHTML=`<div class="date">حلقة التعلّم</div><h3>قائمة الأفكار وما أثبتته الأرقام</h3>
     <div class="sub">كل فكرة تُختبر على التاريخ بامتحان لم يُستخدم في الضبط، ثم يُعاد نفس الاختبار على بيانات عشوائية. لا تُقبل فكرة إلا إذا تفوقت على الضوضاء وصمدت بتكاليف ×3، وحتى حينها تدخل حساب C فقط. ${gen}</div>
     <div style="margin-top:8px">${rows}</div>`;
+}
+
+function renderMonthly(){
+  const el=$('monthly');if(!el||!paper||!Array.isArray(paper.monthly)||!paper.monthly.length)return;
+  const m=paper.monthly[paper.monthly.length-1],A=m.accounts||{},L=t=>`<bdi dir="ltr">${t}</bdi>`,f=x=>x==null?'—':L(pct(x)),NAME={A:'A الرئيسي',B:'B الزخم',C:'C المختبر',D:'D المضاربة'};
+  const rows=Object.keys(A).map(k=>{const a=A[k];return `<div style="padding:10px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between"><b>${NAME[k]||k}</b><span class="sub">${a.days} يوم · ${a.closed} صفقات مغلقة${a.win_rate!=null?` · ${Math.round(a.win_rate*100)}% رابحة`:''}</span></div>
+    <div class="fcr" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div>الحساب<b class="${a.ret>=0?'up':'down'}">${f(a.ret)}</b><span class="sub">أقصى هبوط ${L('-'+(a.max_dd*100).toFixed(1)+'%')}</span></div><div>احتفاظ بـBTC<b>${f(a.btc_hold)}</b></div><div>شراء دوري BTC<b>${f(a.btc_dca)}</b></div></div></div>`}).join('');
+  el.hidden=false;
+  el.innerHTML=`<div class="date">تقرير شهري · ${m.month}</div><h3>كل حساب مقابل أبسط سلوكين</h3><div style="margin-top:8px">${rows}</div>
+    <div class="sub" style="margin-top:8px">المسطرتان محسوبتان على نفس أيام كل حساب. أي حساب لا يتفوق على أبسط سلوك مع الوقت لا يستحق مالاً حقيقياً. يُحدَّث في 17 من كل شهر.</div>`;
 }
 
 /* ---------- control ---------- */

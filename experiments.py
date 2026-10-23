@@ -209,12 +209,101 @@ def test_dca_ruler():
                 days=len(closes))
 
 
+# ---------------------------------------------------------------- account-B variant: weekly instead of daily rebalance
+def mom_backtest_weekly(days, opn, close, e50, e100b, p, start, end, every=7, cost_mult=1.0):
+    old = sl.FEE, sl.SLIP
+    sl.FEE, sl.SLIP = old[0] * cost_mult, old[1] * cost_mult
+    try:
+        cash, hold, eq, trades = sl.CAPITAL, {}, [], 0
+        for t in range(start, end - 1):
+            price = {c: close[c][t] for c in close if close[c][t]}
+            eq.append(cash + sum(q * price.get(c, 0) for c, q in hold.items()))
+            if (t - start) % every:
+                continue
+            tgt = sl.mom_targets(close, e50, e100b, t, p)
+            if set(tgt) != set(hold):
+                nxt = {c: opn[c][t + 1] for c in close if opn[c][t + 1]}
+                cash, hold, fills = sl.rebalance(cash, hold, tgt, nxt, expo=p.get("expo", 1.0))
+                trades += len(fills)
+        last_px = {c: close[c][end - 1] for c in close if close[c][end - 1]}
+        final = cash + sum(q * last_px.get(c, 0) * (1 - sl.FEE) for c, q in hold.items())
+        pk, dd = 0.0, 0.0
+        for x in eq:
+            pk = max(pk, x)
+            dd = max(dd, 1 - x / pk) if pk else 0
+        return dict(ret=final / sl.CAPITAL - 1, dd=dd, n=trades)
+    finally:
+        sl.FEE, sl.SLIP = old
+
+
+def test_momentum_weekly():
+    """Account B: the chosen rotation parameters, rebalanced daily (current) against weekly, on the exam window."""
+    cp = os.path.join(OUT, "config_B.json")
+    p = (json.load(open(cp)).get("params") if os.path.exists(cp) else None) or dict(lookback=60, top=3, regime=1, expo=0.4)
+    uni = sl.load_universe(1000)
+    if "BTC" not in uni or len(uni) < 5:
+        return dict(charts=0, error="not enough data")
+    days, opn, close = sl.align(uni)
+    e50, e100b = sl.mom_prepare(close)
+    s, e = int(len(days) * EXAM_FRAC), len(days)
+    daily = mom_backtest_weekly(days, opn, close, e50, e100b, p, s, e, every=1)
+    weekly = mom_backtest_weekly(days, opn, close, e50, e100b, p, s, e, every=7)
+    d3 = mom_backtest_weekly(days, opn, close, e50, e100b, p, s, e, every=1, cost_mult=rs.COST_STRESS)
+    w3 = mom_backtest_weekly(days, opn, close, e50, e100b, p, s, e, every=7, cost_mult=rs.COST_STRESS)
+    b0, b1 = close["BTC"][s], close["BTC"][e - 1]
+    return dict(charts=1, params=p, daily=daily, weekly=weekly, btc_hold=(b1 / b0 - 1) if b0 and b1 else None,
+                mean_delta=weekly["ret"] - daily["ret"], mean_delta_x3=w3["ret"] - d3["ret"], share_improved=None,
+                dd_delta=weekly["dd"] - daily["dd"], trades_daily=daily["n"], trades_weekly=weekly["n"])
+
+
+# ---------------------------------------------------------------- sizing variant: inverse-volatility targeting
+VOL_TARGET = 0.015     # size so that one ATR move costs about 1.5% of the slice
+
+
+def frac_vol_target(atr_val, price):
+    if price <= 0 or atr_val <= 0:
+        return 0.25
+    return max(0.1, min(1.0, VOL_TARGET / (atr_val / price)))
+
+
+def test_vol_target_sizing():
+    """Same entries and exits, different position size: current rule (3% risk per 2.5 ATR, floor 25%) against a
+    plain inverse-volatility target with a lower floor.  Judged on exam return and drawdown."""
+    deltas, d3, dds, per = [], [], [], []
+    for coin, tf, school, params, stop in charts():
+        try:
+            rows = sl.klines(coin, tf)
+            if len(rows) < 900:
+                continue
+            fn = rs.ALL[school][0]
+            en, ex = fn(rows, **params)
+            base, b3 = run_variant(rows, en, ex, stop), run_variant(rows, en, ex, stop, cost_mult=rs.COST_STRESS)
+            orig = sl.position_fraction
+            sl.position_fraction = frac_vol_target
+            try:
+                var, v3 = run_variant(rows, en, ex, stop), run_variant(rows, en, ex, stop, cost_mult=rs.COST_STRESS)
+            finally:
+                sl.position_fraction = orig
+            deltas.append(var["ret"] - base["ret"])
+            d3.append(v3["ret"] - b3["ret"])
+            dds.append(var["dd"] - base["dd"])
+            per.append(dict(coin=coin, tf=tf, school=school, base=base["ret"], variant=var["ret"], dd_base=base["dd"], dd_variant=var["dd"]))
+        except Exception as ex_:
+            print(f"! {coin} {tf} {school}: {ex_}")
+    s = summarize(deltas, d3)
+    s["mean_dd_delta"] = mean(dds)
+    s["per_chart"] = per
+    return s
+
+
 TESTS = {
     "weekend_filter": lambda: test_filter(mask_weekend),
     "volume_confirm": lambda: test_filter(mask_volume),
     "btc_regime_for_alts": lambda: test_filter(mask_btc_regime),
     "d_trailing_exit": test_d_exits,
     "dca_ruler": test_dca_ruler,
+    "momentum_weekly": test_momentum_weekly,
+    "vol_target_sizing": test_vol_target_sizing,
 }
 
 
