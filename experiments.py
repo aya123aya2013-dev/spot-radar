@@ -18,6 +18,7 @@ import spot_lab as sl
 import research as rs
 import hitrate as hr
 import scalp
+import policy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = sl.OUT
@@ -33,7 +34,11 @@ def charts():
     cp = os.path.join(OUT, "config_C.json")
     cfg = json.load(open(cp)) if os.path.exists(cp) else {}
     out = []
-    for coin in rs.C_COINS:
+    # coins the owner excluded (BNB) or that the screening site has not reviewed (POL) are not used as test charts
+    unreviewed = {c.upper() for c in policy.load().get("unreviewed", [])}
+    for coin in policy.allowed(rs.C_COINS):
+        if coin.upper() in unreviewed:
+            continue
         p = cfg.get(coin)
         if p and p.get("strategy") in rs.ALL:
             out.append((coin, p["tf"], p["strategy"], p["params"], p.get("stop", 0)))
@@ -296,12 +301,54 @@ def test_vol_target_sizing():
     return s
 
 
+def mask_low_vol(rows, n=14, look=100):
+    """Entries only while ATR(14)/close is at or below its median of the last 100 bars (calm market)."""
+    at = sl.atr(rows, n)
+    rel = [a / r[4] if r[4] else 0.0 for a, r in zip(at, rows)]
+    out = []
+    for i in range(len(rel)):
+        if i < look:
+            out.append(True)
+            continue
+        w = sorted(rel[i - look:i])
+        out.append(rel[i - 1] <= w[len(w) // 2])   # previous bar's value: no look-ahead
+    return out
+
+
+def test_d_hold12():
+    """Account D: same entries and 2% / 3% levels, but exit after 12 hours instead of 24 (shorter exposure)."""
+    out = {"hold_24": [], "hold_12": [], "hold_24_x3": [], "hold_12_x3": []}
+    n_tr = 0
+    for coin in D_COINS:
+        try:
+            rows = sl.klines(coin, "1h")
+            if len(rows) < 900:
+                continue
+            en = d_entries(rows)
+            s, e = exam_window(rows)
+            out["hold_24"] += hr.run(rows, en, 0.02, 0.03, 24, s, e)
+            out["hold_12"] += hr.run(rows, en, 0.02, 0.03, 12, s, e)
+            out["hold_24_x3"] += hr.run(rows, en, 0.02, 0.03, 24, s, e, cost_mult=rs.COST_STRESS)
+            out["hold_12_x3"] += hr.run(rows, en, 0.02, 0.03, 12, s, e, cost_mult=rs.COST_STRESS)
+            n_tr += 1
+        except Exception as ex:
+            print(f"! D {coin}: {ex}")
+    res = {k: dict(n=len(v), mean=mean(v), win=(sum(x > 0 for x in v) / len(v)) if v else 0.0) for k, v in out.items()}
+    res["charts"] = n_tr
+    res["mean_delta"] = res["hold_12"]["mean"] - res["hold_24"]["mean"]
+    res["mean_delta_x3"] = res["hold_12_x3"]["mean"] - res["hold_24_x3"]["mean"]
+    res["share_improved"] = None
+    return res
+
+
 TESTS = {
     "weekend_filter": lambda: test_filter(mask_weekend),
     "volume_confirm": lambda: test_filter(mask_volume),
     "btc_regime_for_alts": lambda: test_filter(mask_btc_regime),
     "d_trailing_exit": test_d_exits,
     "dca_ruler": test_dca_ruler,
+    "low_vol_entry": lambda: test_filter(mask_low_vol),
+    "d_hold_12": test_d_hold12,
     "momentum_weekly": test_momentum_weekly,
     "vol_target_sizing": test_vol_target_sizing,
 }
