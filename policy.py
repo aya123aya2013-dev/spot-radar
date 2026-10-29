@@ -11,10 +11,11 @@ def load():
     try:
         return json.load(open(PATH))
     except Exception:
-        return {"source": "", "checked": "", "excluded": [], "reviewed": {}}
+        return {"source": "", "checked": "", "excluded": [], "excluded_cost": [], "reviewed": {}}
 
 
-EXCLUDED = frozenset(c.upper() for c in load().get("excluded", []))
+_P = load()
+EXCLUDED = frozenset(c.upper() for c in list(_P.get("excluded", [])) + list(_P.get("excluded_cost", [])))
 
 
 def allowed(coins):

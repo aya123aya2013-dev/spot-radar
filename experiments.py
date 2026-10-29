@@ -296,6 +296,40 @@ def test_vol_target_sizing():
     return s
 
 
+# ---------------------------------------------------------------- account-E variant: when does profit protection kick in?
+def test_e_protect_threshold():
+    """Same entries and exits as account E, three settings of the break-even trigger: +1.0% (current), +1.5%,
+    and none before the +2% lock.  Mean net return per trade on the exam window, costs x1 and x3."""
+    import strike
+    settings = {"be_1.0": 0.010, "be_1.5": 0.015, "be_off": 9.0}
+    out = {k: [] for k in settings}
+    out3 = {k: [] for k in settings}
+    charts_n = 0
+    orig = strike.BE_TRIGGER
+    try:
+        for coin in strike.COINS:
+            try:
+                rows = sl.klines(coin, "1h")
+                if len(rows) < 900:
+                    continue
+                score = strike.signal_score(rows)
+                s, e = exam_window(rows)
+                for k, thr in settings.items():
+                    strike.BE_TRIGGER = thr
+                    out[k] += strike.run_protected(rows, score, s, e)
+                    out3[k] += strike.run_protected(rows, score, s, e, cost_mult=rs.COST_STRESS)
+                charts_n += 1
+            except Exception as ex_:
+                print(f"! E {coin}: {ex_}")
+    finally:
+        strike.BE_TRIGGER = orig
+    res = {k: dict(n=len(v), mean=mean(v), win=(sum(x > 0 for x in v) / len(v)) if v else 0.0) for k, v in out.items()}
+    res3 = {k: mean(v) for k, v in out3.items()}
+    best = max(settings, key=lambda k: res[k]["mean"])
+    return dict(charts=charts_n, variants=res, variants_x3=res3, best=best,
+                mean_delta=res[best]["mean"] - res["be_1.0"]["mean"], mean_delta_x3=res3[best] - res3["be_1.0"], share_improved=None)
+
+
 TESTS = {
     "weekend_filter": lambda: test_filter(mask_weekend),
     "volume_confirm": lambda: test_filter(mask_volume),
@@ -304,6 +338,7 @@ TESTS = {
     "dca_ruler": test_dca_ruler,
     "momentum_weekly": test_momentum_weekly,
     "vol_target_sizing": test_vol_target_sizing,
+    "e_protect_threshold": test_e_protect_threshold,
 }
 
 

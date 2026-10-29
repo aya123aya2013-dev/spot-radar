@@ -1,5 +1,5 @@
 {
- "note": "Coins the owner does not want traded (religious compliance), from the screening site below. Excluded coins are never bought by any account; an open position in an excluded coin is closed at the next cycle. Rulings are the site's, read by the owner's instruction; this file records them, it does not judge.",
+ "note": "Coins the owner does not want traded (religious compliance), from the screening site below. Excluded coins are never bought by any account; an open position in an excluded coin is closed at the next cycle. Rulings are the site's, read by the owner's instruction; this file records them, it does not judge. excluded_cost: coins dropped for execution cost (not a religious ruling); treated the same way by the accounts.",
  "source": "https://www.cryptohalal.cc/",
  "checked": "2026-10-22",
  "excluded": [
@@ -27,5 +27,9 @@
   "ZK": "مباح",
   "BNB": "غير مباح",
   "POL": "غير مفحوصة في الموقع"
- }
+ },
+ "excluded_cost": [
+  "OP"
+ ],
+ "excluded_cost_reason": "تكلفة تنفيذ عالية على OKX (انزلاق 4–7 نقاط لأمر 1000$) وثلاث وقفات متتالية في A وC خلال الأسبوع الثاني. يُعاد النظر بعد شهر."
 }

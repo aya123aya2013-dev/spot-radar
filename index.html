@@ -1136,7 +1136,7 @@ function renderHome(){
     <div class="tile"><div class="l">الأسعار</div><div class="v ${live?'up':''}" id="hLive">${live?'مباشرة':'كل دقيقتين'}</div></div>
     <div class="tile"><div class="l">بوابة حساب D</div><div class="v num">${nD} / 30</div></div>
     <div class="tile"><div class="l">المراجعة الأسبوعية</div><div class="v">الجمعة 19:47</div></div>
-    <div class="tile" style="grid-column:1/-1"><div class="l">سياسة العملات (الحكم الشرعي)</div><div class="v">${pol&&pol.excluded&&pol.excluded.length?'مستبعدة: '+pol.excluded.join('، '):'لا استبعادات بعد'}${pol&&pol.unreviewed&&pol.unreviewed.length?` <span class="sub">· غير مفحوصة: ${pol.unreviewed.join('، ')}</span>`:''}</div><div class="sub">${pol&&pol.source?`المصدر: ${pol.source}${pol.checked?' · فُحصت '+pol.checked:''}`:'بانتظار تحديد موقع الفحص. أي عملة تُستبعد لا تُشترى في أي حساب وتُغلق صفقتها.'}</div></div></div>`;
+    <div class="tile" style="grid-column:1/-1"><div class="l">سياسة العملات (الحكم الشرعي)</div><div class="v">${pol&&pol.excluded&&pol.excluded.length?'مستبعدة شرعاً: '+pol.excluded.join('، '):'لا استبعادات شرعية'}${pol&&pol.excluded_cost&&pol.excluded_cost.length?` <span class="sub">· مستبعدة لتكلفة التنفيذ: ${pol.excluded_cost.join('، ')}</span>`:''}${pol&&pol.unreviewed&&pol.unreviewed.length?` <span class="sub">· غير مفحوصة: ${pol.unreviewed.join('، ')}</span>`:''}</div><div class="sub">${pol&&pol.source?`المصدر: ${pol.source}${pol.checked?' · فُحصت '+pol.checked:''}`:'بانتظار تحديد موقع الفحص. أي عملة تُستبعد لا تُشترى في أي حساب وتُغلق صفقتها.'}</div></div></div>`;
   el.innerHTML=`
     <div class="stack">
       <section class="card"><h2>الصفقات المفتوحة الآن</h2>${posHtml}</section>

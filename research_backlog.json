@@ -2,6 +2,14 @@
  "note": "Research backlog: every idea is tested on history with an untouched exam window and compared with the same test on random data before anyone believes it. Status: pending / tested / rejected / candidate / adopted / blocked. experiments.py runs the pending ones that have a test; the Friday review records the result here and in the journal.",
  "items": [
   {
+   "id": "e_protect_threshold",
+   "title": "حماية الربح في E تخرج مبكراً",
+   "idea": "12 من 14 صفقة حية في E خرجت بـ-0.1% بعد أن انتقل الوقف فوق الدخول عند +1%، وفي 6 منها بلغ السعر +2% لاحقاً. فرضية: تفعيل الحماية عند +1.5% أو عدم تفعيلها قبل قفل الـ2%. تُختبر على التاريخ وعلى الضوضاء.",
+   "status": "pending",
+   "added": "2026-10-29",
+   "source": "درس يومي من صفقات E الحية"
+  },
+  {
    "id": "weekend_filter",
    "title": "لا دخول في عطلة نهاية الأسبوع",
    "idea": "سيولة الكريبتو أضعف السبت والأحد والحركات أكثر عشوائية. هل منع الدخول فيهما يحسّن نتيجة الامتحان؟",
