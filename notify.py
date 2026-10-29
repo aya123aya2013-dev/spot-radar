@@ -20,7 +20,7 @@ TOKEN, CHAT = os.environ.get("TELEGRAM_BOT_TOKEN", ""), os.environ.get("TELEGRAM
 DRY = "--dry" in sys.argv
 STATE = os.path.join(OUT, "notify_state.json")
 CAPITAL = 5000.0
-ACCOUNTS = [("A", "paper.json"), ("B", "paper_B.json"), ("C", "paper_C.json"), ("D", "paper_D.json"), ("E", "paper_E.json")]
+ACCOUNTS = [("A", "paper.json"), ("B", "paper_B.json"), ("C", "paper_C.json"), ("D", "paper_D.json"), ("E", "paper_E.json"), ("F", "paper_F.json")]
 SUMMARY_HOUR_UTC = 6
 LESSON_HOUR_UTC = 20        # evening lesson, about 22:00-23:00 Jerusalem
 
@@ -71,7 +71,7 @@ def holdings(name, st):
     """[(coin, pnl or None)] for the open positions of one account."""
     out = []
     px = st.get("prices") or {}
-    if name in ("D", "E"):
+    if name in ("D", "E", "F"):
         return [(c, h.get("pnl")) for c, h in (st.get("holdings") or {}).items()]
     if name == "B":
         return [(c, None) for c in (st.get("hold") or {})]
@@ -94,13 +94,13 @@ def morning_summary(now):
         hs = holdings(name, st)
         held = "، ".join(c + (f" {pct(p)}" if p is not None else "") for c, p in hs) if hs else "نقد"
         extra = ""
-        if name in ("D", "E"):
+        if name in ("D", "E", "F"):
             n_closed = (st.get("stats") or {}).get("trades", 0)
-            extra = f" · بوابة {n_closed}/30"
+            extra = f" · بوابة {n_closed}/{(st.get('stats') or {}).get('gate_trades', 30)}"
         lines.append(f"{name}: ${v:,.2f} ({pct(v / CAPITAL - 1)}) · {held}{extra}")
         for t in st.get("trades", []):
             if str(t.get("time", "")) >= cutoff and t.get("side") == "SELL" and t.get("ret") is not None:
-                why = {"stop": "وقف", "target": "هدف", "protect": "حماية ربح", "locked": "قفل 2%+", "time": "وقت", "signal": "إشارة", "halt": "قاطع", "pause": "إيقاف", "policy": "سياسة"}.get(t.get("why"), t.get("why") or "")
+                why = {"stop": "وقف", "target": "هدف", "protect": "حماية ربح", "locked": "قفل 2%+", "lock": "قفل بعد الهدف", "momentum": "زخم انتهى", "trend": "كسر الاتجاه", "time": "وقت", "signal": "إشارة", "halt": "قاطع", "pause": "إيقاف", "policy": "سياسة"}.get(t.get("why"), t.get("why") or "")
                 closed.append(f"{name} {t.get('coin')} {pct(t['ret'])}" + (f" ({why})" if why else ""))
             elif str(t.get("time", "")) >= cutoff and t.get("side") == "BUY":
                 opened.append(f"{name} {t.get('coin')} @ {(t.get('price') or 0):g}")

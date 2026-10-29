@@ -16,10 +16,10 @@ import spot_lab as sl
 
 OUT = sl.OUT
 PATH = os.path.join(OUT, "lessons.json")
-ACCOUNTS = [("D", "paper_D.json"), ("E", "paper_E.json")]
+ACCOUNTS = [("D", "paper_D.json"), ("E", "paper_E.json"), ("F", "paper_F.json")]
 HOUR = 3600 * 1000
 MIN_CASES = 5          # no pattern is called a lesson before this many cases
-WHY_AR = {"stop": "وقف", "target": "هدف", "time": "وقت", "protect": "حماية ربح", "locked": "قفل 2%+", "halt": "قاطع", "policy": "سياسة"}
+WHY_AR = {"stop": "وقف", "target": "هدف", "time": "وقت", "protect": "حماية ربح", "locked": "قفل 2%+", "lock": "قفل بعد الهدف", "momentum": "زخم انتهى", "trend": "كسر الاتجاه", "halt": "قاطع", "policy": "سياسة"}
 LABEL_AR = {
     "stop_recovered": "ضُرب الوقف ثم ارتد السعر فوق الدخول خلال 24 ساعة",
     "stop_continued": "ضُرب الوقف واستمر الهبوط",
@@ -66,8 +66,10 @@ def label(sell, mfe, post_max, post_min, tp):
         return "target_ran" if post_max >= tp else "target_clean"
     if why == "protect":
         return "protect_early" if post_max >= tp else "protect_good"
-    if why == "locked":
+    if why in ("locked", "lock", "momentum"):
         return "locked_ran" if post_max >= ret + 0.02 else "locked_good"
+    if why == "trend":
+        return "stop_recovered" if post_max >= 0.0 else "stop_continued"
     if why == "time":
         return "time_up" if post_max > 0.01 and post_max > -post_min else "time_down"
     return "other"

@@ -50,6 +50,8 @@ jobs:
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python scalp.py backtest || true
       - name: Backtest account E rules
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python strike.py backtest || true
+      - name: Backtest account F rules
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 1200 python swing.py backtest || true
       - name: Save state (single commit, no history growth)
         run: |
           cd data
