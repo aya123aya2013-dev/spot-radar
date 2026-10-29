@@ -137,6 +137,16 @@ def cycle():
                                  hours=round(hours, 1), high=p.get("high"), protected=p.get("sl", 0) > p["entry"]))
         print(f"  E SELL {c} @ {exit_px:g} {ret*100:+.2f}% ({why})")
 
+    # one-off repair of a bookkeeping bug (2026-10-29 00:20 UTC): with signal "single" paused, two candidates had their
+    # cash deducted and then skipped, so 27.75% of the account vanished without any trade and the -10% breaker fired.
+    # The money is restored exactly (cash / (1 - 0.15)^2) and the breaker reset; no trade result is touched.
+    if not st.get("repair_20261029") and st.get("halted") and not st["pos"] and abs(st["cash"] - 3570.5616) < 1:
+        before = st["cash"]
+        st["cash"] = st["cash"] / (1 - SIZE_FRAC) ** 2
+        st["halted"] = False
+        st["repair_20261029"] = dict(cash_before=before, cash_after=st["cash"])
+        st["events"].append(dict(time=stamp, text=f"E: تصحيح خطأ برمجي: خُصم ${st['cash']-before:,.2f} بلا صفقة عند إيقاف الإشارة، أُعيد المبلغ وأُلغي التوقف الناتج عنه"))
+
     if st["day"]["date"] != today:
         st["day"] = dict(date=today, start_eq=value(), n=0, traded=[])
 
@@ -211,15 +221,15 @@ def cycle():
     for score, mom7, c in sorted(cands, reverse=True):
         if len(st["pos"]) >= MAX_OPEN or st["day"]["n"] >= MAX_DAY or not day_ok:
             break
+        sig = "strong" if score >= 2 else "single"
+        if f"signal:{sig}" in paused_now:
+            continue
         invest = min(st["cash"], value() * SIZE_FRAC)
         if invest < 50:
             continue
         px = price[c]
         qty = invest * (1 - FEE) / (px * (1 + SLIP))
         st["cash"] -= invest
-        sig = "strong" if score >= 2 else "single"
-        if f"signal:{sig}" in paused_now:
-            continue
         st["pos"][c] = dict(qty=qty, basis=invest, entry=px, tp=px * (1 + TP), sl=px * (1 - SL_), entry_ms=now_ms, signal=sig, high=px)
         st["day"]["n"] += 1
         st["day"]["traded"].append(c)
