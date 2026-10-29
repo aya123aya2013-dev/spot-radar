@@ -147,7 +147,7 @@ def cycle():
     data = {}
     for c in sorted(set(COINS) | set(held)):
         try:
-            rows = sl.klines(c, "4h", 1500, closed_only=False)
+            rows = sl.klines(c, "4h", 1000, closed_only=False)
         except Exception as e:
             print(f"  ! {c}: {e}")
             continue
