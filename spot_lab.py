@@ -739,7 +739,7 @@ def cycle(cfg, st):
         base = cfg.get(c, {})
         if p:
             ls = live_stats(st, c, skey(p))
-            status = "بديلة" if c in st["override"] else "نشطة"
+            status = "مستبعدة" if c in policy.EXCLUDED else ("بديلة" if c in st["override"] else "نشطة")
         else:
             ls = dict(n=0, win=0, ret=0)
             status = "مستبعدة" if c in policy.EXCLUDED else ("موقوفة" if c in st["paused"] else "نقد")
