@@ -330,6 +330,33 @@ def test_e_protect_threshold():
                 mean_delta=res[best]["mean"] - res["be_1.0"]["mean"], mean_delta_x3=res3[best] - res3["be_1.0"], share_improved=None)
 
 
+def test_e_strong_only():
+    """Account E entries: any signal (min score 1, current) against only 'strong' bars (two of the three signals,
+    min score 2).  Same exits.  Mean net return per trade on the exam window, costs x1 and x3.  Fewer trades is
+    expected; the question is whether the average trade gets better, judged against the same test on noise."""
+    import strike
+    out = {"any": [], "strong": []}
+    out3 = {"any": [], "strong": []}
+    charts_n = 0
+    for coin in strike.COINS:
+        try:
+            rows = sl.klines(coin, "1h")
+            if len(rows) < 900:
+                continue
+            score = strike.signal_score(rows)
+            s, e = exam_window(rows)
+            for k, ms in (("any", 1), ("strong", 2)):
+                out[k] += strike.run_protected(rows, score, s, e, min_score=ms)
+                out3[k] += strike.run_protected(rows, score, s, e, cost_mult=rs.COST_STRESS, min_score=ms)
+            charts_n += 1
+        except Exception as ex_:
+            print(f"! E {coin}: {ex_}")
+    res = {k: dict(n=len(v), mean=mean(v), win=(sum(x > 0 for x in v) / len(v)) if v else 0.0) for k, v in out.items()}
+    res3 = {k: mean(v) for k, v in out3.items()}
+    return dict(charts=charts_n, variants=res, variants_x3=res3,
+                mean_delta=res["strong"]["mean"] - res["any"]["mean"], mean_delta_x3=res3["strong"] - res3["any"], share_improved=None)
+
+
 TESTS = {
     "weekend_filter": lambda: test_filter(mask_weekend),
     "volume_confirm": lambda: test_filter(mask_volume),
@@ -339,6 +366,7 @@ TESTS = {
     "momentum_weekly": test_momentum_weekly,
     "vol_target_sizing": test_vol_target_sizing,
     "e_protect_threshold": test_e_protect_threshold,
+    "e_strong_only": test_e_strong_only,
 }
 
 
