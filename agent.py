@@ -46,6 +46,7 @@ COINS = [c for c in UNIVERSE if c not in _REL]
 WATCH_N, MAX_POS, SLOT = 8, 6, 4
 VOL_UNIT = 0.0075
 INIT_ATR, TRAIL_ATR, PARTIAL_R = 2.5, 3.0, 2.0
+TARGET2_R = 4.0          # second sell target (guide for the remaining half; the trailing stop decides the actual exit)
 FEE, SLIP = sl.FEE, sl.SLIP
 DAY = 86400000
 OKX_FILE = os.path.join(OUT, "okx_instruments.json")
@@ -326,8 +327,10 @@ def shadow_order(coin, price, weight, stop, rule=None, capital=1000.0):
     lot = (rule or {}).get("lot", 0)
     lim = float(f"{round_down(price, tick):.10g}") if tick else float(f"{price:.6g}")
     qty = float(f"{round_down(usd / lim, lot):.10g}") if lot else float(f"{usd / lim:.6g}")
+    r = price - stop
     return dict(pair=f"{coin}-USDT", side="شراء", type="محدد (Limit)", price=lim, usd=round(usd, 2),
                 qty=qty, stop=round(stop, 6), stop_pct=round(1 - stop / price, 4),
+                t1=float(f"{price + PARTIAL_R * r:.6g}"), t2=float(f"{price + TARGET2_R * r:.6g}"),
                 note=f"لكل 1000$ من رأس مالك: {usd:,.0f}$. الوقف عند {stop:.6g} (−{(1 - stop / price) * 100:.1f}%).")
 
 
@@ -369,6 +372,7 @@ def cycle():
         st["cash"] += proceeds
         basis = p["basis"] * frac
         st["trades"].append(dict(time=stamp, coin=c, side="SELL", price=px, ret=proceeds / basis - 1, why=why, frac=frac,
+                                 usd=round(proceeds, 2), cost_usd=round(basis, 2), pnl_usd=round(proceeds - basis, 2), qty=q,
                                  hours=round((time.time() * 1000 - p["entry_ms"]) / 3600000, 1)))
         p["qty"] -= q
         p["basis"] -= basis
@@ -453,7 +457,8 @@ def cycle():
                 stop = float(f"{round_down(px - INIT_ATR * snaps[k]['atr'], rule['tick']):.10g}")
                 st["pos"][k] = dict(qty=qty, basis=invest, entry=px, stop=stop, r=px - stop, slip=slip,
                                     high=px, half=False, entry_ms=int(time.time() * 1000), regime=dec["regime"])
-                st["trades"].append(dict(time=stamp, coin=k, side="BUY", price=px, weight=w, regime=dec["regime"]))
+                st["trades"].append(dict(time=stamp, coin=k, side="BUY", price=px, weight=w, regime=dec["regime"], usd=round(invest, 2), qty=qty,
+                                         stop=stop, t1=px + PARTIAL_R * (px - stop), t2=px + TARGET2_R * (px - stop)))
                 actions.append(f"شراء {k} بوزن {w*100:.1f}% (قائد، {('كسر قمة 20 يوماً' if snaps[k]['breakout'] else 'عودة فوق المتوسط 20 بعد تصحيح')})")
                 orders.append(shadow_order(k, px, w, stop, rule))
                 print(f"  G BUY {k} weight {w*100:.1f}% @ {px:g} stop {stop:g}")
@@ -473,7 +478,12 @@ def cycle():
     v = st["cash"] + sum(p["qty"] * price.get(k, p["entry"]) for k, p in st["pos"].items())
     st["trades"], st["events"] = st["trades"][-400:], st.get("events", [])[-30:]
     st["equity"], st["prices"] = v, {k: price[k] for k in st["pos"] if k in price}
-    st["holdings"] = {k: dict(qty=p["qty"], value=p["qty"] * price.get(k, p["entry"]), entry=p["entry"], sl=p["stop"], tp=p["entry"] + PARTIAL_R * p["r"],
+    for t in st["trades"]:                                          # older buys: record the dollars from the open position
+        if t["side"] == "BUY" and "usd" not in t and t["coin"] in st["pos"]:
+            t["usd"], t["qty"] = round(st["pos"][t["coin"]]["basis"], 2), st["pos"][t["coin"]]["qty"]
+    st["holdings"] = {k: dict(qty=p["qty"], basis=round(p["basis"], 2), t1=p["entry"] + PARTIAL_R * p["r"], t2=p["entry"] + TARGET2_R * p["r"],
+                              half_taken=p["half"], pnl_usd=round(p["qty"] * price.get(k, p["entry"]) * (1 - FEE) - p["basis"], 2),
+                              value=p["qty"] * price.get(k, p["entry"]), entry=p["entry"], sl=p["stop"], tp=p["entry"] + PARTIAL_R * p["r"],
                               pnl=price.get(k, p["entry"]) / p["entry"] - 1, signal=p.get("regime", ""), protected=p["stop"] >= p["entry"]) for k, p in st["pos"].items()}
     sells = [t for t in st["trades"] if t["side"] == "SELL"]
     st["stats"] = dict(trades=len(sells), gate_trades=20, gate=f"مغلقة {len(sells)} · الحكم بعد 3 أشهر مقابل الاحتفاظ بـBTC والشراء الدوري")

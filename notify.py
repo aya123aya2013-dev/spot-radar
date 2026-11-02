@@ -92,7 +92,10 @@ def morning_summary(now):
             continue
         v = equity(st)
         hs = holdings(name, st)
-        held = "، ".join(c + (f" {pct(p)}" if p is not None else "") for c, p in hs) if hs else "نقد"
+        if name == "G" and st.get("holdings"):
+            held = "، ".join(f"{c} ${h.get('basis', 0):,.0f} ({pct(h.get('pnl') or 0)}، {'+' if h.get('pnl_usd', 0) >= 0 else '-'}${abs(h.get('pnl_usd', 0)):,.2f})" for c, h in st["holdings"].items())
+        else:
+            held = "، ".join(c + (f" {pct(p)}" if p is not None else "") for c, p in hs) if hs else "نقد"
         extra = ""
         if st.get("retired"):
             lines.append(f"{name}: ${v:,.2f} ({pct(v / CAPITAL - 1)}) · متوقف")
@@ -159,10 +162,17 @@ def main():
                 continue
             keys.append(k)
             if t["side"] == "BUY":
-                msgs.append(f"🟢 شراء {t.get('coin')} · حساب {name}\nالسعر {(t.get('price') or 0):g}")
+                amt = f"\nالمبلغ ${t['usd']:,.2f} · الكمية {t['qty']:g}" if t.get("usd") else ""
+                if t.get("t1"):
+                    p0 = t["price"]
+                    amt += (f"\nهدف البيع 1: {t['t1']:.6g} (+{(t['t1']/p0-1)*100:.1f}%، بيع النصف)"
+                            f"\nهدف البيع 2: {t['t2']:.6g} (+{(t['t2']/p0-1)*100:.1f}%، الباقي بوقف متحرك)"
+                            f"\nالوقف: {t['stop']:.6g} (−{(1-t['stop']/p0)*100:.1f}%)")
+                msgs.append(f"🟢 شراء {t.get('coin')} · حساب {name}\nالسعر {(t.get('price') or 0):g}{amt}")
             elif t["side"] == "SELL":
                 r = t.get("ret", 0)
-                msgs.append(f"{'✅' if r >= 0 else '🔻'} بيع {t.get('coin')} · حساب {name}\nالنتيجة {pct(r)} · السعر {(t.get('price') or 0):g}")
+                amt = f"\nدخلت بـ ${t['cost_usd']:,.2f} وخرجت بـ ${t['usd']:,.2f} · {'ربح' if t['pnl_usd'] >= 0 else 'خسارة'} ${abs(t['pnl_usd']):,.2f}" if t.get("pnl_usd") is not None else ""
+                msgs.append(f"{'✅' if r >= 0 else '🔻'} بيع {t.get('coin')} · حساب {name}\nالنتيجة {pct(r)} · السعر {(t.get('price') or 0):g}{amt}")
             else:                                        # account B rebalance rows
                 msgs.append(f"🔄 حساب {name}: {t.get('side')} {t.get('coin') or ''}")
         for e in st.get("events", []):

@@ -252,6 +252,11 @@ button.rw:hover{background:rgba(255,255,255,.95)}
 .orders .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:.86rem}
 .sb.retired{opacity:.62}
 .sb.main .sbv{font-size:1.9rem}
+
+.pos{background:var(--panel2);border-radius:18px;padding:12px 14px;margin:8px 0}
+.pos .ph{display:flex;justify-content:space-between;align-items:center;font-size:1.02rem;margin-bottom:8px}
+.pos .pg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}
+.pos .pg div{display:grid;gap:1px;font-size:.84rem}.pos .pg span{color:var(--muted);font-size:.74rem}
 </style>
 </head>
 <body>
@@ -983,13 +988,20 @@ function renderStrike(acct){
   const el=$('acct'+acct),s=paper&&paper['st'+acct],bt=paper&&paper['bt'+acct];if(!el||!s||s.equity==null)return;
   const WHY={stop:'وقف',target:'هدف',time:'انتهى الوقت',halt:'قاطع',policy:'سياسة',protect:'حماية ربح',locked:'قفل +2%',lock:'قفل بعد الهدف',momentum:'الزخم انتهى',trend:'كسر الاتجاه'};
   const sx=s.stats||{},r=s.rules||{},eq=s.equity,pl=eq-5000,L=t=>`<bdi dir="ltr">${t}</bdi>`,p1=x=>x==null?'—':L((x*100).toFixed(1)+'%'),p2=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(2)+'%');
-  const hold=Object.entries(s.holdings||{}).map(([c,h])=>`<div class="row"><span><b>${c}</b> <span class="sub">${h.signal}</span></span><span class="num">دخول ${L(h.entry.toPrecision(6))} · هدف ${L(h.tp.toPrecision(6))} · وقف ${L(h.sl.toPrecision(6))} · <span class="${h.pnl>=0?'up':'down'}">${p2(h.pnl)}</span></span></div>`).join('')||'<div class="sub">لا صفقات مفتوحة الآن.</div>';
+  const $$=x=>L((x<0?'-':'')+'$'+Math.abs(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
+  const hold=Object.entries(s.holdings||{}).map(([c,h])=>h.basis!=null
+    ?`<div class="pos"><div class="ph"><b>${c}</b><span class="${h.pnl_usd>=0?'up':'down'}"><b>${$$(h.pnl_usd)}</b> · ${p2(h.pnl)}</span></div>
+      <div class="pg"><div><span>المبلغ المستثمر</span><b>${$$(h.basis)}</b></div><div><span>القيمة الآن</span><b>${$$(h.value)}</b></div><div><span>الكمية</span><b>${L(+h.qty.toPrecision(6))}</b></div>
+      <div><span>سعر الشراء</span><b>${L(h.entry.toPrecision(6))}</b></div><div><span>الوقف ${L('-'+((1-h.sl/h.entry)*100).toFixed(1)+'%')}</span><b class="down">${L(h.sl.toPrecision(6))}</b></div><div><span>${h.half_taken?'بِيع النصف ✓':'الوضع'}</span><b>${h.half_taken?'الباقي بوقف متحرك':h.protected?'محمي':'مفتوح'}</b></div>
+      <div><span>هدف البيع 1 ${L('+'+(((h.t1||h.tp)/h.entry-1)*100).toFixed(1)+'%')} (بيع النصف)</span><b class="up">${L((h.t1||h.tp).toPrecision(6))}</b></div><div><span>هدف البيع 2 ${h.t2?L('+'+((h.t2/h.entry-1)*100).toFixed(1)+'%'):''} (الباقي)</span><b class="up">${h.t2?L(h.t2.toPrecision(6)):'—'}</b></div><div><span>المسافة للهدف 1</span><b>${s.prices&&s.prices[c]?L((((h.t1||h.tp)/s.prices[c]-1)*100).toFixed(1)+'%'):'—'}</b></div></div></div>`
+    :`<div class="row"><span><b>${c}</b> <span class="sub">${h.signal}</span></span><span class="num">دخول ${L(h.entry.toPrecision(6))} · هدف ${L(h.tp.toPrecision(6))} · وقف ${L(h.sl.toPrecision(6))} · <span class="${h.pnl>=0?'up':'down'}">${p2(h.pnl)}</span></span></div>`).join('')||'<div class="sub">لا صفقات مفتوحة الآن.</div>';
+  const invested=Object.values(s.holdings||{}).reduce((a,h)=>a+(h.basis||0),0),cashNow=s.equity-Object.values(s.holdings||{}).reduce((a,h)=>a+(h.value||0),0);
   const n=sx.trades||0,pct=Math.min(100,n/(sx.gate_trades||30)*100);
   const st=n?`<div class="fcr"><div>نسبة النجاح<b>${p1(sx.win_rate)}</b><span class="sub">نطاق 95%: ${p1(sx.win_ci[0])}–${p1(sx.win_ci[1])}</span></div><div>متوسط الصفقة<b class="${sx.expectancy>=0?'up':'down'}">${p2(sx.expectancy)}</b></div><div>متوسط الربح / الخسارة<b>${p2(sx.avg_win)} / ${p2(sx.avg_loss)}</b></div><div>نجاح التعادل المطلوب<b>${p1(sx.breakeven_win)}</b></div></div>`:'';
   const b=bt&&bt.exam_all?`<h3 style="margin:14px 0 6px">نفس القواعد على التاريخ (الامتحان النهائي)</h3><div class="sub">${bt.exam_all.n} صفقة: نجاح ${p1(bt.exam_all.win)}، متوسط الصفقة ${p2(bt.exam_all.mean)}. دخول عشوائي بنفس الخروج: ${p2(bt.random_all.mean)}. بتكاليف ×3: ${p2(bt.exam_x3_all.mean)}. احتمال أن المتوسط موجب: ${p1(bt.boot_p)}.${bt.by_why?` حسب سبب الخروج: ${Object.entries(bt.by_why).map(([k,v])=>`${WHY[k]||k} ${v.n} (${p2(v.mean)})`).join('، ')}.`:''}${bt.plain_all?` نفس الدخول بهدف ثابت +2% ووقف -3%: نجاح ${p1(bt.plain_all.win)}، متوسط ${p2(bt.plain_all.mean)}.`:''}</div>`:'';
   const log=[...(s.trades||[])].reverse().slice(0,20).map(t=>t.side==='BUY'
-    ?`<li><span><span class="pill buy">دخول</span> ${t.coin} <span class="sub">${t.signal||''}</span></span><span class="num sub">${L(t.price<1?t.price:fmt(t.price))} · ${localTime(t.time)}</span></li>`
-    :`<li><span><span class="pill ${t.ret>=0?'buy':'sell'}">${WHY[t.why]||t.why||'خروج'}</span> ${t.coin} <span class="sub">${t.signal||''}${t.hours!=null?' · '+L(t.hours+' س'):''}</span></span><span class="num sub"><span class="${t.ret>=0?'up':'down'}">${p2(t.ret)}</span> · ${L(t.price<1?t.price:fmt(t.price))} · ${localTime(t.time)}</span></li>`).join('');
+    ?`<li><span><span class="pill buy">دخول</span> ${t.coin} <span class="sub">${t.signal||t.regime||''}</span></span><span class="num sub">${t.usd!=null?`<b style="color:var(--fg)">${$$(t.usd)}</b> · `:''}${L(t.price<1?t.price:fmt(t.price))} · ${localTime(t.time)}</span></li>`
+    :`<li><span><span class="pill ${t.ret>=0?'buy':'sell'}">${WHY[t.why]||t.why||'خروج'}</span> ${t.coin} <span class="sub">${t.signal||''}${t.hours!=null?' · '+L(t.hours+' س'):''}</span></span><span class="num sub"><span class="${t.ret>=0?'up':'down'}">${t.pnl_usd!=null?`<b>${$$(t.pnl_usd)}</b> · `:''}${p2(t.ret)}</span>${t.cost_usd!=null?` · ${$$(t.cost_usd)} ← ${$$(t.usd)}`:''} · ${L(t.price<1?t.price:fmt(t.price))} · ${localTime(t.time)}</span></li>`).join('');
   const byHtml=sx.by?['why','signal','coin'].map(k=>{const o=sx.by[k]||{};const ks=Object.keys(o);if(!ks.length)return '';const lab={why:'حسب سبب الخروج',signal:'حسب الإشارة',coin:'حسب العملة'}[k];
     return `<div class="sub" style="margin-top:8px"><b>${lab}:</b> ${ks.map(x=>`${WHY[x]||x} ${o[x].n} (${p1(o[x].win)}، ${p2(o[x].mean)})`).join(' · ')}</div>`}).join(''):'';
   el.hidden=false;
@@ -997,7 +1009,7 @@ function renderStrike(acct){
   const sw=r.swing;
   el.innerHTML=`<h2>${acct==='G'?'الوكيل G: مدير المحفظة':acct==='D'?'حساب D: جلسة المضاربة اليومية (ورقي)':acct==='E'?'حساب E: 2% وخروج مع حماية الربح (ورقي)':'حساب F: سوينغ على الأسبوعي واليومي (ورقي)'}</h2>${s.retired?`<div class="pill sell" style="margin-bottom:8px">متوقف: ${s.retired.reason}</div>`:''}
     <div class="sub">${r.agent?`يقرأ حالة السوق يومياً ويحدد ميزانية المخاطرة، ويدخل فقط في قادة السوق عند كسر قمة أو عودة بعد تصحيح، بحجم حسب تذبذب كل عملة، بوقف ${r.init_atr}×ATR ثم متحرك ${r.trail_atr}×ATR، ويجني النصف عند +${r.partial_r}R. يُدار كأنه مال حقيقي: رسوم OKX، انزلاق مقاس لكل عملة، أحجام وحدود OKX الفعلية، وحد خسارة الحساب ${(r.account_dd_limit*100).toFixed(0)}% من القمة.`:sw?`الاتجاه من الأسبوعي واليومي، والتأكيد والدخول من 4 ساعات. وقف أولي ${sw.atr_mult}×ATR يومي بحد ${(sw.stop_cap*100).toFixed(0)}%، وخروج عند كسر الاتجاه اليومي. الهدف +${(sw.target*100).toFixed(0)}%: بعده يُفحص الزخم كل 4 ساعات، فإن بقي إيجابياً يستمر بوقف متحرك (لا يقل عن +${(sw.lock*100).toFixed(0)}%)، وإلا يبيع. حد الاحتفاظ ${sw.hold_days} يوماً. على ${(r.coins||[]).length} عملة مباحة. حتى ${r.max_open} صفقات مفتوحة و${r.max_day} دخول يومياً.`:r.take_profit===false?`لا هدف ثابت: عند +${((pr&&pr.lock||0.02)*100).toFixed(0)}% يُقفل الوقف على +${((pr&&pr.lock||0.02)*100).toFixed(0)}% وتُترك الصفقة تمشي، وبعد +${((pr&&pr.trail_trigger||0.03)*100).toFixed(0)}% يتبع الوقف السعر بفارق ${((pr&&pr.trail||0.01)*100).toFixed(0)}%. وقف أولي -${(r.stop*100||3).toFixed(0)}%، وبعد +${((pr&&pr.be_trigger||0.01)*100).toFixed(0)}% ينتقل فوق الدخول. خروج زمني ${r.hold_hours||48} ساعة.`:`هدف +${(r.tp*100||2).toFixed(0)}% ووقف -${(r.stop*100||3).toFixed(0)}% أو ${r.hold_hours||24} ساعة.`} ${sw?'':`على ${(r.coins||[]).length} عملة مباحة: ${(r.coins||[]).join('، ')}. حتى ${r.max_day||3} صفقات يومياً ووقف اليوم عند -${((r.day_loss_cap||0.01)*100).toFixed(1)}%.`}${pr&&r.take_profit!==false?` بعد +${(pr.be_trigger*100).toFixed(0)}% ينتقل الوقف فوق الدخول، وبعد +${(pr.trail_trigger*100).toFixed(1)}% يتبع السعر بفارق ${(pr.trail*100).toFixed(0)}%.`:''}${r.reentry?' العودة إلى عملة تداولت اليوم بإشارة قوية فقط.':''}${r.learn?` قاعدة التعلّم: ما يخسر بثقة بعد ${r.learn.min_trades} صفقة يتوقف ${r.learn.days} أيام.`:''}${paused.length?` <b class="warn">موقوف الآن: ${paused.join('، ')}</b>`:''}</div>
-    <div class="fcr"><div>الرصيد<b>${usd(eq)}</b></div><div>الربح والخسارة<b class="${pl>=0?'up':'down'}">${L((pl>=0?'+':'-')+usd(Math.abs(pl)))} · ${p2(pl/5000)}</b></div></div>
+    <div class="fcr"><div>الرصيد<b>${usd(eq)}</b></div><div>الربح والخسارة<b class="${pl>=0?'up':'down'}">${L((pl>=0?'+':'-')+usd(Math.abs(pl)))} · ${p2(pl/5000)}</b></div>${s.holdings&&Object.values(s.holdings).some(h=>h.basis!=null)?`<div>مستثمر في الصفقات<b>${$$(invested)}</b></div><div>نقد متاح<b>${$$(cashNow)}</b></div>`:''}</div>
     <h3 style="margin:10px 0 6px">الصفقات المفتوحة</h3>${hold}
     <h3 style="margin:14px 0 6px">الطريق إلى بوابة الـ ${sx.gate_trades||30} صفقة</h3>
     <div style="background:var(--panel2);border-radius:8px;height:10px;overflow:hidden"><div style="width:${pct}%;height:10px;background:var(--accent)"></div></div>
@@ -1225,7 +1237,9 @@ function renderAgent(){
   const el=$('agentCard'),g=paper&&paper.stG;if(!el||!g||!g.regime)return;
   const L=t=>`<bdi dir="ltr">${t}</bdi>`,b=g.budget||0,rep=paper.agentRep&&paper.agentRep.days&&paper.agentRep.days.slice(-1)[0];
   const tone={bull:'up',early:'up',turn:'warn',bear:'down',weak:'warn'}[g.regime]||'';
-  const orders=(g.orders||[]).map(o=>`<div class="row"><span><b>${o.pair}</b> · ${o.type}</span><span class="num">${L(o.price)} · ${L(o.qty)} · وقف ${L(o.stop)}</span></div><div class="sub">${o.note}</div>`).join('');
+  const orders=(g.orders||[]).map(o=>`<div class="pos"><div class="ph"><b>${o.pair}</b><span class="sub">${o.type}</span></div><div class="pg">
+    <div><span>سعر الشراء</span><b>${L(o.price)}</b></div><div><span>الكمية لكل 1000$</span><b>${L(o.qty)} (${L('$'+o.usd)})</b></div><div><span>الوقف</span><b class="down">${L(o.stop)}</b></div>
+    <div><span>هدف البيع 1 (النصف)</span><b class="up">${o.t1?L(o.t1):'—'}</b></div><div><span>هدف البيع 2 (الباقي)</span><b class="up">${o.t2?L(o.t2):'—'}</b></div><div><span>المخاطرة</span><b>${L('-'+(o.stop_pct*100).toFixed(1)+'%')}</b></div></div></div>`).join('');
   el.hidden=false;
   el.innerHTML=`<div class="regime"><div><div class="sub">قراءة الوكيل للسوق اليوم</div><div class="big ${tone}">السوق ${REG_AR[g.regime]||g.regime}</div><div class="sub">اتساع السوق ${L(Math.round((g.breadth||0)*100)+'%')} من العملات المباحة فوق متوسطها 50 يوماً</div></div>
     <div class="budget"><div class="sub">ميزانية المخاطرة</div><div class="track"><div class="fill" style="width:${b*100}%"></div></div><b class="num">${L(Math.round(b*100)+'%')} من الحساب كحد أقصى</b></div></div>
