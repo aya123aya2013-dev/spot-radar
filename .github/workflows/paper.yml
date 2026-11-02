@@ -25,14 +25,10 @@ jobs:
         run: |
           URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
           git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
-      - name: One paper-trading cycle
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python spot_lab.py paper --once
-      - name: Account D (daily quick-strike session, paper)
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python scalp.py || true
-      - name: Account E (take 2% and leave, profit protection, paper)
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python strike.py || true
-      - name: Account F (swing on weekly/daily with 4h confirmation, paper)
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python swing.py || true
+      - name: Retire the old accounts A-F (idempotent; kept as records)
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python retire.py A B C D E F || true
+      - name: The trading agent G (paper, run as if it were real money)
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python agent.py || true
       - name: Daily lessons from closed trades (read-only)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python lessons.py || true
       - name: Telegram alerts (does nothing until the two secrets exist)

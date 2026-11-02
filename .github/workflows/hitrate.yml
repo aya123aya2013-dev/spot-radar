@@ -22,12 +22,15 @@ jobs:
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python hitrate.py
       - name: Same pipeline on random noise (luck yardstick)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python hitrate.py --synthetic
-      - name: Backtest account D rules
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python scalp.py backtest || true
-      - name: Backtest account E rules
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python strike.py backtest || true
       - name: Backtest account F rules
         run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 1200 python swing.py backtest || true
+      - name: Backtest the agent (G) since 2019
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 1500 python agent.py backtest || true
+      - name: Agent on noise (yardstick)
+        run: |
+          mkdir -p "$RUNNER_TEMP/gnull"
+          SPOT_LAB_DATA="$RUNNER_TEMP/gnull" timeout 900 python agent.py backtest --synthetic || true
+          cp "$RUNNER_TEMP/gnull/backtest_G_null.json" data/lab_data/ 2>/dev/null || true
       - name: Save state (single commit, no history growth)
         run: |
           cd data

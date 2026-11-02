@@ -16,7 +16,7 @@ import spot_lab as sl
 
 OUT = sl.OUT
 PATH = os.path.join(OUT, "lessons.json")
-ACCOUNTS = [("D", "paper_D.json"), ("E", "paper_E.json"), ("F", "paper_F.json")]
+ACCOUNTS = [("D", "paper_D.json"), ("E", "paper_E.json"), ("F", "paper_F.json"), ("G", "paper_G.json")]
 HOUR = 3600 * 1000
 MIN_CASES = 5          # no pattern is called a lesson before this many cases
 WHY_AR = {"stop": "وقف", "target": "هدف", "time": "وقت", "protect": "حماية ربح", "locked": "قفل 2%+", "lock": "قفل بعد الهدف", "momentum": "زخم انتهى", "trend": "كسر الاتجاه", "halt": "قاطع", "policy": "سياسة"}
