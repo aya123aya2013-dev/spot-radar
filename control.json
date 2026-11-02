@@ -4,11 +4,11 @@
  "emergency_stop": false,
  "risk": {
   "risk_per_trade": 0.01,
-  "max_stop": 0.12,
+  "max_stop": 0.2,
   "max_position": 0.25,
   "max_positions": 6,
-  "max_cluster_exposure": 0.40,
-  "corr_limit": 0.80,
+  "max_cluster_exposure": 0.4,
+  "corr_limit": 0.8,
   "daily_loss_limit": 0.03,
   "weekly_loss_limit": 0.06,
   "max_drawdown": 0.15,
@@ -19,9 +19,17 @@
   "max_spread_bps": 30.0,
   "max_slip_bps": 25.0,
   "data_max_age_hours": 30,
-  "min_data_coverage": 0.80,
+  "min_data_coverage": 0.8,
   "min_order_usd": 10.0,
   "min_edge": 0.005,
   "edge_min_trades": 20
- }
+ },
+ "owner_decisions": [
+  {
+   "date": "2026-11-02",
+   "change": "max_stop 0.12 -> 0.20",
+   "reason": "Owner accepted a historical drawdown up to 25% for higher return. Round-2 test: CAGR 9.6% -> 14.7%, max drawdown -9% -> -24%, Calmar 1.06 -> 0.62, positive in 4 of 5 folds, costs x3 still positive. Per-trade risk stays 1%; the 15% drawdown breaker stays.",
+   "authorized_by": "owner (chat, 2 Nov 2026)"
+  }
+ ]
 }
