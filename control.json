@@ -1,0 +1,27 @@
+{
+ "note": "Owner controls. mode must stay 'paper': live trading is not implemented and is refused by risk.py. Set emergency_stop to true to block every new entry immediately (exits and stops keep working). Risk limits are conservative paper-trading caps, not optimal values; change them only on purpose.",
+ "mode": "paper",
+ "emergency_stop": false,
+ "risk": {
+  "risk_per_trade": 0.01,
+  "max_stop": 0.12,
+  "max_position": 0.25,
+  "max_positions": 6,
+  "max_cluster_exposure": 0.40,
+  "corr_limit": 0.80,
+  "daily_loss_limit": 0.03,
+  "weekly_loss_limit": 0.06,
+  "max_drawdown": 0.15,
+  "halt_days": 14,
+  "loss_streak": 4,
+  "streak_cooldown_days": 3,
+  "asset_cooldown_days": 3,
+  "max_spread_bps": 30.0,
+  "max_slip_bps": 25.0,
+  "data_max_age_hours": 30,
+  "min_data_coverage": 0.80,
+  "min_order_usd": 10.0,
+  "min_edge": 0.005,
+  "edge_min_trades": 20
+ }
+}
