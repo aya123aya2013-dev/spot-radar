@@ -144,7 +144,7 @@ def plan(snaps, positions, equity, values, force_budget=None):
 
 
 # ---------------------------------------------------------------- backtest (champion = rules alone, challenger = rules + risk engine)
-def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, risk_cfg=None, edge_table=None, inds=None, idx=None):
+def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, risk_cfg=None, edge_table=None, inds=None, idx=None, core=None):
     """Day by day: decide at the close of day d, execute at the open of d+1, stops on d+1's range, trailing on its close.
     risk_cfg None = champion (the strategy's own sizing, no risk engine).  With risk_cfg: every risk gate that can be
     simulated on daily bars (per-trade risk, stop cap, position cap, correlation cap, daily/weekly loss, drawdown halt,
@@ -154,6 +154,8 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
         inds = {k: indicators(v) for k, v in data.items()}
         idx = {k: {d: i for i, d in enumerate(ind["day"])} for k, ind in inds.items()}
     cash, pos, trades, curve, reg_days = CAPITAL, {}, [], [], {}
+    core_pos = {}                         # core sleeve: {coin: dict(qty, basis, day)}; no ATR stops, trend filter only
+    share = core["share"] if core else 0.0
     acc = dict(fees=0.0, slip=0.0, traded=0.0, rejected={})
     peak, halt_until, streak_until, cooldown = CAPITAL, -1, -1, {}
     prev_eq, week_start, week_id, closed = CAPITAL, CAPITAL, None, []
@@ -162,8 +164,9 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
         nd = days[t + 1]
         px = {k: inds[k]["c"][idx[k][d]] for k in pos if d in idx[k]}
         values = {k: pos[k]["qty"] * px.get(k, pos[k]["entry"]) for k in pos}
-        equity = cash + sum(values.values())
-        curve.append((d, equity, sum(values.values())))
+        core_vals = {k: core_pos[k]["qty"] * inds[k]["c"][idx[k][d]] for k in core_pos if d in idx[k]}
+        equity = cash + sum(values.values()) + sum(core_vals.values())
+        curve.append((d, equity, sum(values.values()) + sum(core_vals.values())))
         snaps = {k: snap(inds[k], idx[k][d]) if d in idx[k] else None for k in inds}
 
         def sell(k, frac, price, why):
@@ -200,6 +203,14 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
                 for k in list(pos):
                     if nd in idx[k]:
                         sell(k, 1.0, inds[k]["o"][idx[k][nd]], "risk_limit")
+                for k in list(core_pos):
+                    if nd in idx[k]:
+                        cp = core_pos.pop(k)
+                        g = cp["qty"] * inds[k]["o"][idx[k][nd]]
+                        cash += g * (1 - slip) * (1 - fee)
+                        acc["fees"] += g * fee; acc["slip"] += g * slip; acc["traded"] += g
+                        trades.append(dict(coin=k, ret=g * (1 - slip) * (1 - fee) / cp["basis"] - 1, pnl=g * (1 - slip) * (1 - fee) - cp["basis"],
+                                           why="risk_limit", days=nd - cp["day"], regime="core"))
             if halt_until >= 0 and d > halt_until:
                 halt_until, peak = -1, equity
             wk = (d + 3) // 7
@@ -209,7 +220,30 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
                         halt_until=(halt_until + 1) * DAY if halt_until >= d else 0, streak_until=(streak_until + 1) * DAY if streak_until >= d else 0)
             allow, reasons = risk.global_gates(risk_cfg, acct, (d + 1) * DAY - 1, 0, 1.0)
         prev_eq = equity
-        dec = plan(snaps, pos, equity, values, 0.0 if (risk_cfg and halt_until >= d) else force_budget)
+        sat_equity = equity * (1 - share)
+        dec = plan(snaps, pos, sat_equity, values, 0.0 if (risk_cfg and halt_until >= d) else force_budget)
+        # ---- core sleeve: hold BTC/ETH while their own trend is up (close > EMA200 and EMA50 > EMA200), cash when the
+        #      close falls under EMA200; decided at the close, executed at the next open
+        if core:
+            halted = risk_cfg and halt_until >= d
+            for k in core["coins"]:
+                s_ = snaps.get(k)
+                if not s_ or nd not in idx[k]:
+                    continue
+                o = inds[k]["o"][idx[k][nd]]
+                if k in core_pos and (s_["c"] < s_["e200"] or halted):
+                    cp = core_pos.pop(k)
+                    g = cp["qty"] * o
+                    pr = g * (1 - slip) * (1 - fee)
+                    cash += pr
+                    acc["fees"] += g * fee; acc["slip"] += g * slip; acc["traded"] += g
+                    trades.append(dict(coin=k, ret=pr / cp["basis"] - 1, pnl=pr - cp["basis"], why="core_exit", days=nd - cp["day"], regime="core"))
+                elif k not in core_pos and not halted and s_["c"] > s_["e200"] and s_["e50"] > s_["e200"]:
+                    invest = min(cash, equity * share / len(core["coins"]))
+                    if invest > 20:
+                        cash -= invest
+                        acc["fees"] += invest * fee; acc["slip"] += invest * slip; acc["traded"] += invest
+                        core_pos[k] = dict(qty=invest * (1 - fee) / (o * (1 + slip)), basis=invest, day=nd)
         reg_days.setdefault(dec["regime"], []).append(d)
         for k, frac, why in dec["exits"]:
             if k in pos and nd in idx[k]:
@@ -234,7 +268,7 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
                     j = idx[kk].get(d)
                     if j is not None and j >= 61:
                         rets[kk] = risk.returns(inds[kk]["c"][:j + 1])
-                ctx = dict(equity=equity, cash=cash, budget=dec["budget"], held_values=held_vals, n_positions=n_pos,
+                ctx = dict(equity=sat_equity, cash=cash, budget=dec["budget"], held_values=held_vals, n_positions=n_pos,
                            rets=rets, cooldowns={c: (u + 1) * DAY for c, u in cooldown.items()}, now_ms=(d + 1) * DAY - 1)
                 usd, why_not = risk.size_entry(risk_cfg, dict(coin=k, price=s["c"], stop=stop, weight=w), ctx)
                 if usd <= 0:
@@ -243,7 +277,7 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
                     continue
                 invest = min(cash, usd)
             else:
-                invest = min(cash, w * equity)
+                invest = min(cash, w * sat_equity)
             if invest < 20:
                 continue
             o = inds[k]["o"][idx[k][nd]]
@@ -277,6 +311,12 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
             cash += pr
             p["pnl"] = p.get("pnl", 0.0) + pr - p["basis"]
             trades.append(dict(coin=k, ret=p["pnl"] / p["basis0"], pnl=p["pnl"], why="end", days=d - p["day"], regime=p["regime"]))
+    for k in list(core_pos):
+        if d in idx[k]:
+            cp = core_pos.pop(k)
+            pr = cp["qty"] * inds[k]["c"][idx[k][d]] * (1 - slip) * (1 - fee)
+            cash += pr
+            trades.append(dict(coin=k, ret=pr / cp["basis"] - 1, pnl=pr - cp["basis"], why="end", days=d - cp["day"], regime="core"))
     curve.append((d, cash, 0.0))
     return curve, trades, reg_days, acc
 
@@ -425,6 +465,73 @@ def evaluate(data):
     out["exam"] = dict(agent=curve_stats(e_c if out["promotion"]["challenger"] else e_h), btc_hold=h2, btc_dca=d2)
     print("promotion:", out["promotion"], "| BTC hold", f"{hold['ret']*100:+.1f}% DD {hold['max_dd']*100:.0f}%")
     return out
+
+
+VARIANT_RULE = ("Round 2 (2 Nov 2026, written before running; 3 candidates against the current champion = rules + risk engine): "
+                "a candidate is eligible only if full-period max drawdown <= 20%, positive in >= 4 of 5 folds, full-period return "
+                "positive with costs x3, Calmar >= 1.0, and CAGR higher than the champion's. Among eligible candidates the highest CAGR is adopted; if none, the champion stays.")
+
+
+def variants():
+    data = {}
+    for c in COINS:
+        try:
+            rows = sl.klines(c, "1d", 3000)
+            if len(rows) >= 300:
+                data[c] = rows
+        except Exception as e:
+            print(f"  ! {c}: {e}")
+    inds = {k: indicators(v) for k, v in data.items()}
+    idx = {k: {d: i for i, d in enumerate(ind["day"])} for k, ind in inds.items()}
+    btc_days = inds["BTC"]["day"]
+    start, end = btc_days[260], btc_days[-1]
+    span = [d for d in btc_days if start <= d <= end]
+    folds = [(span[len(span) * i // 5], span[min(len(span) - 1, len(span) * (i + 1) // 5)]) for i in range(5)]
+    base = risk.load_control()
+    core = dict(coins=[c for c in ("BTC", "ETH") if c in data], share=0.5)
+    cands = {"champion": dict(risk_cfg=base),
+             "wider_stop": dict(risk_cfg=dict(base, max_stop=0.20)),
+             "core_satellite": dict(risk_cfg=base, core=core),
+             "both": dict(risk_cfg=dict(base, max_stop=0.20), core=core)}
+    run = lambda a, b, **kw: backtest_run(data, a, b, inds=inds, idx=idx, **kw)
+
+    def edge_before(day):
+        if day - start < 120:
+            return {}
+        _, tr, _, _ = run(start, day)
+        return risk.edge_table_from(tr)
+    edges = {a: edge_before(a) for a, _ in folds}
+    out = dict(generated=datetime.now(timezone.utc).isoformat(), synthetic=sl.SYN, rule=VARIANT_RULE, candidates_tested=3,
+               period=[datetime.fromtimestamp(start * 86400, timezone.utc).strftime("%Y-%m-%d"),
+                       datetime.fromtimestamp(end * 86400, timezone.utc).strftime("%Y-%m-%d")], results={})
+    for name, kw in cands.items():
+        folds_r = []
+        for a, b in folds:
+            c, tr, _, _ = run(a, b, edge_table=edges[a], **kw)
+            cs = curve_stats(c)
+            folds_r.append(dict(start=datetime.fromtimestamp(a * 86400, timezone.utc).strftime("%Y-%m"), ret=cs["ret"], max_dd=cs["max_dd"], trades=len(tr)))
+        c, tr, rd, acc = run(start, end, edge_table=edges[folds[0][0]], **kw)
+        c3, _, _, _ = run(start, end, edge_table=edges[folds[0][0]], cost_mult=3.0, **kw)
+        cs = curve_stats(c)
+        out["results"][name] = dict(full=cs, full_x3=curve_stats(c3), folds=folds_r, yearly=yearly(c),
+                                    trades=trade_stats(tr, acc, sum(p[1] for p in c) / len(c), max(0.1, cs["days"] / 365.25)))
+        print(f"{name:15} ret {cs['ret']*100:+.1f}% CAGR {(cs['cagr'] or 0)*100:+.1f}% DD {cs['max_dd']*100:.1f}% Calmar {cs['calmar'] or 0:.2f} "
+              f"Sharpe {cs['sharpe'] or 0:.2f} exp {(cs['exposure'] or 0)*100:.0f}% x3 {out['results'][name]['full_x3']['ret']*100:+.1f}% | folds "
+              + " ".join(f"{f['ret']*100:+.0f}%" for f in folds_r))
+    elig = {}
+    for name in ("wider_stop", "core_satellite", "both"):
+        r = out["results"][name]
+        checks = dict(dd=r["full"]["max_dd"] <= 0.20, folds=sum(1 for f in r["folds"] if f["ret"] > 0) >= 4,
+                      costs_x3=r["full_x3"]["ret"] > 0, calmar=(r["full"]["calmar"] or 0) >= 1.0,
+                      beats_champion=(r["full"]["cagr"] or 0) > (out["results"]["champion"]["full"]["cagr"] or 0) + 1e-9)
+        r["checks"] = checks
+        if all(checks.values()):
+            elig[name] = r["full"]["cagr"] or 0
+    out["adopted"] = max(elig, key=elig.get) if elig else "champion"
+    hold, dca = btc_rulers(data["BTC"], start, end)
+    out.update(btc_hold=hold, btc_dca=dca)
+    print("adopted:", out["adopted"], {k: v.get("checks") for k, v in out["results"].items() if "checks" in v})
+    json.dump(out, open(os.path.join(OUT, "variants_G_null.json" if sl.SYN else "variants_G.json"), "w"), indent=1)
 
 
 def backtest():
@@ -775,4 +882,9 @@ def cycle():
 
 
 if __name__ == "__main__":
-    backtest() if "backtest" in sys.argv else cycle()
+    if "variants" in sys.argv:
+        variants()
+    elif "backtest" in sys.argv:
+        backtest()
+    else:
+        cycle()
