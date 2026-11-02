@@ -1293,7 +1293,8 @@ function costsPanel(g){
     <div class="tile"><div class="l">ربح محقق هذا الشهر</div><div class="v ${co.realized_this_month>=0?'up':'down'}">${$$(co.realized_this_month)}</div></div>
     <div class="tile"><div class="l">التغطية</div><div class="v">${co.coverage!=null?L(Math.round(co.coverage*100)+'%'):'—'}</div></div>
     <div class="tile"><div class="l">الباقي للتعادل</div><div class="v">${co.remaining!=null?$$(Math.max(0,co.remaining)):'—'}</div></div></div>
-    <div class="sub">${items.map(i=>`${i.name}: ${$$(i.usd)}`).join(' · ')}. الحساب ورقي، فالتغطية افتراضية.</div>`;
+    <div class="sub">${items.map(i=>`${i.name}: ${$$(i.usd)}`).join(' · ')}. الحساب ورقي، فالتغطية افتراضية.</div>
+    ${co.support?`<div class="note"><b>هل يدعم التاريخ هذا الهدف؟</b> ${co.support.covers?'نعم على الورق':'لا'}. بالعائد التاريخي للوكيل (${L((co.support.hist_cagr*100).toFixed(1)+'%')} سنوياً، أقصى هبوط ${L((co.support.hist_max_dd*100).toFixed(0)+'%')}) يعطي هذا الحساب نحو ${$$(co.support.monthly_at_cagr)} شهرياً في المتوسط، مقابل تكلفة ${$$(co.monthly_cost)}. تغطيتها بنفس المخاطرة تحتاج رأس مال نحو ${$$(Math.round(co.support.capital_needed/1000)*1000)}، وحتى حينها تأتي أشهر خاسرة كثيرة ولا ضمان. لن تُرفع المخاطرة لتغطية التكاليف.</div>`:''}`;
 }
 function backtestPanel(bt){
   if(!bt||!bt.champion||!bt.challenger)return '';

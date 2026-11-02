@@ -1,5 +1,11 @@
 {
  "note": "Monthly operating costs of the project, filled in by the owner. Used only to report how far trading results are from covering them. The trading account is paper, so any 'coverage' shown is hypothetical.",
  "currency": "USD",
- "monthly": []
+ "monthly": [
+  {
+   "name": "تكاليف التشغيل والاشتراكات (تقدير المالك، الحد الأدنى)",
+   "usd": 1500
+  }
+ ],
+ "updated": "2026-11-02"
 }

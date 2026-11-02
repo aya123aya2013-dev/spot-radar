@@ -79,6 +79,16 @@ def summarize(st, csv_path, costs_path=None):
     monthly_cost = sum(float(c.get("usd", 0)) for c in costs)
     month = datetime.now(timezone.utc).strftime("%Y-%m")
     realized_month = sum(t.get("pnl_usd", 0.0) for t in sells if str(t.get("time", "")).startswith(month))
+    support = None
+    try:
+        bt = json.load(open(os.path.join(os.path.dirname(csv_path), "backtest_G.json")))
+        best = bt["challenger"] if bt.get("promotion", {}).get("challenger") else bt["champion"]
+        cagr, dd = best["full"].get("cagr"), best["full"].get("max_dd")
+        if cagr and monthly_cost > 0:
+            support = dict(hist_cagr=cagr, hist_max_dd=dd, monthly_at_cagr=eq * cagr / 12,
+                           capital_needed=monthly_cost * 12 / cagr, covers=eq * cagr / 12 >= monthly_cost)
+    except Exception:
+        pass
     out = dict(
         equity=eq, cash=st.get("cash"), invested=held, exposure=held / eq if eq else 0.0,
         realized_pnl=realized, unrealized_pnl=unreal, total_pnl=eq - CAPITAL,
@@ -93,5 +103,5 @@ def summarize(st, csv_path, costs_path=None):
         operating=dict(monthly_cost=monthly_cost, items=costs, realized_this_month=realized_month,
                        coverage=(realized_month / monthly_cost) if monthly_cost > 0 else None,
                        remaining=(monthly_cost - realized_month) if monthly_cost > 0 else None,
-                       paper=True))
+                       paper=True, support=support))
     return out
