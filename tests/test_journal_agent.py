@@ -60,8 +60,27 @@ def test_emergency_stop_blocks_agent_entries():
         open(ctl, "w").write(orig)
 
 
+def test_backtest_resumes_after_drawdown_halt():
+    """Regression: a drawdown halt used to re-trigger forever (breach checked before the halt expired)."""
+    sys.argv.append("--synthetic")
+    import importlib, spot_lab
+    importlib.reload(spot_lab)
+    import agent
+    importlib.reload(agent)
+    data = {c: spot_lab.klines(c, "1d", 1500) for c in ("BTC", "ETH", "SOL", "AVAX", "LINK", "DOGE")}
+    days = [r[0] // agent.DAY for r in data["BTC"]]
+    cfg = dict(agent.risk.load_control(), max_drawdown=0.02, halt_days=5)       # tiny limit: forces many halts
+    curve, trades, _, acc = agent.backtest_run(data, days[260], days[-1], risk_cfg=cfg, edge_table={})
+    last_trade_day = max((days[260] + t["days"]) for t in trades) if trades else None
+    vals = [p[1] for p in curve]
+    late = vals[len(vals) * 3 // 4:]
+    assert len(set(round(v, 6) for v in late)) > 1, "equity frozen in the last quarter: halt never released"
+    sys.argv.remove("--synthetic")
+
+
 if __name__ == "__main__":
     test_journal_chain_detects_tampering()
     test_agent_cycle_bookkeeping()
     test_emergency_stop_blocks_agent_entries()
-    print("3 journal/agent tests passed")
+    test_backtest_resumes_after_drawdown_halt()
+    print("4 journal/agent tests passed")

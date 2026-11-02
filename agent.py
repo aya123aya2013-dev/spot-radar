@@ -197,6 +197,8 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
 
         allow, reasons = True, []
         if risk_cfg:
+            if halt_until >= 0 and d > halt_until:             # halt over: restart the drawdown count from today
+                halt_until, peak = -1, equity
             peak = max(peak, equity)
             if halt_until < d and risk.drawdown_breach(risk_cfg, equity, peak):
                 halt_until = d + risk_cfg["halt_days"]
@@ -211,8 +213,6 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
                         acc["fees"] += g * fee; acc["slip"] += g * slip; acc["traded"] += g
                         trades.append(dict(coin=k, ret=g * (1 - slip) * (1 - fee) / cp["basis"] - 1, pnl=g * (1 - slip) * (1 - fee) - cp["basis"],
                                            why="risk_limit", days=nd - cp["day"], regime="core"))
-            if halt_until >= 0 and d > halt_until:
-                halt_until, peak = -1, equity
             wk = (d + 3) // 7
             if wk != week_id:
                 week_id, week_start = wk, equity
