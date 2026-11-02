@@ -257,6 +257,8 @@ button.rw:hover{background:rgba(255,255,255,.95)}
 .pos .ph{display:flex;justify-content:space-between;align-items:center;font-size:1.02rem;margin-bottom:8px}
 .pos .pg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}
 .pos .pg div{display:grid;gap:1px;font-size:.84rem}.pos .pg span{color:var(--muted);font-size:.74rem}
+#agentCard .tile,#acctG .tile,#agentCard .pos,#acctG .pos{background:var(--panel2)}
+#agentCard .tile .l,#acctG .tile .l{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -885,10 +887,10 @@ async function loadPaper(){
       fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const series=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
     const parse=t=>t.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1]}}).filter(p=>p.e>0);
-    const [policy,backlog]=await Promise.all(['coins_policy.json','research_backlog.json'].map(f=>fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/`+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
+    const [policy,backlog,costs]=await Promise.all(['coins_policy.json','research_backlog.json','costs.json'].map(f=>fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/`+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const [xp,xpn,monthly,lessons]=await Promise.all(['experiments.json','experiments_null.json','monthly.json','lessons.json'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.json():null).catch(()=>null)));
     const [csvB,csvC,csvD,csvE,csvF,csvG]=await Promise.all(['paper_equity_B.csv','paper_equity_C.csv','paper_equity_D.csv','paper_equity_E.csv','paper_equity_F.csv','paper_equity_G.csv'].map(f=>fetch(base+f+bust).then(r=>r.ok?r.text():'').catch(()=>'')));
-    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,stE,btE,stF,btF,stG,btG,agentRep,serG:parse(csvG),serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),serE:parse(csvE),serF:parse(csvF),policy,backlog,xp,xpn,monthly,lessons};renderLearn();renderMonthly();renderLesson();renderSummary();renderPaper();renderWeekly();renderPostmortems();renderOkx();renderOkxCandles();renderD();renderE();renderF();renderG();renderAgent();renderHome();
+    paper={st,cfg,series,stB,cfgB,stC,cfgC,resC,pm,okx,okxc,stD,btD,stE,btE,stF,btF,stG,btG,agentRep,serG:parse(csvG),serB:parse(csvB),serC:parse(csvC),serD:parse(csvD),serE:parse(csvE),serF:parse(csvF),policy,backlog,costs,xp,xpn,monthly,lessons};[renderLearn,renderMonthly,renderLesson].forEach(f=>{try{f()}catch(e){console.warn('render',f.name,e)}});[renderSummary,renderPaper,renderWeekly,renderPostmortems,renderOkx,renderOkxCandles,renderD,renderE,renderF,renderG,renderAgent,renderHome].forEach(f=>{try{f()}catch(e){console.warn('render',f.name,e)}});
   }catch(e){
     body.innerHTML='<section class="card"><div class="empty">لا توجد بيانات للحساب الوهمي بعد.<br><span class="sub">شغّل backtest ثم paper-trade من تبويب Actions في GitHub، وانتظر دقيقة.</span></div></section>';
   }
@@ -997,7 +999,7 @@ function renderStrike(acct){
     :`<div class="row"><span><b>${c}</b> <span class="sub">${h.signal}</span></span><span class="num">دخول ${L(h.entry.toPrecision(6))} · هدف ${L(h.tp.toPrecision(6))} · وقف ${L(h.sl.toPrecision(6))} · <span class="${h.pnl>=0?'up':'down'}">${p2(h.pnl)}</span></span></div>`).join('')||'<div class="sub">لا صفقات مفتوحة الآن.</div>';
   const invested=Object.values(s.holdings||{}).reduce((a,h)=>a+(h.basis||0),0),cashNow=s.equity-Object.values(s.holdings||{}).reduce((a,h)=>a+(h.value||0),0);
   const n=sx.trades||0,pct=Math.min(100,n/(sx.gate_trades||30)*100);
-  const st=n?`<div class="fcr"><div>نسبة النجاح<b>${p1(sx.win_rate)}</b><span class="sub">نطاق 95%: ${p1(sx.win_ci[0])}–${p1(sx.win_ci[1])}</span></div><div>متوسط الصفقة<b class="${sx.expectancy>=0?'up':'down'}">${p2(sx.expectancy)}</b></div><div>متوسط الربح / الخسارة<b>${p2(sx.avg_win)} / ${p2(sx.avg_loss)}</b></div><div>نجاح التعادل المطلوب<b>${p1(sx.breakeven_win)}</b></div></div>`:'';
+  const st=n&&sx.win_ci?`<div class="fcr"><div>نسبة النجاح<b>${p1(sx.win_rate)}</b><span class="sub">نطاق 95%: ${p1(sx.win_ci[0])}–${p1(sx.win_ci[1])}</span></div><div>متوسط الصفقة<b class="${sx.expectancy>=0?'up':'down'}">${p2(sx.expectancy)}</b></div><div>متوسط الربح / الخسارة<b>${p2(sx.avg_win)} / ${p2(sx.avg_loss)}</b></div><div>نجاح التعادل المطلوب<b>${p1(sx.breakeven_win)}</b></div></div>`:'';
   const b=bt&&bt.exam_all?`<h3 style="margin:14px 0 6px">نفس القواعد على التاريخ (الامتحان النهائي)</h3><div class="sub">${bt.exam_all.n} صفقة: نجاح ${p1(bt.exam_all.win)}، متوسط الصفقة ${p2(bt.exam_all.mean)}. دخول عشوائي بنفس الخروج: ${p2(bt.random_all.mean)}. بتكاليف ×3: ${p2(bt.exam_x3_all.mean)}. احتمال أن المتوسط موجب: ${p1(bt.boot_p)}.${bt.by_why?` حسب سبب الخروج: ${Object.entries(bt.by_why).map(([k,v])=>`${WHY[k]||k} ${v.n} (${p2(v.mean)})`).join('، ')}.`:''}${bt.plain_all?` نفس الدخول بهدف ثابت +2% ووقف -3%: نجاح ${p1(bt.plain_all.win)}، متوسط ${p2(bt.plain_all.mean)}.`:''}</div>`:'';
   const log=[...(s.trades||[])].reverse().slice(0,20).map(t=>t.side==='BUY'
     ?`<li><span><span class="pill buy">دخول</span> ${t.coin} <span class="sub">${t.signal||t.regime||''}</span></span><span class="num sub">${t.usd!=null?`<b style="color:var(--fg)">${$$(t.usd)}</b> · `:''}${L(t.price<1?t.price:fmt(t.price))} · ${localTime(t.time)}</span></li>`
@@ -1246,15 +1248,69 @@ function renderAgent(){
     <h3 style="margin:14px 0 4px;font-size:.92rem">قادة السوق (جاهزون للانعطاف)</h3><div class="watch">${(g.watch||[]).map(c=>`<span>${c}</span>`).join('')||'<span class="sub">لا عملة فوق متوسطها 50 يوماً</span>'}</div>
     <h3 style="margin:14px 0 4px;font-size:.92rem">قرار اليوم</h3><div style="white-space:pre-line;line-height:1.8;font-size:.9rem">${g.decision||''}</div>
     ${orders?`<h3 style="margin:14px 0 4px;font-size:.92rem">أوامر الظل (لو كنت تنفذ يدوياً على OKX)</h3><div class="orders">${orders}</div>`:''}
-    <div class="note">ورقي يُدار كأنه مال حقيقي. لا يُرسل أي أمر لأي منصة، ولا وعد بربح.</div>`;
+    ${agentPanels(g)}${costsPanel(g)}
+    <div class="note">ورقي يُدار كأنه مال حقيقي. لا يُرسل أي أمر لأي منصة، ولا وعد بربح. حدود المخاطرة في ملف control.json وإيقاف الطوارئ بتغيير emergency_stop إلى true.</div>`;
   const lg=$('agentLog'),days=paper.agentRep&&paper.agentRep.days||[];
   if(lg&&days.length){lg.hidden=false;lg.innerHTML=`<h2>سجل قرارات الوكيل</h2>${days.slice(-14).reverse().map(d=>`<div style="padding:10px 0;border-top:1px solid var(--line)"><div class="sub">${d.date} · ${REG_AR[d.regime]||d.regime} · ميزانية ${L(Math.round(d.budget*100)+'%')}</div><div style="white-space:pre-line;font-size:.88rem;line-height:1.7">${d.text}</div></div>`).join('')}`}
   const bt=paper.btG;
-  if(bt&&bt.full&&lg){const f=bt.full,e=bt.exam,P=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(1)+'%');
+  if(bt&&bt.champion&&lg){lg.hidden=false;lg.insertAdjacentHTML('afterbegin',backtestPanel(bt))}
+  else if(bt&&bt.full&&lg){const f=bt.full,e=bt.exam,P=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(1)+'%');
     lg.insertAdjacentHTML('afterbegin',`<section style="margin-bottom:12px"><h2>الوكيل على التاريخ (${bt.period[0]} إلى ${bt.period[1]})</h2>
     <div class="fcr" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div>الوكيل<b>${P(f.agent.ret)}</b><span class="sub">أقصى هبوط ${P(-f.agent.max_dd)}</span></div><div>الاحتفاظ بـBTC<b>${P(f.btc_hold.ret)}</b><span class="sub">أقصى هبوط ${P(-f.btc_hold.max_dd)}</span></div>
     <div>الشراء الدوري BTC<b>${P(f.btc_dca.ret)}</b><span class="sub">أقصى هبوط ${P(-f.btc_dca.max_dd)}</span></div><div>الوكيل بلا قراءة السوق<b>${P(f.no_regime.ret)}</b><span class="sub">أقصى هبوط ${P(-f.no_regime.max_dd)}</span></div></div>
     <div class="sub">الامتحان الأخير (آخر 30%): الوكيل ${P(e.agent.ret)} بهبوط ${P(-e.agent.max_dd)}، مقابل BTC ${P(e.btc_hold.ret)} بهبوط ${P(-e.btc_hold.max_dd)}. بتكاليف ×3: ${P(f.agent_x3.ret)}. ${f.trades} صفقة، نسبة الرابحة ${f.win!=null?Math.round(f.win*100)+'%':'—'}.</div></section>`)}
+}
+
+/* ---------- agent: performance overview, safety and health, rejected decisions, operating costs ---------- */
+function agentPanels(g){
+  const L=t=>`<bdi dir="ltr">${t}</bdi>`,a=g.accounting||{},h=g.health||{},c=g.control||{},j=g.journal||{};
+  const $$=x=>x==null?'—':L((x<0?'-':'')+'$'+Math.abs(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
+  const P=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(2)+'%'),N=x=>x==null?'—':L(x.toFixed(2));
+  const tile=(l,v,cls='')=>`<div class="tile"><div class="l">${l}</div><div class="v ${cls}">${v}</div></div>`;
+  const perf=`<h3 style="margin:14px 0 6px;font-size:.92rem">الأداء (ورقي، بعد الرسوم والانزلاق)</h3><div class="tiles">
+    ${tile('قيمة الحساب',$$(a.equity))}${tile('نقد متاح',$$(a.cash))}${tile('مستثمر الآن',$$(a.invested)+' · '+L(Math.round((a.exposure||0)*100)+'%'))}
+    ${tile('ربح محقق',$$(a.realized_pnl),(a.realized_pnl||0)>=0?'up':'down')}${tile('ربح غير محقق',$$(a.unrealized_pnl),(a.unrealized_pnl||0)>=0?'up':'down')}${tile('رسوم مدفوعة',$$(a.fees))}
+    ${tile('تكلفة الانزلاق',$$(a.slippage))}${tile('أقصى هبوط',P(-(a.max_drawdown||0)),'down')}${tile('الهبوط الآن',P(-(a.drawdown_now||0)))}
+    ${tile('اليوم / الأسبوع / الشهر',P(a.day)+' / '+P(a.week)+' / '+P(a.month))}${tile('BTC لنفس الفترة',P(a.btc_hold))}${tile('النقد (مرجع)',P(0))}
+    ${tile('صفقات مغلقة',L(a.trades_closed||0)+(a.win_rate!=null?' · '+L(Math.round(a.win_rate*100)+'%')+' رابحة':''))}${tile('عامل الربح',N(a.profit_factor))}${tile('Sharpe / Sortino / Calmar',a.sharpe==null?'بعد 30 يوماً':N(a.sharpe)+' / '+N(a.sortino)+' / '+N(a.calmar))}</div>`;
+  const gates=(h.gate_text||[]);
+  const safe=`<h3 style="margin:14px 0 6px;font-size:.92rem">السلامة وصحة النظام</h3><div class="tiles">
+    ${tile('الوضع',c.mode==='paper'?'ورقي فقط':'⚠ '+c.mode,c.mode==='paper'?'up':'down')}${tile('إيقاف الطوارئ',c.emergency_stop?'مفعّل':'غير مفعّل',c.emergency_stop?'down':'')}
+    ${tile('الدخول الجديد',h.allow_entries===false?'موقوف':'مسموح',h.allow_entries===false?'warn':'up')}
+    ${tile('عمر البيانات',h.data_age_h!=null?L(h.data_age_h+' ساعة'):'—')}${tile('تغطية العملات',h.coverage!=null?L(Math.round(h.coverage*100)+'%'):'—')}
+    ${tile('سجل القرارات',j.records!=null?L(j.records)+' سجل · '+(j.intact?'سليم':'⚠ معدَّل'):'—',j.intact===false?'down':'')}
+    ${tile('قاطع الهبوط',c.halt_until?'مفعّل':'غير مفعّل',c.halt_until?'down':'')}${tile('تبريد الخسائر',c.streak_until&&c.streak_until>Date.now()?'مفعّل':'غير مفعّل')}${tile('آخر فحص يومي',h.checked||'—')}</div>
+    ${gates.length?`<div class="sub warn" style="margin-top:6px">سبب إيقاف الدخول: ${gates.join('، ')}</div>`:''}`;
+  const rej=(g.rejected||[]).filter(x=>x.reasons&&x.reasons.length);
+  const rejH=rej.length?`<h3 style="margin:14px 0 6px;font-size:.92rem">ما رفضه الوكيل اليوم ولماذا</h3><div class="ev">${rej.map(x=>`<div><b>${x.coin}</b>: ${x.text}</div>`).join('')}</div>`:'';
+  return perf+safe+rejH;
+}
+function costsPanel(g){
+  const co=(g.accounting||{}).operating||{},items=co.items||[],L=t=>`<bdi dir="ltr">${t}</bdi>`,$$=x=>L('$'+(+x).toLocaleString('en-US',{maximumFractionDigits:2}));
+  if(!items.length)return `<h3 style="margin:14px 0 6px;font-size:.92rem">تكاليف التشغيل ونقطة التعادل</h3><div class="sub">لم تُدخل التكاليف الشهرية بعد. بعد إدخالها يظهر هنا: كم يغطي الربح المحقق من الاشتراكات، وكم بقي للتعادل.</div>`;
+  return `<h3 style="margin:14px 0 6px;font-size:.92rem">تكاليف التشغيل ونقطة التعادل (هذا الشهر)</h3><div class="tiles">
+    <div class="tile"><div class="l">التكلفة الشهرية</div><div class="v">${$$(co.monthly_cost)}</div></div>
+    <div class="tile"><div class="l">ربح محقق هذا الشهر</div><div class="v ${co.realized_this_month>=0?'up':'down'}">${$$(co.realized_this_month)}</div></div>
+    <div class="tile"><div class="l">التغطية</div><div class="v">${co.coverage!=null?L(Math.round(co.coverage*100)+'%'):'—'}</div></div>
+    <div class="tile"><div class="l">الباقي للتعادل</div><div class="v">${co.remaining!=null?$$(Math.max(0,co.remaining)):'—'}</div></div></div>
+    <div class="sub">${items.map(i=>`${i.name}: ${$$(i.usd)}`).join(' · ')}. الحساب ورقي، فالتغطية افتراضية.</div>`;
+}
+function backtestPanel(bt){
+  if(!bt||!bt.champion||!bt.challenger)return '';
+  const L=t=>`<bdi dir="ltr">${t}</bdi>`,P=x=>x==null?'—':L((x>=0?'+':'')+(x*100).toFixed(1)+'%'),N=x=>x==null?'—':L((+x).toFixed(2));
+  const row=(n,o)=>`<tr><td><b>${n}</b></td><td class="num">${P(o.full.ret)}</td><td class="num">${P(o.full.cagr)}</td><td class="num">${P(-o.full.max_dd)}</td><td class="num">${N(o.full.sharpe)}</td><td class="num">${N(o.full.calmar)}</td><td class="num">${P(o.full_x3.ret)}</td></tr>`;
+  const hold=bt.btc_hold,dca=bt.btc_dca;
+  const folds=bt.challenger.folds.map((f,i)=>`<tr><td>${f.start} ← ${f.end}</td><td class="num">${P(bt.champion.folds[i].ret)}</td><td class="num">${P(f.ret)}</td></tr>`).join('');
+  const pr=bt.promotion||{},names=['هبوط أقل بـ5 نقاط','Calmar أو Sharpe أعلى','ربح في 3 من 5 فترات','ربح بتكاليف ×3'];
+  return `<section style="margin-bottom:14px"><h2>البطل مقابل المتحدي (${bt.period[0]} إلى ${bt.period[1]})</h2>
+    <div class="sub" style="margin-bottom:8px">البطل: قواعد الوكيل وحدها. المتحدي: نفس القواعد مع محرك المخاطر. ${bt.candidates_tested} مرشحان فقط، وقاعدة الترقية مكتوبة قبل التشغيل.</div>
+    <div style="overflow-x:auto"><table class="wt"><tr><th></th><th>العائد</th><th>سنوياً</th><th>أقصى هبوط</th><th>Sharpe</th><th>Calmar</th><th>تكاليف ×3</th></tr>
+    ${row('البطل',bt.champion)}${row('المتحدي',bt.challenger)}
+    <tr><td><b>احتفاظ BTC</b></td><td class="num">${P(hold.ret)}</td><td class="num">${P(hold.cagr)}</td><td class="num">${P(-hold.max_dd)}</td><td class="num">${N(hold.sharpe)}</td><td class="num">${N(hold.calmar)}</td><td>—</td></tr>
+    <tr><td><b>شراء دوري</b></td><td class="num">${P(dca.ret)}</td><td class="num">${P(dca.cagr)}</td><td class="num">${P(-dca.max_dd)}</td><td class="num">${N(dca.sharpe)}</td><td class="num">${N(dca.calmar)}</td><td>—</td></tr></table></div>
+    <h3 style="margin:12px 0 4px;font-size:.9rem">الفترات المتتالية</h3><div style="overflow-x:auto"><table class="wt"><tr><th>الفترة</th><th>البطل</th><th>المتحدي</th></tr>${folds}</table></div>
+    <div class="note">الترقية: ${pr.challenger?'<b class="up">نجح المتحدي في الشروط الأربعة</b>':'<b class="warn">لم يُرقَّ المتحدي</b>'} (${(pr.checks||[]).map((c,i)=>`${names[i]} ${c?'✓':'✗'}`).join('، ')}). محرك المخاطر يبقى مفعّلاً حياً في كل الأحوال لأنه حماية لا استراتيجية.
+    ${(bt.caveats||[]).length?'<br>حدود هذا الاختبار: '+bt.caveats.map(x=>({"survivorship: the universe is today's listed permissible coins":'العملات هي المدرجة اليوم فقط (انحياز البقاء)',"the 2024-2026 'exam' was lived through before the rules were written: not a truly unseen holdout":'فترة 2024–2026 شوهدت قبل كتابة القواعد',"spread and data-freshness gates are live-only and not simulated":'بوابات الفارق وحداثة البيانات حية فقط',"the only truly unseen test is the live paper record from 2026-11-02":'الاختبار غير المرئي الوحيد هو السجل الحي منذ 2 نوفمبر'}[x]||x)).join('؛ '):''}</div></section>`;
 }
 
 /* ---------- control ---------- */
