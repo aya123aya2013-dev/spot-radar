@@ -2,6 +2,36 @@
  "note": "Research backlog: every idea is tested on history with an untouched exam window and compared with the same test on random data before anyone believes it. Status: pending / tested / rejected / candidate / adopted / blocked. experiments.py runs the pending ones that have a test; the Friday review records the result here and in the journal.",
  "items": [
   {
+   "id": "bear_p1_capitulation",
+   "title": "صيد ارتداد الاستسلام في السوق الهابط",
+   "idea": "بعد انهيار (RSI<25، -20% من قمة 20 يوماً، حجم ذعر) وشمعة خضراء قوية: دخول، وقف تحت القاع، خروج عند EMA20 أو +10%.",
+   "status": "rejected",
+   "added": "2026-11-02",
+   "tested": "2026-11-02",
+   "result": "103 صفقة على 27 عملة في 7 فترات هبوط: نجاح 40%، متوسط -2.08% للصفقة، أسوأ من الدخول العشوائي (-0.78%). نجح في انهيار مارس 2020 ومنتصف 2026، وخسر في 2022 و2025-2026.",
+   "source": "بحث bear_hunt.py"
+  },
+  {
+   "id": "bear_p2_relative_strength",
+   "title": "العملة القوية في سوق ضعيف",
+   "idea": "عملة فوق EMA50 الصاعد، تفوقت على BTC بـ20 نقطة في 30 يوماً، وتكسر قمة 20 يوماً، بينما BTC هابط.",
+   "status": "rejected",
+   "added": "2026-11-02",
+   "tested": "2026-11-02",
+   "result": "79 صفقة: نجاح 22%، متوسط -0.85% مقابل +1.26% للعشوائي. القوة في السوق الهابط لا تدوم غالباً: 75 من 79 ضُربت بالوقف.",
+   "source": "بحث bear_hunt.py"
+  },
+  {
+   "id": "bear_p3_deep_value",
+   "title": "التجميع عند القيمة العميقة (BTC وETH)",
+   "idea": "شراء عندما يكون السعر أقل من EMA350 بـ20% وRSI<35، والاحتفاظ 180 يوماً.",
+   "status": "tested",
+   "added": "2026-11-02",
+   "tested": "2026-11-02",
+   "result": "28 دخولاً: متوسط +25.8% بعد 180 يوماً (الوسيط +9.8%، الأسوأ -37.6%)، لكن الشراء في أي يوم عشوائي أعطى +42%. أي أن الاحتفاظ الطويل كان رابحاً تاريخياً، وتوقيته بهذه القاعدة لم يضف شيئاً. وتجميع 2025-2026 ما زال -13%. ليس صيداً بل قرار ادخار.",
+   "source": "بحث bear_hunt.py"
+  },
+  {
    "id": "e_protect_threshold",
    "title": "حماية الربح في E تخرج مبكراً",
    "idea": "12 من 14 صفقة حية في E خرجت بـ-0.1% بعد أن انتقل الوقف فوق الدخول عند +1%، وفي 6 منها بلغ السعر +2% لاحقاً. فرضية: تفعيل الحماية عند +1.5% أو عدم تفعيلها قبل قفل الـ2%. تُختبر على التاريخ وعلى الضوضاء.",
