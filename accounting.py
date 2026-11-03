@@ -83,9 +83,9 @@ def summarize(st, csv_path, costs_path=None):
     try:
         bt = json.load(open(os.path.join(os.path.dirname(csv_path), "backtest_G.json")))
         best = bt["challenger"] if bt.get("promotion", {}).get("challenger") else bt["champion"]
-        cagr, dd = best["full"].get("cagr"), best["full"].get("max_dd")
+        cagr, bt_dd = best["full"].get("cagr"), best["full"].get("max_dd")   # backtest figures: never reuse `dd`
         if cagr and monthly_cost > 0:
-            support = dict(hist_cagr=cagr, hist_max_dd=dd, monthly_at_cagr=eq * cagr / 12,
+            support = dict(hist_cagr=cagr, hist_max_dd=bt_dd, monthly_at_cagr=eq * cagr / 12,
                            capital_needed=monthly_cost * 12 / cagr, covers=eq * cagr / 12 >= monthly_cost)
     except Exception:
         pass

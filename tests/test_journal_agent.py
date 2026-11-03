@@ -84,3 +84,18 @@ if __name__ == "__main__":
     test_emergency_stop_blocks_agent_entries()
     test_backtest_resumes_after_drawdown_halt()
     print("4 journal/agent tests passed")
+
+
+def test_live_drawdown_not_overwritten_by_backtest():
+    """Regression: the cost-support block once reused `dd`, so the live max drawdown showed the backtest's 23.75%."""
+    import accounting
+    d = tempfile.mkdtemp()
+    csv_p = os.path.join(d, "paper_equity_G.csv")
+    open(csv_p, "w").write("time,equity,btc\n2026-11-02 10:00,5000,77000\n2026-11-03 10:00,4950,76000\n")
+    json.dump(dict(promotion=dict(challenger=True), challenger=dict(full=dict(cagr=0.147, max_dd=0.2375))),
+              open(os.path.join(d, "backtest_G.json"), "w"))
+    costs_p = os.path.join(d, "costs.json")
+    json.dump(dict(monthly=[dict(name="x", usd=1500)]), open(costs_p, "w"))
+    a = accounting.summarize(dict(equity=4950, cash=4950, trades=[], holdings={}), csv_p, costs_p)
+    assert abs(a["max_drawdown"] - 0.01) < 1e-9
+    assert a["operating"]["support"]["hist_max_dd"] == 0.2375
