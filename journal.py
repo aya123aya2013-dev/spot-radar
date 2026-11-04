@@ -5,9 +5,9 @@ Records both executed and REJECTED decisions with their reasons, so missed oppor
 without hindsight (the record holds only what was known at decision time)."""
 import hashlib, json, os
 
-import spot_lab as sl
+import market as mk
 
-PATH = os.path.join(sl.OUT, "journal.jsonl")
+PATH = os.path.join(mk.OUT, "journal.jsonl")
 
 
 def _hash(prev, body):

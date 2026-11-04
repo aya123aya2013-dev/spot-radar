@@ -63,11 +63,11 @@ def test_emergency_stop_blocks_agent_entries():
 def test_backtest_resumes_after_drawdown_halt():
     """Regression: a drawdown halt used to re-trigger forever (breach checked before the halt expired)."""
     sys.argv.append("--synthetic")
-    import importlib, spot_lab
-    importlib.reload(spot_lab)
+    import importlib, market
+    importlib.reload(market)
     import agent
     importlib.reload(agent)
-    data = {c: spot_lab.klines(c, "1d", 1500) for c in ("BTC", "ETH", "SOL", "AVAX", "LINK", "DOGE")}
+    data = {c: market.klines(c, "1d", 1500) for c in ("BTC", "ETH", "SOL", "AVAX", "LINK", "DOGE")}
     days = [r[0] // agent.DAY for r in data["BTC"]]
     cfg = dict(agent.risk.load_control(), max_drawdown=0.02, halt_days=5)       # tiny limit: forces many halts
     curve, trades, _, acc = agent.backtest_run(data, days[260], days[-1], risk_cfg=cfg, edge_table={})
@@ -76,14 +76,6 @@ def test_backtest_resumes_after_drawdown_halt():
     late = vals[len(vals) * 3 // 4:]
     assert len(set(round(v, 6) for v in late)) > 1, "equity frozen in the last quarter: halt never released"
     sys.argv.remove("--synthetic")
-
-
-if __name__ == "__main__":
-    test_journal_chain_detects_tampering()
-    test_agent_cycle_bookkeeping()
-    test_emergency_stop_blocks_agent_entries()
-    test_backtest_resumes_after_drawdown_halt()
-    print("4 journal/agent tests passed")
 
 
 def test_live_drawdown_not_overwritten_by_backtest():
@@ -99,3 +91,10 @@ def test_live_drawdown_not_overwritten_by_backtest():
     a = accounting.summarize(dict(equity=4950, cash=4950, trades=[], holdings={}), csv_p, costs_p)
     assert abs(a["max_drawdown"] - 0.01) < 1e-9
     assert a["operating"]["support"]["hist_max_dd"] == 0.2375
+
+
+if __name__ == "__main__":
+    tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
+    for t in tests:
+        t()
+    print(f"{len(tests)} journal/agent tests passed")

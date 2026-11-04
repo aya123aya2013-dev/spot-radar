@@ -25,8 +25,6 @@ jobs:
         run: |
           URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
           git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
-      - name: Retire the old accounts A-F (idempotent; kept as records)
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python retire.py A B C D E F || true
       - name: The trading agent G (paper, run as if it were real money)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python agent.py || true
       - name: Daily lessons from closed trades (read-only)
@@ -37,10 +35,14 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           NOTIFY_TEST: ${{ github.event.inputs.telegram_test }}
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python notify.py || true
-      - name: Post-mortem of closed trades (read-only)
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python postmortem.py || true
       - name: OKX vs Binance public check
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python okx_check.py || true
+      - name: Remove files of the deleted accounts A-F (backup kept on branch archive-legacy)
+        run: |
+          cd data/lab_data 2>/dev/null || exit 0
+          rm -f paper.json paper_[A-F].json paper_equity.csv paper_equity_[A-F].csv paper_trades.csv paper_trades_C.csv \
+                config.json config_B.json config_C.json backtest.json backtest_[D-F].json research_C.json research_null.json \
+                hitrate_C.json hitrate_null.json experiments.json experiments_null.json bear_hunt.json bear_hunt_null.json postmortems.json
       - name: Save state (single commit, no history growth)
         run: |
           cd data

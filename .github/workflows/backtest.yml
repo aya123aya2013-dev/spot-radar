@@ -11,7 +11,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,36 +20,12 @@ jobs:
         run: |
           URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
           git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
-      - name: Backtest and pick strategies
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" python spot_lab.py backtest
-      - name: OKX vs Binance candle comparison
+      - name: OKX vs Binance candle comparison (the agent's coins)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python okx_candles.py || true
-      - name: Noise control (same research on random data, results discarded except a count)
-        run: |
-          mkdir -p "$RUNNER_TEMP/null"
-          SPOT_LAB_DATA="$RUNNER_TEMP/null" python research.py --synthetic > "$RUNNER_TEMP/null.log" 2>&1 || true
-          python - <<'PY'
-          import json, os
-          p = os.path.join(os.environ["RUNNER_TEMP"], "null", "config_C.json")
-          out = os.path.join(os.environ["GITHUB_WORKSPACE"], "data", "lab_data", "research_null.json")
-          try:
-              c = json.load(open(p))
-              act = [k for k, v in c.items() if k != "generated" and v.get("active")]
-              json.dump(dict(active=len(act), coins=len(c) - 1, generated=c.get("generated")), open(out, "w"))
-          except Exception as e:
-              print("noise control skipped:", e)
-          PY
-      - name: Experiments (learning loop, real data)
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 900 python experiments.py || true
-      - name: Experiments on noise (yardstick)
-        run: |
-          mkdir -p "$RUNNER_TEMP/xnull"
-          SPOT_LAB_DATA="$RUNNER_TEMP/xnull" timeout 600 python experiments.py --synthetic || true
-          cp "$RUNNER_TEMP/xnull/experiments_null.json" data/lab_data/ 2>/dev/null || true
-      - name: Backtest account F rules
-        run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 1200 python swing.py backtest || true
       - name: Backtest the agent (G) since 2019
         run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 1500 python agent.py backtest || true
+      - name: Agent challengers (pre-registered variants)
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 1500 python agent.py variants || true
       - name: Agent on noise (yardstick)
         run: |
           mkdir -p "$RUNNER_TEMP/gnull"

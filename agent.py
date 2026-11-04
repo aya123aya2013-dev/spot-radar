@@ -31,11 +31,11 @@ State: lab_data/paper_G.json, paper_equity_G.csv, agent_report.json, backtest_G.
 import csv, json, math, os, sys, time
 from datetime import datetime, timezone
 
-import spot_lab as sl
+import market as mk
 import policy
 import risk
 
-OUT = sl.OUT
+OUT = mk.OUT
 STATE = os.path.join(OUT, "paper_G.json")
 REPORT = os.path.join(OUT, "agent_report.json")
 CAPITAL = 5000.0
@@ -48,7 +48,7 @@ WATCH_N, MAX_POS, SLOT = 8, 6, 4
 VOL_UNIT = 0.0075
 INIT_ATR, TRAIL_ATR, PARTIAL_R = 2.5, 3.0, 2.0
 TARGET2_R = 4.0          # second sell target (guide for the remaining half; the trailing stop decides the actual exit)
-FEE, SLIP = sl.FEE, sl.SLIP
+FEE, SLIP = mk.FEE, mk.SLIP
 DAY = 86400000
 OKX_FILE = os.path.join(OUT, "okx_instruments.json")
 REGIME_AR = {"bull": "صاعد", "early": "بداية صعود", "turn": "محاولة انعطاف", "bear": "هابط", "weak": "ضعيف بلا اتجاه"}
@@ -58,8 +58,8 @@ REGIME_AR = {"bull": "صاعد", "early": "بداية صعود", "turn": "محا
 def indicators(rows):
     c = [r[4] for r in rows]
     n = len(c)
-    e20, e50, e200 = sl.ema(c, 20), sl.ema(c, 50), sl.ema(c, 200)
-    at = sl.atr(rows)
+    e20, e50, e200 = mk.ema(c, 20), mk.ema(c, 50), mk.ema(c, 200)
+    at = mk.atr(rows)
     vol = [None] * n
     for i in range(21, n):
         rs = [c[j] / c[j - 1] - 1 for j in range(i - 19, i + 1)]
@@ -407,7 +407,7 @@ def evaluate(data):
         _, tr, _, _ = run(start, day)
         return risk.edge_table_from(tr)
 
-    out = dict(generated=datetime.now(timezone.utc).isoformat(), synthetic=sl.SYN, coins=len(data),
+    out = dict(generated=datetime.now(timezone.utc).isoformat(), synthetic=mk.SYN, coins=len(data),
                period=[datetime.fromtimestamp(start * 86400, timezone.utc).strftime("%Y-%m-%d"),
                        datetime.fromtimestamp(end * 86400, timezone.utc).strftime("%Y-%m-%d")],
                candidates_tested=2, promotion_rule=PROMOTION_RULE, risk_config=cfg,
@@ -476,7 +476,7 @@ def variants():
     data = {}
     for c in COINS:
         try:
-            rows = sl.klines(c, "1d", 3000)
+            rows = mk.klines(c, "1d", 3000)
             if len(rows) >= 300:
                 data[c] = rows
         except Exception as e:
@@ -501,7 +501,7 @@ def variants():
         _, tr, _, _ = run(start, day)
         return risk.edge_table_from(tr)
     edges = {a: edge_before(a) for a, _ in folds}
-    out = dict(generated=datetime.now(timezone.utc).isoformat(), synthetic=sl.SYN, rule=VARIANT_RULE, candidates_tested=3,
+    out = dict(generated=datetime.now(timezone.utc).isoformat(), synthetic=mk.SYN, rule=VARIANT_RULE, candidates_tested=3,
                period=[datetime.fromtimestamp(start * 86400, timezone.utc).strftime("%Y-%m-%d"),
                        datetime.fromtimestamp(end * 86400, timezone.utc).strftime("%Y-%m-%d")], results={})
     for name, kw in cands.items():
@@ -531,20 +531,20 @@ def variants():
     hold, dca = btc_rulers(data["BTC"], start, end)
     out.update(btc_hold=hold, btc_dca=dca)
     print("adopted:", out["adopted"], {k: v.get("checks") for k, v in out["results"].items() if "checks" in v})
-    json.dump(out, open(os.path.join(OUT, "variants_G_null.json" if sl.SYN else "variants_G.json"), "w"), indent=1)
+    json.dump(out, open(os.path.join(OUT, "variants_G_null.json" if mk.SYN else "variants_G.json"), "w"), indent=1)
 
 
 def backtest():
     data = {}
     for c in COINS:
         try:
-            rows = sl.klines(c, "1d", 3000)
+            rows = mk.klines(c, "1d", 3000)
             if len(rows) >= 300:
                 data[c] = rows
         except Exception as e:
             print(f"  ! {c}: {e}")
     out = evaluate(data)
-    json.dump(out, open(os.path.join(OUT, "backtest_G_null.json" if sl.SYN else "backtest_G.json"), "w"), indent=1)
+    json.dump(out, open(os.path.join(OUT, "backtest_G_null.json" if mk.SYN else "backtest_G.json"), "w"), indent=1)
 
 
 # ---------------------------------------------------------------- real-exchange realism (treated as real money)
@@ -556,7 +556,7 @@ def okx_rules():
             return cache["rules"]
     except Exception:
         cache = None
-    if sl.SYN:
+    if mk.SYN:
         return {c: dict(lot=1e-6, min=1e-6, tick=1e-6) for c in COINS}
     try:
         import urllib.request
@@ -650,7 +650,7 @@ def cycle():
     price, price_ok = {}, True
     for c in list(st["pos"]) + ["BTC"]:
         try:
-            price[c] = sl.last_price(c, sl.klines(c, "1h", 3, closed_only=False) if sl.SYN else None)
+            price[c] = mk.last_price(c, mk.klines(c, "1h", 3, closed_only=False) if mk.SYN else None)
         except Exception as e:
             price_ok = False
             print(f"  ! price {c}: {e}")
@@ -729,13 +729,13 @@ def cycle():
         data = {}
         for c in COINS:
             try:
-                rows = sl.klines(c, "1d", 400)
+                rows = mk.klines(c, "1d", 400)
                 if len(rows) >= 120:
                     data[c] = rows
             except Exception as e:
                 print(f"  ! {c}: {e}")
         if "BTC" in data:
-            age_h = 0.0 if sl.SYN else (now_ms - (data["BTC"][-1][0] + DAY)) / 3600000   # synthetic candles are not dated like real ones
+            age_h = 0.0 if mk.SYN else (now_ms - (data["BTC"][-1][0] + DAY)) / 3600000   # synthetic candles are not dated like real ones
             coverage = len(data) / len(COINS)
             inds = {k: indicators(v) for k, v in data.items()}
             snaps = {k: snap(ind, len(ind["c"]) - 1) for k, ind in inds.items()}
@@ -781,7 +781,7 @@ def cycle():
                     actions.append(f"تخطي {k}: غير متاحة للتداول الفوري على OKX")
                     continue
                 try:
-                    px = sl.last_price(k, data[k]) if sl.SYN else sl.last_price(k, None)
+                    px = mk.last_price(k, data[k]) if mk.SYN else mk.last_price(k, None)
                 except Exception:
                     px = price[k]
                 price[k] = px

@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""Monthly scorecard: every paper account since its start against the two simplest rulers, holding BTC and
+"""Monthly scorecard: the agent (G) since its start against the two simplest rulers, holding BTC and
 buying BTC in equal weekly instalments, plus trade counts and win rates.  Read-only; writes lab_data/monthly.json
 (a list, one entry per report, newest last).  Runs on the 17th of each month and on demand."""
 import csv, json, os
 from datetime import datetime, timezone
 
-import spot_lab as sl
+import market as mk
 
-OUT = sl.OUT
+OUT = mk.OUT
 CAPITAL = 5000.0
-ACCOUNTS = [("A", "paper.json", "paper_equity.csv"), ("B", "paper_B.json", "paper_equity_B.csv"),
-            ("C", "paper_C.json", "paper_equity_C.csv"), ("D", "paper_D.json", "paper_equity_D.csv"),
-            ("E", "paper_E.json", "paper_equity_E.csv"), ("F", "paper_F.json", "paper_equity_F.csv"), ("G", "paper_G.json", "paper_equity_G.csv")]
+ACCOUNTS = [("G", "paper_G.json", "paper_equity_G.csv")]
 
 
 def load(name):
@@ -58,7 +56,7 @@ def btc_rulers(start, end, daily):
 def main():
     now = datetime.now(timezone.utc)
     try:
-        daily = [(r[0], r[4]) for r in sl.klines("BTC", "1d", 400)]
+        daily = [(r[0], r[4]) for r in mk.klines("BTC", "1d", 400)]
     except Exception as e:
         print("no BTC daily data:", e)
         daily = []
@@ -85,9 +83,11 @@ def main():
                               avg_trade=(sum(t["ret"] for t in sells) / len(sells)) if sells else None,
                               btc_hold=hold, btc_dca=dca)
     entry = dict(generated=now.isoformat(), month=now.strftime("%Y-%m"), accounts=accounts,
-                 note="Paper accounts only. Rulers: holding BTC and weekly DCA into BTC over the same days. No profit is promised.")
+                 note="Paper account only. Rulers: holding BTC and weekly DCA into BTC over the same days. No profit is promised.")
     path = os.path.join(OUT, "monthly.json")
     hist = json.load(open(path)) if os.path.exists(path) else []
+    hist = [dict(h, accounts={k: v for k, v in h.get("accounts", {}).items() if k == "G"}) for h in hist]
+    hist = [h for h in hist if h["accounts"]]            # reports of the deleted accounts are dropped
     hist = [h for h in hist if h.get("month") != entry["month"]] + [entry]
     os.makedirs(OUT, exist_ok=True)
     json.dump(hist[-24:], open(path, "w"), indent=1)

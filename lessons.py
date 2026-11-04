@@ -1,37 +1,36 @@
 #!/usr/bin/env python3
-"""Daily lesson: what the closed trades of the quick-strike accounts (D and E) teach, measured, not guessed.
+"""Daily lesson from the agent's closed trades: measured from real candles, not guessed.
 
-For every closed trade it reads the real hourly candles and measures:
-  best / worst price while holding (MFE / MAE), what the price did 24h after the exit,
-  and a plain label: stop hit then price recovered, stop hit and price kept falling, target hit then price ran on,
-  early protected exit before the target, time exit ...
-Then it aggregates ALL closed trades by signal, coin, exit reason and entry hour (UTC), and writes one Arabic lesson
-for the day.  Output: lab_data/lessons.json (daily entries + aggregates + suggested hypotheses for the backlog).
-Read-only.  It never changes any account; rule changes go through the backlog and the weekly test.
+For every sell (a full exit or a partial one) it reads the candles and measures:
+  best and worst price while holding (MFE / MAE, from daily candles),
+  what the price did in the POST_H hours after the exit (hourly candles),
+  and a plain label: stop hit then the price recovered above the entry, stop hit and the fall continued,
+  exited and the price ran on, exited and the exit avoided a fall ...
+Then it aggregates all closed fills by label, exit reason, coin and entry regime, and writes one Arabic lesson for
+the day.  Output: lab_data/lessons.json.  Read-only: it never changes the account.  A rule changes only through a
+challenger in agent.py that passes the pre-registered promotion rule.
 """
 import json, os
 from datetime import datetime, timezone, timedelta
 
-import spot_lab as sl
+import market as mk
 
-OUT = sl.OUT
+OUT = mk.OUT
 PATH = os.path.join(OUT, "lessons.json")
-ACCOUNTS = [("D", "paper_D.json"), ("E", "paper_E.json"), ("F", "paper_F.json"), ("G", "paper_G.json")]
+STATE = os.path.join(OUT, "paper_G.json")
 HOUR = 3600 * 1000
+DAY = 24 * HOUR
+POST_H = 72            # the agent trades daily candles: judge an exit on the next 3 days, not the next hour
+MOVE = 0.05            # a move of 5% after the exit counts as "the price ran on" / "the exit avoided a fall"
 MIN_CASES = 5          # no pattern is called a lesson before this many cases
-WHY_AR = {"stop": "وقف", "target": "هدف", "time": "وقت", "protect": "حماية ربح", "locked": "قفل 2%+", "lock": "قفل بعد الهدف", "momentum": "زخم انتهى", "trend": "كسر الاتجاه", "halt": "قاطع", "policy": "سياسة"}
+WHY_AR = {"stop": "وقف", "partial": "جني النصف", "risk_trim": "تقليص حسب حد المخاطرة", "risk_limit": "قاطع الهبوط",
+          "budget": "خفض الميزانية", "policy": "سياسة العملات"}
 LABEL_AR = {
-    "stop_recovered": "ضُرب الوقف ثم ارتد السعر فوق الدخول خلال 24 ساعة",
-    "stop_continued": "ضُرب الوقف واستمر الهبوط",
-    "target_ran": "تحقق الهدف واستمر الصعود أكثر من 2% إضافية",
-    "target_clean": "تحقق الهدف ثم تراجع السعر: خروج جيد",
-    "protect_early": "حماية الربح أخرجت الصفقة ثم بلغ السعر الهدف",
-    "protect_good": "حماية الربح أنقذت ربحاً لم يبلغ الهدف",
-    "locked_ran": "خرج عند قفل 2%+ ثم صعد السعر 2% إضافية على الأقل",
-    "locked_good": "خرج عند قفل 2%+ ولم يصعد السعر أكثر: خروج جيد",
-    "time_up": "انتهى الوقت ثم صعد السعر",
-    "time_down": "انتهى الوقت ثم هبط السعر",
-    "other": "أخرى",
+    "stop_recovered": "ضُرب الوقف ثم عاد السعر فوق سعر الدخول خلال 3 أيام",
+    "stop_continued": "ضُرب الوقف ولم يعد السعر إلى الدخول: الوقف حمى الحساب",
+    "exit_early": "خرج ثم صعد السعر 5% أو أكثر",
+    "exit_saved": "خرج ثم هبط السعر 5% أو أكثر: الخروج جنّب خسارة",
+    "exit_neutral": "خرج ولم يتحرك السعر كثيراً بعده",
 }
 
 
@@ -39,68 +38,63 @@ def ts(s):
     return int(datetime.strptime(str(s)[:16], "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).timestamp() * 1000)
 
 
-def bars(coin, t0, n=120):
-    if sl.SYN:
-        rows = sl.synthetic(coin, "1h", 1500)
+def candles(coin, tf, t0, n):
+    if mk.SYN:
+        rows = mk.synthetic(coin, tf, 1500)
         return [r for r in rows if r[0] >= t0][:n]
-    b = sl.api(f"/api/v3/klines?symbol={coin}USDT&interval=1h&startTime={t0}&limit={n}")
+    b = mk.api(f"/api/v3/klines?symbol={coin}USDT&interval={tf}&startTime={t0}&limit={n}")
     return [[int(k[0]), *map(float, k[1:6])] for k in b]
 
 
-def pair(trades):
-    """(buy, sell) pairs per coin, in order."""
-    open_, out = {}, []
+def fills(trades):
+    """(buy, sell) for every sell, matched to its position's buy by pos_id (or the coin's last buy)."""
+    by_pos, last_buy, out = {}, {}, []
     for t in trades:
         if t.get("side") == "BUY":
-            open_[t["coin"]] = t
-        elif t.get("side") == "SELL" and t["coin"] in open_:
-            out.append((open_.pop(t["coin"]), t))
+            last_buy[t["coin"]] = t
+            if t.get("pos_id"):
+                by_pos[t["pos_id"]] = t
+        elif t.get("side") == "SELL":
+            buy = by_pos.get(t.get("pos_id")) or last_buy.get(t["coin"])
+            if buy:
+                out.append((buy, t))
     return out
 
 
-def label(sell, mfe, post_max, post_min, tp):
-    why, ret = sell.get("why"), sell.get("ret", 0)
+def label(why, entry, exit_px, post_max, post_min):
     if why == "stop":
-        return "stop_recovered" if post_max >= 0.0 else "stop_continued"
-    if why == "target":
-        return "target_ran" if post_max >= tp else "target_clean"
-    if why == "protect":
-        return "protect_early" if post_max >= tp else "protect_good"
-    if why in ("locked", "lock", "momentum"):
-        return "locked_ran" if post_max >= ret + 0.02 else "locked_good"
-    if why == "trend":
-        return "stop_recovered" if post_max >= 0.0 else "stop_continued"
-    if why == "time":
-        return "time_up" if post_max > 0.01 and post_max > -post_min else "time_down"
-    return "other"
+        return "stop_recovered" if post_max >= entry else "stop_continued"
+    if post_max >= exit_px * (1 + MOVE):
+        return "exit_early"
+    if post_min <= exit_px * (1 - MOVE):
+        return "exit_saved"
+    return "exit_neutral"
 
 
-def analyze(acct, st, cache):
-    rules = st.get("rules") or {}
-    tp = rules.get("tp", 0.02)
+def analyze(st, cache, now_ms):
     out = []
-    for buy, sell in pair(st.get("trades", [])):
-        key = f"{acct}|{sell['coin']}|{sell['time']}"
+    for buy, sell in fills(st.get("trades", [])):
+        key = f"G|{sell['coin']}|{sell['time']}|{sell.get('why')}"
         if key in cache:
             out.append(cache[key])
             continue
         try:
             t0, t1 = ts(buy["time"]), ts(sell["time"])
-            rows = bars(sell["coin"], t0 - HOUR)
-            held = [r for r in rows if t0 <= r[0] <= t1]
-            after = [r for r in rows if t1 < r[0] <= t1 + 24 * HOUR]
+            if now_ms - t1 < POST_H * HOUR:
+                continue                                        # too fresh to judge: the next runs will do it
+            held = [r for r in candles(sell["coin"], "1d", t0 - DAY, 1000) if t0 - DAY < r[0] <= t1]
+            after = [r for r in candles(sell["coin"], "1h", t1, POST_H + 2) if t1 < r[0] <= t1 + POST_H * HOUR]
+            if len(after) < POST_H // 2:
+                continue
             entry, exit_px = buy["price"], sell["price"]
             mfe = (max(r[2] for r in held) / entry - 1) if held else 0.0
             mae = (min(r[3] for r in held) / entry - 1) if held else 0.0
-            if len(after) < 3:
-                continue                                    # too fresh to judge: wait for the next run
-            post_max = max(r[2] for r in after) / entry - 1    # relative to ENTRY: did the idea work later?
-            post_min = min(r[3] for r in after) / entry - 1
-            lab = label(sell, mfe, post_max, post_min, tp)
-            item = dict(key=key, account=acct, coin=sell["coin"], entry_time=buy["time"], exit_time=sell["time"],
-                        entry_hour=int(buy["time"][11:13]), signal=sell.get("signal") or buy.get("signal") or "-",
-                        why=sell.get("why"), ret=sell.get("ret"), hours=sell.get("hours"), mfe=mfe, mae=mae,
-                        post24_max=post_max, post24_min=post_min, label=lab)
+            post_max, post_min = max(r[2] for r in after), min(r[3] for r in after)
+            item = dict(key=key, account="G", coin=sell["coin"], entry_time=buy["time"], exit_time=sell["time"],
+                        regime=buy.get("regime") or "-", why=sell.get("why"), ret=sell.get("ret"),
+                        pnl_usd=sell.get("pnl_usd"), mfe=mfe, mae=mae,
+                        post_max=post_max / exit_px - 1, post_min=post_min / exit_px - 1,
+                        label=label(sell.get("why"), entry, exit_px, post_max, post_min))
             cache[key] = item
             out.append(item)
         except Exception as e:
@@ -115,66 +109,72 @@ def agg(items, field):
     return {k: dict(n=len(v), win=sum(x > 0 for x in v) / len(v), mean=sum(v) / len(v)) for k, v in d.items()}
 
 
+def usd(x):
+    return f"{'+' if x >= 0 else '-'}${abs(x):,.2f}"
+
+
 def lesson_text(today_items, all_items):
-    """One honest paragraph.  Patterns are only named with >= MIN_CASES cases."""
+    """One honest paragraph.  Patterns are named only with >= MIN_CASES cases."""
     lines, hyps = [], []
     if today_items:
-        wins = [i for i in today_items if (i["ret"] or 0) > 0]
-        lines.append(f"أُغلقت اليوم {len(today_items)} صفقة في D وE، منها {len(wins)} رابحة.")
+        lines.append(f"صفقات الوكيل التي اكتمل تقييمها اليوم: {len(today_items)}.")
         for i in today_items:
-            lines.append(f"{i['account']} {i['coin']} {i['ret']*100:+.2f}% ({WHY_AR.get(i['why'], i['why'])}): {LABEL_AR.get(i['label'], i['label'])}.")
+            money = f" ({usd(i['pnl_usd'])})" if i.get("pnl_usd") is not None else ""
+            lines.append(f"{i['coin']} {i['ret']*100:+.2f}%{money}، {WHY_AR.get(i['why'], i['why'])}: {LABEL_AR.get(i['label'], i['label'])}.")
     else:
-        lines.append("لم تُغلق صفقات اليوم في D وE.")
+        lines.append("لا صفقات جديدة اكتمل تقييمها اليوم (أي خروج يُقيَّم بعد 3 أيام من حركة السعر).")
     n = len(all_items)
     if n >= MIN_CASES:
-        labs = agg(all_items, "label")
         stops = [i for i in all_items if i["why"] == "stop"]
         rec = [i for i in stops if i["label"] == "stop_recovered"]
         if len(stops) >= MIN_CASES:
             share = len(rec) / len(stops)
-            lines.append(f"من {len(stops)} وقفاً حتى الآن، ارتد السعر فوق الدخول خلال 24 ساعة بعد {len(rec)} منها ({share*100:.0f}%).")
+            lines.append(f"من {len(stops)} وقفاً، عاد السعر فوق الدخول بعد {len(rec)} منها ({share*100:.0f}%).")
             if share >= 0.5:
-                hyps.append(dict(id="wider_stop_or_confirmation", title="الوقف يُضرب ثم يرتد السعر",
-                                 idea=f"في {share*100:.0f}% من الوقفات ارتد السعر فوق الدخول خلال 24 ساعة. فرضية: وقف أوسع (4%) أو دخول بعد شمعة تأكيد. تُختبر على التاريخ مقابل الضوضاء قبل أي تطبيق.",
-                                 source="درس يومي من الصفقات الحية", status="pending"))
-        pe = [i for i in all_items if i["label"] == "protect_early"]
-        pg = [i for i in all_items if i["label"] == "protect_good"]
-        if len(pe) + len(pg) >= MIN_CASES:
-            lines.append(f"حماية الربح: أنقذت ربحاً في {len(pg)} حالة وأخرجت مبكراً قبل الهدف في {len(pe)}.")
-            if len(pe) > len(pg):
-                hyps.append(dict(id="protect_later", title="حماية الربح تخرج مبكراً", idea="أكثر الخروجات المحمية سبقت بلوغ الهدف. فرضية: تفعيل الحماية بعد +1.5% بدل +1%.", source="درس يومي", status="pending"))
-        for field, name in (("signal", "الإشارة"), ("coin", "العملة"), ("entry_hour", "ساعة الدخول (UTC)")):
+                hyps.append(dict(id="g_stop_confirmation", title="الوقف يُضرب ثم يعود السعر",
+                                 idea=f"في {share*100:.0f}% من الوقفات عاد السعر فوق الدخول خلال 3 أيام. فرضية: وقف أوسع أو إغلاق يومي تحت الوقف بدل لمسه. تُختبر كمتحدٍّ في agent.py بقاعدة الترقية.",
+                                 source="درس يومي من صفقات الوكيل", status="pending"))
+        parts = [i for i in all_items if i["why"] == "partial"]
+        early = [i for i in parts if i["label"] == "exit_early"]
+        if len(parts) >= MIN_CASES:
+            lines.append(f"جني النصف عند +2R: بعد {len(early)} من {len(parts)} حالة صعد السعر 5% أو أكثر.")
+            if len(early) / len(parts) >= 0.6:
+                hyps.append(dict(id="g_partial_later", title="جني النصف مبكر", idea="أغلب حالات جني النصف تبعها صعود 5%+. فرضية: جني النصف عند +3R. تُختبر كمتحدٍّ.",
+                                 source="درس يومي", status="pending"))
+        for field, name in (("why", "سبب الخروج"), ("regime", "حالة السوق عند الدخول"), ("coin", "العملة")):
             a = {k: v for k, v in agg(all_items, field).items() if v["n"] >= MIN_CASES}
-            if a:
+            if len(a) >= 2:
                 best = max(a, key=lambda k: a[k]["mean"])
                 worst = min(a, key=lambda k: a[k]["mean"])
-                lines.append(f"{name}: الأفضل {best} (متوسط {a[best]['mean']*100:+.2f}% في {a[best]['n']})، الأسوأ {worst} ({a[worst]['mean']*100:+.2f}% في {a[worst]['n']}).")
-        lines.append(f"المجموع: {n} صفقة مغلقة، نسبة النجاح {sum((i['ret'] or 0) > 0 for i in all_items)/n*100:.0f}%، متوسط الصفقة {sum(i['ret'] or 0 for i in all_items)/n*100:+.2f}%. التعادل يحتاج نحو 66%.")
+                nm = (lambda k: WHY_AR.get(k, k)) if field == "why" else (lambda k: k)
+                lines.append(f"{name}: الأفضل {nm(best)} (متوسط {a[best]['mean']*100:+.2f}% في {a[best]['n']})، الأسوأ {nm(worst)} ({a[worst]['mean']*100:+.2f}% في {a[worst]['n']}).")
+        tot = sum(i.get("pnl_usd") or 0 for i in all_items)
+        lines.append(f"المجموع: {n} عملية خروج مقيَّمة، الرابحة {sum((i['ret'] or 0) > 0 for i in all_items)/n*100:.0f}%، صافي {usd(tot)}.")
     else:
-        lines.append(f"المجموع {n} صفقة مغلقة فقط؛ لا أستخلص نمطاً قبل {MIN_CASES} حالات لكل نمط.")
-    lines.append("القواعد لا تتغير على درس يوم واحد: الدروس تتجمع هنا، وما يتكرر يدخل قائمة الأفكار ويُختبر على التاريخ وعلى الضوضاء.")
+        lines.append(f"المقيَّم حتى الآن {n} عملية خروج فقط؛ لا أستخلص نمطاً قبل {MIN_CASES} حالات.")
+    lines.append("القواعد لا تتغير على درس يوم واحد: ما يتكرر يدخل قائمة الأفكار، ولا يُعتمد إلا كمتحدٍّ يتفوق على الوكيل الحالي بقاعدة الترقية المكتوبة مسبقاً.")
     return "\n".join(lines), hyps
 
 
 def main():
     now = datetime.now(timezone.utc)
-    prev = json.load(open(PATH)) if os.path.exists(PATH) else {"daily": [], "items": {}}
-    cache = {it["key"]: it for it in prev.get("items", {}).values()} if isinstance(prev.get("items"), dict) else {}
-    items = []
-    for acct, fn in ACCOUNTS:
-        p = os.path.join(OUT, fn)
-        if os.path.exists(p):
-            items += analyze(acct, json.load(open(p)), cache)
-    items.sort(key=lambda i: i["exit_time"])
-    cutoff = (now - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M")
-    today_items = [i for i in items if i["exit_time"] >= cutoff]
-    text, hyps = lesson_text(today_items, items)
+    prev = json.load(open(PATH)) if os.path.exists(PATH) else {}
+    if prev.get("scope") != "G":
+        prev = {}                                   # lessons of the deleted accounts are not carried over
+    cache = dict(prev.get("items") or {})
+    st = json.load(open(STATE)) if os.path.exists(STATE) else {"trades": []}
+    items = sorted(analyze(st, cache, now.timestamp() * 1000), key=lambda i: i["exit_time"])
     day = now.strftime("%Y-%m-%d")
+    known = set((prev.get("items") or {}).keys())
+    today_items = [i for i in items if i["key"] not in known] + [i for i in items if i["key"] in known and i.get("judged") == day]
+    for i in items:
+        i.setdefault("judged", day)
+    text, hyps = lesson_text(today_items, items)
     daily = [d for d in prev.get("daily", []) if d.get("date") != day] + [dict(date=day, n_today=len(today_items), text=text)]
-    out = dict(generated=now.isoformat(), items={i["key"]: i for i in items}, daily=daily[-60:],
-               aggregates=dict(by_label=agg(items, "label"), by_signal=agg(items, "signal"), by_coin=agg(items, "coin"),
-                               by_why=agg(items, "why"), by_hour=agg(items, "entry_hour"), n=len(items)),
-               suggested=hyps, labels=LABEL_AR)
+    out = dict(scope="G", generated=now.isoformat(), items={i["key"]: i for i in items}, daily=daily[-60:],
+               aggregates=dict(by_label=agg(items, "label"), by_why=agg(items, "why"), by_coin=agg(items, "coin"),
+                               by_regime=agg(items, "regime"), n=len(items)),
+               suggested=hyps, labels=LABEL_AR, why=WHY_AR)
     os.makedirs(OUT, exist_ok=True)
     json.dump(out, open(PATH, "w"), indent=1, ensure_ascii=False)
     print(text)

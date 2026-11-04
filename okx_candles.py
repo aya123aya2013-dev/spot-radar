@@ -9,9 +9,9 @@ Writes lab_data/okx_candles.json. If the agreement is high, results measured on 
 import json, math, os, urllib.request
 from datetime import datetime, timezone
 
-import spot_lab as sl
+import market as mk
 
-COINS = ["BTC", "ETH", "SOL", "OP", "POL"]
+COINS = mk.agent_coins()          # BTC, ETH and the agent's holdings and watchlist
 BAR = {"1h": "1H", "4h": "4H", "1d": "1Dutc"}
 N = 300
 
@@ -46,7 +46,7 @@ def main():
         for tf in BAR:
             try:
                 ok = {r[0]: r for r in okx_klines(coin, tf)}
-                bn = {r[0]: r for r in sl.klines(coin, tf)}
+                bn = {r[0]: r for r in mk.klines(coin, tf)}
                 ts = sorted(set(ok) & set(bn))
                 if len(ts) < 50:
                     errs.append(f"{coin} {tf}: only {len(ts)} common candles")
@@ -55,15 +55,15 @@ def main():
                 ro = [ok[b][4] / ok[a][4] - 1 for a, b in zip(ts, ts[1:])]
                 rb = [bn[b][4] / bn[a][4] - 1 for a, b in zip(ts, ts[1:])]
                 co, cb = [ok[t][4] for t in ts], [bn[t][4] for t in ts]
-                eo = (sl.ema(co, 12), sl.ema(co, 26))
-                ebn = (sl.ema(cb, 12), sl.ema(cb, 26))
+                eo = (mk.ema(co, 12), mk.ema(co, 26))
+                ebn = (mk.ema(cb, 12), mk.ema(cb, 26))
                 agree = sum((eo[0][i] > eo[1][i]) == (ebn[0][i] > ebn[1][i]) for i in range(len(ts))) / len(ts)
                 out[f"{coin}|{tf}"] = dict(candles=len(ts), median_bps=sorted(diffs)[len(diffs) // 2], worst_bps=max(diffs),
                                            ret_corr=corr(ro, rb), signal_agree=agree)
             except Exception as e:
                 errs.append(f"{coin} {tf}: {type(e).__name__} {str(e)[:60]}")
     json.dump(dict(time=datetime.now(timezone.utc).isoformat(timespec="seconds"), pairs=out, errors=errs),
-              open(os.path.join(sl.OUT, "okx_candles.json"), "w"))
+              open(os.path.join(mk.OUT, "okx_candles.json"), "w"))
     print(f"okx_candles: {len(out)} charts compared" + (f"; errors {errs}" if errs else ""))
     for k, v in out.items():
         print(f"  {k:8} median {v['median_bps']:.1f} bps  worst {v['worst_bps']:.1f}  corr {v['ret_corr']:.4f}  signal agree {v['signal_agree']*100:.1f}%")

@@ -9,10 +9,10 @@ Writes lab_data/okx_check.json.
 import json, os, sys, time, urllib.request
 from datetime import datetime, timezone
 
-import spot_lab as sl
+import market as mk
 
-COINS = ["BTC", "ETH", "SOL", "OP", "POL"]
-PATH = os.path.join(sl.OUT, "okx_check.json")
+COINS = mk.agent_coins()          # BTC, ETH and the agent's holdings and watchlist
+PATH = os.path.join(mk.OUT, "okx_check.json")
 NOTIONAL = 1000.0
 KEEP = 288
 
@@ -26,7 +26,7 @@ def okx_book(coin):
 
 
 def binance_book(coin):
-    d = sl.api(f"/api/v3/depth?symbol={coin}USDT&limit=50")
+    d = mk.api(f"/api/v3/depth?symbol={coin}USDT&limit=50")
     return [(float(p), float(q)) for p, q in d["asks"]], [(float(p), float(q)) for p, q in d["bids"]]
 
 
@@ -74,7 +74,7 @@ def main():
         avg[c] = dict(samples=len(h), gap_bps=m(0), gap_abs_bps=(sum(abs(x[0]) for x in h) / len(h)) if h else None,
                       okx_spread_bps=m(1), okx_slip_bps=m(2))
     json.dump(dict(time=now, notional=NOTIONAL, now=snap, avg=avg, errors=errs, history=hist,
-                   model_slip_bps=sl.SLIP * 1e4, okx_taker_bps=10, okx_maker_bps=8), open(PATH, "w"))
+                   model_slip_bps=mk.SLIP * 1e4, okx_taker_bps=10, okx_maker_bps=8), open(PATH, "w"))
     print(f"okx_check: {len(snap)}/{len(COINS)} coins" + (f"; errors {errs}" if errs else ""))
     for c, r in snap.items():
         print(f"  {c:4} gap {r['gap_bps']:+.1f} bps  OKX spread {r['okx_spread_bps']:.1f} bps  buy 1000$ slip {r['okx_slip_bps']}")

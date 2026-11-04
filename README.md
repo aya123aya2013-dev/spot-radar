@@ -1,10 +1,15 @@
-# spot-radar
-Live crypto spot dashboard (BTC, ETH, SOL, OP, POL) plus a $5000 paper-trading account.
+# spot-radar: the agent (G)
 
-- `index.html`: the dashboard (GitHub Pages).
-- `spot_lab.py`: backtests strategies and paper-trades.
-- `.github/workflows/backtest.yml`: picks strategies (weekly, or run it by hand).
-- `.github/workflows/paper.yml`: one paper-trading cycle every 5 minutes.
-- State lives on the `data` branch (`lab_data/`), rewritten as a single commit each time.
+A paper-trading crypto SPOT agent, run as if it were real money. Halal coins only (`coins_policy.json`, source cryptohalal.cc). No exchange keys, no real orders.
 
-Setup: Settings > Pages > Deploy from branch `main` / root. Then Actions > backtest > Run workflow, then Actions > paper-trade > Run workflow.
+- `agent.py`: the agent. Reads the market regime daily (BTC 50/200-day averages and breadth), sets a risk budget, trades the leaders on breakouts or pullback resumes, 2.5 ATR stop, trailing 3 ATR, half sold at +2R. `python agent.py backtest` and `python agent.py variants` run the champion/challenger tests.
+- `risk.py` + `control.json`: the deterministic risk engine. The agent proposes, the risk engine decides. Limits and the emergency stop live in `control.json`.
+- `journal.py` (hash-chained decision journal), `accounting.py` (P&L, fees, slippage, ratios, operating costs from `costs.json`).
+- `lessons.py` (daily lesson from closed trades), `monthly.py` (monthly scorecard vs BTC), `notify.py` (Telegram).
+- `okx_check.py`, `okx_candles.py`: OKX public order books and candles, to measure real costs. `market.py`: shared data helpers.
+- `tests/`: invariants of the risk engine, the journal and the agent. Run on every push.
+- `index.html`: the dashboard (GitHub Pages). State lives on the `data` branch (`lab_data/`).
+
+Workflows: `paper-trade` (one cycle about every 30-40 minutes), `backtest` (weekly: agent backtest, challengers, noise yardstick), `monthly`, `okx-candles`, `tests`.
+
+The old accounts A-F were deleted on 4 Nov 2026. Their code is on branch `archive-legacy-code` and their data on `archive-legacy`.
