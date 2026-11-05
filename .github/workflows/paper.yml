@@ -31,6 +31,8 @@ jobs:
         run: |
           URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
           git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
+      - name: Sharia rulings from cryptohalal.cc (once a day; the agent buys only coins ruled permissible)
+        run: SPOT_LAB_DATA="$PWD/data/lab_data" python halal_check.py || true
       - name: The trading agent G (paper, run as if it were real money)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python agent.py || true
       - name: Daily lessons from closed trades (read-only)
