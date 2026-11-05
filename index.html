@@ -321,6 +321,7 @@ button.rw:hover{background:rgba(255,255,255,.95)}
       <div class="date">سجل التغييرات</div>
       <h3>ما تغيّر في الوكيل</h3>
       <ul>
+        <li><b>5 نوفمبر 2026:</b> الأحكام الشرعية تُقرأ كل يوم مباشرة من موقع cryptohalal.cc، ولا يُشترى إلا ما حكمه «مباح» (APT أُخرجت لعدم وجود حكم لها). وحماية من ضياع بيانات الحساب: لا يبدأ حساباً جديداً إذا تعذّر تحميل الحالة، ونسخة احتياطية يومية لآخر 7 أيام.</li>
         <li><b>5 نوفمبر 2026:</b> الوقف وهدف البيع 1 صارا أوامر معلّقة كما على المنصة: يُنفَّذان عند لمس السعر بين الفحوص، لا متأخرين بتأخر جدولة GitHub. وأُضيفت إعادة محاولة عند فشل حفظ البيانات، ومواعيد إضافية بعد بداية اليوم لقرار الدخول.</li>
         <li><b>4 نوفمبر 2026:</b> حُذفت الحسابات المتوقفة والنظام القديم من اللوحة والتقارير والكود. لم يبقَ إلا الوكيل. وصُحِّح رقم «أقصى هبوط» الذي كان يعرض رقم الاختبار التاريخي بدل الحساب الحي.</li>
         <li><b>2 نوفمبر 2026 (قرارك):</b> قبول هبوط تاريخي حتى 25% مقابل ربح أعلى، فرُفع حد بُعد الوقف من 12% إلى 20%. على التاريخ: نحو 14.7% سنوياً بأقصى هبوط 23.8%، بلا ضمان.</li>
@@ -715,10 +716,10 @@ async function loadPaper(){
   const bust='?'+Date.now(),J=u=>fetch(u+bust).then(r=>r.ok?r.json():null).catch(()=>null),T=u=>fetch(u+bust).then(r=>r.ok?r.text():'').catch(()=>'');
   try{
     const stG=await fetch(base+'paper_G.json'+bust).then(r=>{if(!r.ok)throw 0;return r.json()});
-    const [btG,agentRep,okx,okxc,monthly,lessons,csvG]=await Promise.all([J(base+'backtest_G.json'),J(base+'agent_report.json'),J(base+'okx_check.json'),J(base+'okx_candles.json'),J(base+'monthly.json'),J(base+'lessons.json'),T(base+'paper_equity_G.csv')]);
+    const [btG,agentRep,okx,okxc,monthly,lessons,csvG,halal]=await Promise.all([J(base+'backtest_G.json'),J(base+'agent_report.json'),J(base+'okx_check.json'),J(base+'okx_candles.json'),J(base+'monthly.json'),J(base+'lessons.json'),T(base+'paper_equity_G.csv'),J(base+'halal_rulings.json')]);
     const [policy,backlog,costs]=await Promise.all([J(main+'coins_policy.json'),J(main+'research_backlog.json'),J(main+'costs.json')]);
     const serG=csvG.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:p[0],e:+p[1],b:+p[2]}}).filter(p=>p.e>0);
-    paper={stG,btG,agentRep,okx,okxc,monthly,lessons,serG,policy,backlog,costs};
+    paper={stG,btG,agentRep,okx,okxc,monthly,lessons,serG,policy,backlog,costs,halal};
     [renderAgent,renderAcct,renderWeekly,renderOkx,renderOkxCandles,renderLearn,renderMonthly,renderLesson,renderHome].forEach(f=>{try{f()}catch(e){console.warn('render',f.name,e)}});
     syncCoins();
   }catch(e){
@@ -862,7 +863,7 @@ function renderHome(){
     <div class="tile"><div class="l">الأسعار</div><div class="v ${live?'up':''}" id="hLive">${live?'مباشرة':'كل دقيقتين'}</div></div>
     <div class="tile"><div class="l">صفقات مغلقة</div><div class="v num">${L(acc.trades_closed||0)}</div></div>
     <div class="tile"><div class="l">المراجعة الأسبوعية</div><div class="v">الجمعة 19:47</div></div>
-    <div class="tile" style="grid-column:1/-1"><div class="l">سياسة العملات (الحكم الشرعي)</div><div class="v">${pol&&pol.excluded&&pol.excluded.length?'مستبعدة شرعاً: '+pol.excluded.join('، '):'لا استبعادات شرعية'}${pol&&pol.excluded_cost&&pol.excluded_cost.length?` <span class="sub">· مستبعدة لتكلفة التنفيذ: ${pol.excluded_cost.join('، ')}</span>`:''}${pol&&pol.unreviewed&&pol.unreviewed.length?` <span class="sub">· غير مفحوصة: ${pol.unreviewed.join('، ')}</span>`:''}</div><div class="sub">${pol&&pol.source?`المصدر: ${pol.source}${pol.checked?' · فُحصت '+pol.checked:''}`:''}. أي عملة غير مباحة لا يشتريها الوكيل أبداً.</div></div></div>`;
+    <div class="tile" style="grid-column:1/-1"><div class="l">سياسة العملات (الحكم الشرعي)</div><div class="v">${pol&&pol.excluded&&pol.excluded.length?'مستبعدة شرعاً: '+pol.excluded.join('، '):'لا استبعادات شرعية'}${pol&&pol.excluded_cost&&pol.excluded_cost.length?` <span class="sub">· مستبعدة لتكلفة التنفيذ: ${pol.excluded_cost.join('، ')}</span>`:''}${pol&&pol.unreviewed&&pol.unreviewed.length?` <span class="sub">· غير مفحوصة: ${pol.unreviewed.join('، ')}</span>`:''}</div><div class="sub">${paper&&paper.halal&&paper.halal.date?`مطابقة يومية مع موقع cryptohalal.cc · آخرها ${paper.halal.date} · ${((g&&g.rules&&g.rules.coins)||[]).length} عملة مباحة يتداولها الوكيل`:(pol&&pol.source?`المصدر: ${pol.source}`:'')}. لا يشتري الوكيل إلا عملة حكمها «مباح»، وإن تغيّر الحكم يبيعها.</div></div></div>`;
   el.innerHTML=`
     <div class="stack">
       <section class="card"><h2>الصفقات المفتوحة الآن</h2>${posHtml}</section>

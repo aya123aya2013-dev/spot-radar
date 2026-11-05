@@ -17,7 +17,12 @@ jobs:
       - name: Load state branch
         run: |
           URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
-          git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
+          for i in 1 2 3 4; do git clone -q --branch data --single-branch --depth 1 "$URL" data && break; rm -rf data; sleep $((i*15)); done
+          if [ ! -d data ]; then
+            rc=0; git ls-remote --exit-code --heads "$URL" data > /dev/null || rc=$?
+            if [ "$rc" != "2" ]; then echo "state branch not readable (rc=$rc): stop, never start from an empty account"; exit 1; fi
+            mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"
+          fi
       - name: Compare OKX and Binance candles
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python okx_candles.py
       - name: Save state (single commit, no history growth)

@@ -1,11 +1,12 @@
 {
  "note": "Coins the owner does not want traded (religious compliance), from the screening site below. Excluded coins are never bought by any account; an open position in an excluded coin is closed at the next cycle. Rulings are the site's, read by the owner's instruction; this file records them, it does not judge. excluded_cost: coins dropped for execution cost (not a religious ruling); treated the same way by the accounts.",
  "source": "https://www.cryptohalal.cc/",
- "checked": "2026-10-22",
+ "checked": "2026-11-05",
  "excluded": [
   "BNB"
  ],
  "unreviewed": [
+  "APT",
   "POL"
  ],
  "reviewed": {
@@ -26,10 +27,25 @@
   "ZRO": "مباح",
   "ZK": "مباح",
   "BNB": "غير مباح",
-  "POL": "غير مفحوصة في الموقع"
+  "POL": "غير مفحوصة في الموقع",
+  "XLM": "مباح",
+  "HBAR": "مباح",
+  "SUI": "مباح",
+  "ARB": "مباح",
+  "ALGO": "مباح",
+  "FIL": "مباح",
+  "ICP": "مباح",
+  "ETC": "مباح",
+  "BCH": "مباح",
+  "ZEC": "مباح",
+  "TAO": "مباح",
+  "RENDER": "مباح",
+  "QNT": "مباح",
+  "WLD": "مباح"
  },
  "excluded_cost": [
   "OP"
  ],
- "excluded_cost_reason": "تكلفة تنفيذ عالية على OKX (انزلاق 4–7 نقاط لأمر 1000$) وثلاث وقفات متتالية في A وC خلال الأسبوع الثاني. يُعاد النظر بعد شهر."
+ "excluded_cost_reason": "تكلفة تنفيذ عالية على OKX (انزلاق 4–7 نقاط لأمر 1000$) وثلاث وقفات متتالية في A وC خلال الأسبوع الثاني. يُعاد النظر بعد شهر.",
+ "note_site_list": "منذ 5 نوفمبر 2026 تُقرأ الأحكام يومياً من واجهة الموقع العامة (halal_check.py) وتتقدّم على هذا الملف. OP وZK غير مدرجتين في قائمة الموقع اليوم، فيُعتمد حكمهما المسجل هنا (مباح، 22 أكتوبر). APT بلا حكم: لا تُشترى."
 }

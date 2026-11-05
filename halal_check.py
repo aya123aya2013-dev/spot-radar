@@ -17,7 +17,7 @@ UA = {"User-Agent": "Mozilla/5.0 (spot-radar agent; daily ruling check)", "Accep
 # (all 0) as "مباح" and BNB (not 0) as "غير مباح".  Only 0 is ever bought; every other value is treated as not
 # permissible, whatever it stands for (forbidden, suspicious, new, unknown), so a new code can never open a trade.
 PERMISSIBLE = 0
-KNOWN = {0: "مباح"}
+KNOWN = {0: "مباح", 1: "غير مباح"}      # 1 is BNB's value, shown on the site as غير مباح
 ANCHORS = {"BTC": 0, "ETH": 0, "XRP": 0, "SOL": 0}      # sanity check of the meaning of 0 on every run
 
 
@@ -51,7 +51,7 @@ def main():
                     j = None
                 if sym and sym not in rulings:              # ordered by size: the first entry of a symbol wins
                     rulings[sym] = dict(name=it.get("name"), judgement=j, permissible=(j == PERMISSIBLE),
-                                        ruling=KNOWN.get(j, "غير مباح أو غير محسوم"), note=(it.get("judgnote") or it.get("note") or "")[:300],
+                                        ruling=KNOWN.get(j, "غير محسوم"), note=(it.get("judgnote") or it.get("note") or "")[:300],
                                         rank=it.get("rank"), slug=it.get("slug"))
             if len(items) < limit:
                 break

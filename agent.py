@@ -40,11 +40,12 @@ OUT = mk.OUT
 STATE = os.path.join(OUT, "paper_G.json")
 REPORT = os.path.join(OUT, "agent_report.json")
 CAPITAL = 5000.0
-_REL = frozenset(c.upper() for c in policy.load().get("excluded", []))
+_RULINGS = policy.site_rulings(OUT)          # refreshed daily from cryptohalal.cc by halal_check.py
 UNIVERSE = ["BTC", "ETH", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC", "OP", "DOT", "TRX", "ATOM", "NEAR",
             "XLM", "HBAR", "SUI", "APT", "ARB", "ALGO", "FIL", "ICP", "ETC", "BCH", "ZRO", "ZK", "ZEC", "TAO",
             "RENDER", "QNT", "WLD"]
-COINS = [c for c in UNIVERSE if c not in _REL]
+COINS = policy.permitted(UNIVERSE, _RULINGS)   # only coins ruled permissible (مباح); see policy.py
+_OK = frozenset(COINS)
 WATCH_N, MAX_POS, SLOT = 8, 6, 4
 VOL_UNIT = 0.0075
 INIT_ATR, TRAIL_ATR, PARTIAL_R = 2.5, 3.0, 2.0
@@ -702,6 +703,8 @@ def cycle():
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     now_ms = int(time.time() * 1000)
     today = now_ms // DAY
+    if not os.path.exists(STATE) and os.path.exists(os.path.join(OUT, "paper_equity_G.csv")):
+        raise SystemExit("state file missing while the account has history: stop instead of starting a new account")
     st = json.load(open(STATE)) if os.path.exists(STATE) else dict(start=datetime.now(timezone.utc).isoformat(), cash=CAPITAL, pos={},
                                                                     trades=[], events=[], last_day=0, orders=[])
     st.setdefault("cooldown", {})
@@ -753,8 +756,9 @@ def cycle():
         if not p["half"] and px >= p["entry"] + PARTIAL_R * p["r"]:
             sell(c, 0.5, px, "partial")
             p["half"], p["stop"] = True, max(p["stop"], p["entry"])
-        if c in _REL and c in st["pos"]:
+        if c not in _OK and c in st["pos"]:                   # ruling changed or no longer permissible: close it
             sell(c, 1.0, px, "policy")
+            st["events"].append(dict(time=stamp, text=f"G: بيع {c}: لم تعد مصنّفة مباحة في موقع الفحص الشرعي"))
 
     # ---- positions opened before the risk engine existed: if the loss at the stop is above 1.5x the per-trade cap,
     #      sell part so that it is back at the cap (REDUCE EXPOSURE; never adds, never averages down)

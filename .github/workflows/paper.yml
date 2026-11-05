@@ -30,7 +30,12 @@ jobs:
       - name: Load state branch
         run: |
           URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
-          git clone --branch data --single-branch --depth 1 "$URL" data 2>/dev/null || { mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"; }
+          for i in 1 2 3 4; do git clone -q --branch data --single-branch --depth 1 "$URL" data && break; rm -rf data; sleep $((i*15)); done
+          if [ ! -d data ]; then
+            rc=0; git ls-remote --exit-code --heads "$URL" data > /dev/null || rc=$?
+            if [ "$rc" != "2" ]; then echo "state branch not readable (rc=$rc): stop, never start from an empty account"; exit 1; fi
+            mkdir data && git -C data init -q -b data && git -C data remote add origin "$URL"
+          fi
       - name: Sharia rulings from cryptohalal.cc (once a day; the agent buys only coins ruled permissible)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" python halal_check.py || true
       - name: The trading agent G (paper, run as if it were real money)
@@ -58,3 +63,5 @@ jobs:
           git add -A
           git commit -q --amend -m "state" 2>/dev/null || git commit -q -m "state"
           ok=0; for i in 1 2 3 4; do if git push -q -f origin data; then ok=1; break; fi; echo "push failed (GitHub error), retry $i"; sleep $((i*15)); done; [ $ok = 1 ]
+          # rotating daily backups of the state (one branch per weekday, 7 days kept)
+          git push -q -f origin data:refs/heads/backup-$(date -u +%a | tr A-Z a-z) || echo "backup push failed"
