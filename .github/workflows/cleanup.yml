@@ -1,0 +1,20 @@
+name: cleanup-branches
+on:
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: space-separated branch names to delete (never main, data, archive-*, backup-*)
+        required: true
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: |
+          URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          for b in ${{ github.event.inputs.branches }}; do
+            case "$b" in main|data|archive-*|backup-*) echo "refusing $b"; continue;; esac
+            git push "$URL" --delete "$b" && echo "deleted $b"
+          done
