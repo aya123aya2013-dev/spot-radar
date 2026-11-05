@@ -9,7 +9,7 @@ A paper-trading crypto SPOT agent, run as if it were real money. Halal coins onl
 - `halal_check.py` + `policy.py`: the Sharia rulings, read daily from cryptohalal.cc's public API; only coins ruled مباح are traded.
 - `okx_check.py`, `okx_candles.py`: OKX public order books and candles, to measure real costs. `market.py`: shared data helpers. `tools/`: runner-side site probes.
 - `tests/`: invariants of the risk engine, the journal and the agent. Run on every push.
-- `index.html`: the dashboard (GitHub Pages). State lives on the `data` branch (`lab_data/`).
+- `index.html`: the dashboard (GitHub Pages), one self-contained file; `changelog.json` feeds its change log. State lives on the `data` branch (`lab_data/`).
 
 Workflows: `paper-trade` (one cycle about every 30-40 minutes), `backtest` (weekly: agent backtest, challengers, noise yardstick), `monthly`, `okx-candles`, `tests`.
 
