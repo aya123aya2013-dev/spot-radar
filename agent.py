@@ -23,7 +23,8 @@
      what would change the view.  New entries also come as "shadow orders": the exact OKX spot limit order a person
      would place by hand (pair, price, size for a given capital, stop).  Nothing is ever sent to an exchange.
 
-`python agent.py`            one cycle (every 5 minutes: live stop checks; decisions once per new UTC day)
+`python agent.py`            one cycle: resting stop/target orders replayed on 15-minute candles since the last
+                             check (as the exchange would fill them); decisions once per new UTC day
 `python agent.py backtest`   the same rules day by day since 2019 against BTC hold and weekly DCA, plus the ablation
                              "same agent without the market reading" (budget always 100%) to show what the regime adds
 State: lab_data/paper_G.json, paper_equity_G.csv, agent_report.json, backtest_G.json.  Paper only, no keys.
@@ -636,6 +637,65 @@ def load_edge():
         return {}
 
 
+BAR = 15 * 60 * 1000      # resting-order checks walk 15-minute candles
+
+
+def last_check_ms(default):
+    """Time of the previous cycle (last row of the equity log), so the next cycle replays only what happened since."""
+    try:
+        with open(os.path.join(OUT, "paper_equity_G.csv")) as f:
+            last = f.read().strip().splitlines()[-1].split(",")[0]
+        return int(datetime.strptime(last[:16], "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).timestamp() * 1000)
+    except Exception:
+        return default
+
+
+def bars_since(coin, start_ms, now_ms, ref_price=None):
+    """15-minute candles [t, o, h, l, c, v] from the one containing start_ms to now (the still-forming one included);
+    hourly candles if the gap is longer than 9 days (Binance returns at most 1000 rows)."""
+    tf, step = ("15m", BAR) if now_ms - start_ms <= 9 * DAY else ("1h", 4 * BAR)
+    t0 = start_ms // step * step
+    if mk.SYN:                                       # code test only: a synthetic path scaled to the current price
+        rows = [r for r in mk.synthetic(coin, tf, 1500) if r[0] >= t0]
+        k = (ref_price / rows[-1][4]) if rows and ref_price else 1.0
+        return [[r[0], r[1] * k, r[2] * k, r[3] * k, r[4] * k, r[5]] for r in rows], step
+    b = mk.api(f"/api/v3/klines?symbol={coin}USDT&interval={tf}&startTime={t0}&limit=1000")
+    return [[int(x[0]), *map(float, x[1:6])] for x in b], step
+
+
+def resting_orders(pos, start_ms, now_ms, bars, sell):
+    """Exits as the exchange executes them.  Right after a buy, the stop (stop-market) and target 1 (limit order for
+    half) rest on the exchange, so they fill the moment the price touches them, between our checks too.  This replays
+    the candles since the previous check in order:
+      - low touches the stop: everything is sold at the stop, or at the candle's open if it opened below the stop (gap);
+      - high touches target 1 (half not yet sold): half is sold at target 1 (or at the open if it opened above), and
+        the stop moves to break-even;
+      - both in one candle: the order inside a candle is unknown, so the stop is assumed first (the worse case).
+    The candle in which the position was opened is skipped (its low may predate the entry).
+    Same rules as the backtest on daily candles.  bars(coin, start) -> (rows, step); sell(coin, frac, price, why, at_ms)."""
+    for c in list(pos):
+        p = pos[c]
+        start = max(start_ms, p["entry_ms"] - p["entry_ms"] % BAR + BAR)
+        if start >= now_ms:
+            continue
+        try:
+            rows, step = bars(c, start)
+        except Exception as e:
+            print(f"  ! candles {c}: {e}")
+            continue
+        for t, o, h, l, cl, v in rows:
+            if t + step <= start or t > now_ms:
+                continue
+            at = max(t, start)
+            if l <= p["stop"]:
+                sell(c, 1.0, min(p["stop"], o), "stop", at)
+                break
+            t1 = p["entry"] + PARTIAL_R * p["r"]
+            if not p["half"] and h >= t1:
+                sell(c, 0.5, max(t1, o), "partial", at)
+                p["half"], p["stop"] = True, max(p["stop"], p["entry"])
+
+
 def cycle():
     import journal, accounting
     cfg = risk.load_control()
@@ -655,7 +715,9 @@ def cycle():
             price_ok = False
             print(f"  ! price {c}: {e}")
 
-    def sell(c, frac, px, why):
+    def sell(c, frac, px, why, at=None):
+        at = at or now_ms
+        when = datetime.fromtimestamp(at / 1000, timezone.utc).strftime("%Y-%m-%d %H:%M")
         p = st["pos"][c]
         q = risk.can_sell(p["qty"], p["qty"] * frac)
         s_ = p.get("slip", SLIP)
@@ -664,20 +726,23 @@ def cycle():
         st["cash"] += proceeds
         part = q / p["qty"] if p["qty"] > 0 else 1.0
         basis = p["basis"] * part
-        st["trades"].append(dict(time=stamp, coin=c, side="SELL", price=px, ret=proceeds / basis - 1, why=why, frac=frac,
+        st["trades"].append(dict(time=when, coin=c, side="SELL", price=px, ret=proceeds / basis - 1, why=why, frac=frac,
                                  usd=round(proceeds, 2), cost_usd=round(basis, 2), pnl_usd=round(proceeds - basis, 2), qty=q,
                                  fee_usd=round(gross * (1 - s_) * FEE, 4), slip_usd=round(gross * s_, 4), pos_id=p.get("pos_id"),
-                                 hours=round((now_ms - p["entry_ms"]) / 3600000, 1)))
-        jrec.append(dict(t=stamp, type="exit", coin=c, why=why, frac=frac, price=px, pnl_usd=round(proceeds - basis, 2), pos_id=p.get("pos_id")))
+                                 hours=round((at - p["entry_ms"]) / 3600000, 1)))
+        jrec.append(dict(t=when, type="exit", coin=c, why=why, frac=frac, price=px, pnl_usd=round(proceeds - basis, 2), pos_id=p.get("pos_id")))
         p["qty"] -= q
         p["basis"] -= basis
         if frac >= 0.999 or p["qty"] <= 1e-12:
             st["pos"].pop(c)
             if why == "stop":
-                st["cooldown"][c] = now_ms + cfg["asset_cooldown_days"] * DAY
-        print(f"  G SELL {c} {frac*100:.0f}% @ {px:g} ({why})")
+                st["cooldown"][c] = at + cfg["asset_cooldown_days"] * DAY
+        print(f"  G SELL {c} {frac*100:.0f}% @ {px:g} ({why}) at {when}")
 
-    for c in list(st["pos"]):
+    # ---- resting exchange orders (stop and target 1) replayed on the candles since the previous check
+    resting_orders(st["pos"], last_check_ms(now_ms - 3600000), now_ms,
+                   lambda c, start: bars_since(c, start, now_ms, price.get(c)), sell)
+    for c in list(st["pos"]):                                # fallback on the live price (candles unavailable)
         px = price.get(c)
         if px is None:
             continue

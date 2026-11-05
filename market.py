@@ -8,7 +8,7 @@ and the few indicators the agent uses.  No API key, no orders.
 import json, os, random, sys, time, urllib.request
 
 CAPITAL = 5000.0
-TFS = {"1h": 3600, "4h": 14400, "1d": 86400, "1w": 604800}
+TFS = {"15m": 900, "1h": 3600, "4h": 14400, "1d": 86400, "1w": 604800}
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.environ.get("SPOT_LAB_DATA") or os.path.join(HERE, "lab_data")
 FEE, SLIP = 0.001, 0.0005          # per side: 0.1% exchange fee, 0.05% slippage

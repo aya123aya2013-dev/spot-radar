@@ -28,4 +28,4 @@ jobs:
           git config user.name github-actions && git config user.email actions@github.com
           git add -A
           git commit -q --amend -m "state" 2>/dev/null || git commit -q -m "state"
-          git push -q -f origin data
+          ok=0; for i in 1 2 3 4; do if git push -q -f origin data; then ok=1; break; fi; echo "push failed (GitHub error), retry $i"; sleep $((i*15)); done; [ $ok = 1 ]
