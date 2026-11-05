@@ -6,12 +6,21 @@ on:
         description: space-separated URLs
         required: true
         default: "https://www.cryptohalal.cc/"
+      render:
+        description: render with a headless browser (true/false)
+        required: false
+        default: "false"
 permissions:
   contents: read
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - run: python3 tools/site_probe.py ${{ github.event.inputs.urls }}
+      - if: github.event.inputs.render != 'true'
+        run: python3 tools/site_probe.py ${{ github.event.inputs.urls }}
+      - if: github.event.inputs.render == 'true'
+        run: |
+          pip install -q playwright && python3 -m playwright install --with-deps chromium > /dev/null
+          for u in ${{ github.event.inputs.urls }}; do python3 tools/site_render.py "$u" || true; done
