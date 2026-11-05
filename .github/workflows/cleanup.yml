@@ -14,6 +14,7 @@ jobs:
     steps:
       - run: |
           URL="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"
+          git init -q tmp && cd tmp
           for b in ${{ github.event.inputs.branches }}; do
             case "$b" in main|data|archive-*|backup-*) echo "refusing $b"; continue;; esac
             git push "$URL" --delete "$b" && echo "deleted $b"
