@@ -1,0 +1,17 @@
+name: site-probe
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: space-separated URLs
+        required: true
+        default: "https://www.cryptohalal.cc/"
+permissions:
+  contents: read
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/site_probe.py ${{ github.event.inputs.urls }}
