@@ -469,8 +469,8 @@ def evaluate(data):
     return out
 
 
-VARIANT_RULE = ("Round 2 (2 Nov 2026, written before running; 3 candidates against the current champion = rules + risk engine): "
-                "a candidate is eligible only if full-period max drawdown <= 20%, positive in >= 4 of 5 folds, full-period return "
+VARIANT_RULE = ("Round 3 (6 Nov 2026, written before running; challengers against the current champion = rules + risk engine with max_stop 20%): "
+                "a candidate is eligible only if full-period max drawdown <= 25% (owner decision), positive in >= 4 of 5 folds, full-period return "
                 "positive with costs x3, Calmar >= 1.0, and CAGR higher than the champion's. Among eligible candidates the highest CAGR is adopted; if none, the champion stays.")
 
 
@@ -523,7 +523,7 @@ def variants():
     elig = {}
     for name in ("wider_stop", "core_satellite", "both"):
         r = out["results"][name]
-        checks = dict(dd=r["full"]["max_dd"] <= 0.20, folds=sum(1 for f in r["folds"] if f["ret"] > 0) >= 4,
+        checks = dict(dd=r["full"]["max_dd"] <= 0.25, folds=sum(1 for f in r["folds"] if f["ret"] > 0) >= 4,
                       costs_x3=r["full_x3"]["ret"] > 0, calmar=(r["full"]["calmar"] or 0) >= 1.0,
                       beats_champion=(r["full"]["cagr"] or 0) > (out["results"]["champion"]["full"]["cagr"] or 0) + 1e-9)
         r["checks"] = checks
