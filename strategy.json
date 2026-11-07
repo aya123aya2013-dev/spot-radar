@@ -1,0 +1,5 @@
+{
+ "note": "The live strategy's parameters. Empty params = the original rules (DEFAULT_PARAMS in agent.py). Changed only by the pre-registered research rule (agent.py RESEARCH_RULE, results in lab_data/research_G.json) or by an explicit owner decision; every change is recorded in history and docs/DECISIONS.md.",
+ "params": {},
+ "history": []
+}

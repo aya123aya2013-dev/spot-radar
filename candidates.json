@@ -1,0 +1,15 @@
+{
+ "note": "Challengers to the live strategy, tested every week by `python agent.py research` under the pre-registered rule in agent.py (RESEARCH_RULE). Each one changes one thing. status: active (tested) or retired (no longer tested). New ones are appended with the date they were added, before their first run.",
+ "items": [
+  {"id": "breakout55", "title": "دخول على كسر قمة 55 يوماً بدل 20", "params": {"breakout_n": 55}, "added": "2026-11-07", "source": "نظام السلاحف (Turtle) الثاني", "status": "active"},
+  {"id": "donchian_exit", "title": "الخروج عند كسر أدنى سعر لـ20 يوماً بدل الوقف المتحرك", "params": {"exit": "donchian", "exit_low_n": 20}, "added": "2026-11-07", "source": "نظام السلاحف (Turtle)", "status": "active"},
+  {"id": "turtle", "title": "نظام السلاحف كاملاً: كسر 55 يوماً، خروج على أدنى 20 يوماً، بلا بيع للنصف", "params": {"breakout_n": 55, "resume": false, "exit": "donchian", "exit_low_n": 20, "partial_r": 0.0}, "added": "2026-11-07", "source": "Turtle system 2", "status": "active"},
+  {"id": "no_partial", "title": "بلا بيع للنصف عند الهدف الأول: ترك الرابح يجري", "params": {"partial_r": 0.0}, "added": "2026-11-07", "source": "مبدأ تتبع الاتجاه", "status": "active"},
+  {"id": "partial_3r", "title": "بيع النصف عند 3 أضعاف المخاطرة بدل ضعفين", "params": {"partial_r": 3.0}, "added": "2026-11-07", "source": "درس: هل البيع مبكر؟", "status": "active"},
+  {"id": "trail_4atr", "title": "وقف متحرك أوسع (4 أضعاف التذبذب بدل 3)", "params": {"trail_atr": 4.0}, "added": "2026-11-07", "source": "تقليل الخروج بسبب الضجيج", "status": "active"},
+  {"id": "wider_net", "title": "شبكة أوسع: 12 قائداً وحتى 8 صفقات", "params": {"watch_n": 12, "max_pos": 8, "slot": 6}, "risk": {"max_positions": 8}, "added": "2026-11-07", "source": "تنويع أكبر", "status": "active"},
+  {"id": "time_stop", "title": "إغلاق الصفقة الراكدة: 30 يوماً بلا ربح يساوي المخاطرة", "params": {"time_stop_days": 30, "time_stop_r": 1.0}, "added": "2026-11-07", "source": "تحرير المال من الصفقات الميتة", "status": "active"},
+  {"id": "pyramid", "title": "زيادة الكمية على الرابح عند ربح يساوي المخاطرة", "params": {"pyramid": true, "pyramid_r": 1.0}, "added": "2026-11-07", "source": "نظام السلاحف (الإضافة على الرابح)", "status": "active"},
+  {"id": "ml_filter", "title": "فلتر تعلّم آلة: تخطي الإشارات الأضعف من المتوسط", "params": {"ml": true}, "added": "2026-11-07", "source": "المرحلة 4 من خطة المالك", "status": "active"}
+ ]
+}
