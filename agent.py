@@ -16,9 +16,10 @@
      high or resumes after a pullback to EMA20 (closed under it in the last 5 days, back above today).
   4. Size: each position = min(budget / 4, 0.75% / the coin's daily volatility) of the account: calm coins get more,
      wild coins less; total never above the budget; at most 6 positions.
-  5. Exits: initial stop 2.5 ATR under entry; then a trailing stop 3 ATR under the highest close.  At +2R (R = entry -
-     initial stop) half is sold and the stop moves to break-even.  If the budget falls, the weakest positions are cut
-     until the account is back inside it (a bear regime sells everything).
+  5. Exits: initial stop 2.5 ATR under entry; then a trailing stop (since 8 Nov 2026, by the research rule: the lowest
+     low of the last 20 days, the Turtle exit; before: 3 ATR under the highest close).  At +2R (R = entry - initial
+     stop) half is sold and the stop moves to break-even.  If the budget falls, the weakest positions are cut until the
+     account is back inside it (a bear regime sells everything).  All of these are parameters in strategy.json.
   6. Every day a decision report in Arabic: the regime and why, the budget, the watchlist, what was done and why,
      what would change the view.  New entries also come as "shadow orders": the exact OKX spot limit order a person
      would place by hand (pair, price, size for a given capital, stop).  Nothing is ever sent to an exchange.
@@ -867,7 +868,7 @@ def research():
                        result=compact(r))
         # neighbours of every changed numeric parameter: is the winner a knife edge?
         nb = []
-        for k, v in adopted["params"].items():
+        for k, v in {**cand.get("params", {}), **adopted["params"]}.items():
             stp = NEIGHBOUR_STEP.get(k)
             if stp is None or isinstance(v, bool) or not isinstance(v, (int, float)):
                 continue
@@ -881,6 +882,16 @@ def research():
     else:
         out["monte_carlo"] = dict(baseline=monte_carlo(base_curve))
     out["adopted"] = adopted
+    # the live strategy's own neighbourhood: does it still work if its key numbers move a little? (reported only)
+    rob = []
+    keys = ["breakout_n", "init_atr"] + (["exit_low_n"] if base_prm["exit"] == "donchian" else ["trail_atr"]) + (["partial_r"] if base_prm["partial_r"] > 0 else [])
+    for k in keys:
+        v = base_prm[k]
+        for nv in (v - NEIGHBOUR_STEP[k], v + NEIGHBOUR_STEP[k]):
+            if nv > 0:
+                rr, _ = lab.evaluate(dict(base_prm, **{k: type(v)(nv)}), base_cfg)
+                rob.append(dict(param=k, value=nv, calmar=rr["full"]["calmar"], cagr=rr["full"]["cagr"], max_dd=rr["full"]["max_dd"]))
+    out["robustness"] = rob
     hold, dca = btc_rulers(lab.data["BTC"], lab.start, lab.end)
     out.update(btc_hold=hold, btc_dca=dca)
     print("adopted:", adopted["name"] if adopted else "none (the live strategy stays)")

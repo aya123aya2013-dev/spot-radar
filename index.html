@@ -232,7 +232,7 @@ dialog p{margin:0 0 6px;font-size:14.5px}
   <h3>يختار الأقوى فقط</h3>
   <p>يرتّب العملات المباحة حسب قوتها أمام بيتكوين، ويشتري فقط عندما تكسر إحداها أعلى سعر لها في 20 يوماً أو تعود للصعود بعد تراجع.</p>
   <h3>كل صفقة محمية</h3>
-  <p>لكل صفقة وقف خسارة، وهدفان للبيع: عند الهدف الأول يبيع النصف ويرفع الوقف إلى سعر الشراء، والباقي يتبع السعر. الوقف والهدف يُنفذان لحظة لمس السعر، كما على المنصة.</p>
+  <p>لكل صفقة وقف خسارة، وهدف أول: عنده يبيع النصف ويرفع الوقف إلى سعر الشراء. بعدها يرتفع الوقف مع السعر إلى أدنى سعر في آخر 20 يوماً، فيبقى الباقي ما دام الاتجاه قائماً. الوقف والهدف يُنفذان لحظة لمس السعر، كما على المنصة.</p>
   <h3>حدود لا يتجاوزها</h3>
   <p>لا تخسر صفقة واحدة أكثر من 1% من الحساب إذا ضرب الوقف. يتوقف عن الشراء إذا خسر 3% في يوم أو 6% في أسبوع، ويبيع كل شيء إذا هبط الحساب 15% عن أعلى قيمة بلغها.</p>
   <h3>حلال فقط</h3>
@@ -328,7 +328,7 @@ const ema=(a,n)=>{const k=2/(n+1);let e=null;return a.map(x=>e=e==null?x:x*k+e*(
 let S=null;
 async function load(){
   const [g,csv,rep,bt,vr,les,mon,hal,okx,pol,back,costs,log]=await Promise.all([
-    J(DATA+'paper_G.json'),T(DATA+'paper_equity_G.csv'),J(DATA+'agent_report.json'),J(DATA+'backtest_G.json'),J(DATA+'variants_G.json'),
+    J(DATA+'paper_G.json'),T(DATA+'paper_equity_G.csv'),J(DATA+'agent_report.json'),J(DATA+'backtest_G.json'),J(DATA+'research_G.json'),
     J(DATA+'lessons.json'),J(DATA+'monthly.json'),J(DATA+'halal_rulings.json'),J(DATA+'okx_check.json'),
     J(MAIN+'coins_policy.json'),J(MAIN+'research_backlog.json'),J(MAIN+'costs.json'),J(MAIN+'changelog.json')]);
   if(!g){$('p-home').innerHTML='<div class="panel"><h2>لا توجد بيانات بعد</h2><p class="lead">تظهر هنا بعد أول دورة للوكيل. إن استمر هذا، فالمراقب اليومي يفحص التشغيل ويصلحه.</p></div>';return}
@@ -357,17 +357,18 @@ function renderStatus(){
 function positions(){
   const g=S.g;return Object.entries(g.holdings||{}).map(([c,h])=>{
     const price=(g.prices||{})[c]??(h.value/h.qty);
-    return {c,price,qty:h.qty,basis:h.basis,value:h.value,pl:h.pnl_usd,plp:h.pnl,entry:h.entry,stop:h.sl,t1:h.t1||h.tp,t2:h.t2,half:h.half_taken,
-      atStop:h.qty*h.sl-h.basis,atT1:h.qty*(h.t1||h.tp)-h.basis,opened:openedAt(c)}});
+    const t1=h.t1||h.tp||null;
+    return {c,price,qty:h.qty,basis:h.basis,value:h.value,pl:h.pnl_usd,plp:h.pnl,entry:h.entry,stop:h.sl,t1,t2:h.t2,half:h.half_taken,added:h.added,
+      atStop:h.qty*h.sl-h.basis,atT1:h.qty*(t1||h.t2)-h.basis,opened:openedAt(c)}});
 }
 function openedAt(c){const b=[...(S.g.trades||[])].reverse().find(t=>t.coin===c&&t.side==='BUY');return b?utc(b.time):null}
 function rail(p){
-  const lo=Math.min(p.stop,p.price)*0.985,hi=Math.max(p.t2||p.t1,p.price)*1.01,pos=v=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
+  const lo=Math.min(p.stop,p.price)*0.985,hi=Math.max(p.t2||p.t1||p.price,p.price)*1.01,pos=v=>Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));
   const mk=(v,c)=>`<span class="m ${c}" style="right:${pos(v)}%"></span>`;
   const at=v=>{const x=pos(v);return `right:${x}%;transform:translateX(${x<10?'0':x>90?'100%':'50%'})`};   // keep edge labels inside
-  const labs=[[p.stop,'الوقف'],[p.t1,p.half?'هدف 1 ✓':'هدف 1'],...(p.t2?[[p.t2,'هدف 2']]:[])];
+  const labs=[[p.stop,'الوقف'],...(p.t1?[[p.t1,p.half?'هدف 1 ✓':'هدف 1']]:[]),...(p.t2?[[p.t2,p.t1?'هدف 2':'الهدف']]:[])];
   if(labs.every(([v])=>Math.abs(pos(v)-pos(p.entry))>24))labs.push([p.entry,'الشراء']);
-  return `<div class="rail" aria-hidden="true">${mk(p.stop,'stop')}${mk(p.entry,'')}${mk(p.t1,p.half?'t done':'t')}${p.t2?mk(p.t2,'t'):''}<span class="now" style="right:${pos(p.price)}%"><em style="${pos(p.price)<12?'left:auto;right:-6px;transform:none':pos(p.price)>88?'left:-6px;transform:none':''}">الآن ${px(p.price)}</em></span></div>
+  return `<div class="rail" aria-hidden="true">${mk(p.stop,'stop')}${mk(p.entry,'')}${p.t1?mk(p.t1,p.half?'t done':'t'):''}${p.t2?mk(p.t2,'t'):''}<span class="now" style="right:${pos(p.price)}%"><em style="${pos(p.price)<12?'left:auto;right:-6px;transform:none':pos(p.price)>88?'left:-6px;transform:none':''}">الآن ${px(p.price)}</em></span></div>
    <div class="rail-l" aria-hidden="true">${labs.map(([v,t])=>`<span style="${at(v)}"><i>${t}</i><b>${px(v)}</b></span>`).join('')}</div>
    <p class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">السعر الآن ${p.price}، الوقف ${p.stop}، الهدف الأول ${p.t1}</p>`;
 }
@@ -375,7 +376,7 @@ function coinBadge(c){return `<div class="coin"><span class="sym">${esc(c)}</spa
 function events(n){
   const out=[];
   (S.g.trades||[]).forEach(t=>{const d=utc(t.time);if(!d)return;
-    if(t.side==='BUY')out.push({d,kind:'buy',text:`اشترى ${coinName(t.coin)}`,sub:t.price?`بسعر ${t.price}`:'',amt:t.usd!=null?usd(t.usd):''});
+    if(t.side==='BUY')out.push({d,kind:'buy',text:`${t.add?'زاد كمية':'اشترى'} ${coinName(t.coin)}`,sub:t.price?`بسعر ${t.price}`:'',amt:t.usd!=null?usd(t.usd):''});
     else out.push({d,kind:'sell',text:`باع ${t.frac&&t.frac<0.999?'جزءاً من ':''}${coinName(t.coin)}`,sub:WHY[t.why]||t.why||'',amt:t.pnl_usd!=null?`<span class="${cls(t.pnl_usd)}">${usd(t.pnl_usd,true)}</span>`:''})});
   (S.g.events||[]).forEach(e=>{const d=utc(e.time);if(!d)return;const tx=String(e.text||'').replace(/^G: /,'').replace(/حالة السوق (\S+(?: \S+)?)، ميزانية المخاطرة (\d+)%/,(m,a,b)=>`قرأ السوق: ${a}، والمسموح للاستثمار ${b}%`);
     if(/^تقليص/.test(tx))return;   // already shown as the sell it caused
@@ -479,7 +480,7 @@ function renderTrades(){
       <div><span>قيمتها الآن</span><b>${usd(p.value)}</b></div>
       <div><span>الكمية</span><b class="n">${(+p.qty.toPrecision(6))}</b></div>
       <div><span>لو وصل الوقف</span><b class="${cls(p.atStop)}">${usd(p.atStop,true)}</b></div>
-      <div><span>لو وصل الهدف 1</span><b class="${cls(p.atT1)}">${usd(p.atT1,true)}</b></div>
+      <div><span>${p.t1?'لو وصل الهدف 1':'لو وصل الهدف'}</span><b class="${cls(p.atT1)}">${usd(p.atT1,true)}</b></div>
       <div><span>مفتوحة منذ</span><b>${p.opened?`${fmtDay(p.opened)}${days!=null?` (${days===0?'اليوم':days===1?'يوم':days+' أيام'})`:''}`:'—'}</b></div>
     </div>
     <div class="mini chart" id="mini${i}"><div class="empty">جارٍ رسم السعر…</div></div></div>`}).join('')
@@ -517,7 +518,7 @@ function renderTrades(){
     const css=getComputedStyle(document.documentElement),c=v=>css.getPropertyValue(v).trim();
     const pts=k.map(x=>[x[0],x[1]]);pts.push([Date.now(),p.price]);
     chart(el,{series:[{pts,color:c('--ink'),width:2,endDot:true}],height:150,fmtY:v=>(+v.toPrecision(4)).toString(),
-      hlines:[{v:p.stop,color:c('--down'),label:'الوقف'},{v:p.entry,color:c('--muted'),label:'الشراء',dash:'2 3'},...(p.t1<=Math.max(...pts.map(x=>x[1]))*1.35?[{v:p.t1,color:c('--up'),label:'هدف 1'}]:[])],
+      hlines:[{v:p.stop,color:c('--down'),label:'الوقف'},{v:p.entry,color:c('--muted'),label:'الشراء',dash:'2 3'},...(p.t1&&p.t1<=Math.max(...pts.map(x=>x[1]))*1.35?[{v:p.t1,color:c('--up'),label:'هدف 1'}]:[])],
       marks:p.opened?[{t:+p.opened,v:p.entry,color:c('--amber')}]:[]})});
 }
 
@@ -555,6 +556,32 @@ function renderMarket(){
 }
 
 /* ---------------- LEARN ---------------- */
+const CHECK_AR={dd:'هبوط أعمق من 25%',folds:'خسر في أكثر من فترة من الخمس',costs_x3:'لا يصمد إذا تضاعفت الرسوم 3 مرات',calmar:'ليس أفضل بوضوح (التحسن أقل من 10%)',fold_wins:'لم يتفوق في 3 فترات من 5'};
+function researchPanel(){
+  const R=S.vr;if(!R||!R.candidates)return '';
+  const base=R.baseline&&R.baseline.result,ad=R.adopted;
+  const rows=Object.entries(R.candidates).map(([id,c])=>{const f=c.result.full,fail=Object.entries(c.checks||{}).filter(([k,v])=>!v).map(([k])=>CHECK_AR[k]||k);
+    const won=ad&&ad.name.split('+').includes(id);
+    return `<div class="idea"><div class="t"><b>${esc(c.title||id)}</b><span class="chip ${won?'up':c.eligible?'amber':'down'}">${won?'اعتُمد':c.eligible?'نجح ولم يُختر':'رُفض'}</span></div>
+      <p>العائد السنوي ${pct(f.cagr,1)}، أسوأ هبوط ${pct(-f.max_dd,0)}، العائد مقابل الهبوط ${f.calmar!=null?`<span class="n">${f.calmar.toFixed(2)}</span>`:'—'}${fail.length?`. السبب: ${fail.join('، ')}`:''}.</p></div>`}).join('');
+  const bf=base&&base.full;
+  return `<div class="panel"><div class="h-row"><h2>جولة البحث</h2><span class="muted">${R.generated?esc(fmtDay(new Date(R.generated))):''}</span></div>
+    <p class="lead">${Object.keys(R.candidates).length} أفكار اختُبرت ضد الوكيل الحالي على السوق منذ ${esc(R.period[0].slice(0,4))}، بقاعدة كُتبت قبل الاختبار. الوكيل الحالي: ${bf?`${pct(bf.cagr,1)} سنوياً بأسوأ هبوط ${pct(-bf.max_dd,0)}`:'—'}.</p>
+    <p style="margin:0 0 6px;font-size:14.5px"><b>${ad?`النتيجة: اعتُمد «${esc(ad.name)}»${ad.risk&&ad.risk.risk_per_trade?`، مع رفع المخاطرة للصفقة إلى ${pct(ad.risk.risk_per_trade,2,false)}`:''}.`:'النتيجة: لا فكرة تفوقت بوضوح، فبقي الوكيل كما هو.'}</b></p>
+    ${rows}</div>`;
+}
+function expectPanel(){
+  const R=S.vr;const mc=R&&R.monte_carlo&&(R.monte_carlo.adopted||R.monte_carlo.baseline);if(!mc)return '';
+  return `<div class="panel"><h2>ماذا تتوقع في 3 سنوات؟</h2><p class="lead">${mc.paths.toLocaleString('en-US')} مستقبلاً محتملاً مبنية من أيام الوكيل الماضية نفسها. نطاق، لا وعد.</p>
+    <div class="rows">
+      <div class="row"><span>في الحالة الوسطى</span><b class="${cls(mc.cagr_p50)}">${pct(mc.cagr_p50,1)} سنوياً</b></div>
+      <div class="row"><span>في أسوأ 5% من الحالات</span><b class="${cls(mc.cagr_p5)}">${pct(mc.cagr_p5,1)} سنوياً</b></div>
+      <div class="row"><span>في أفضل 5% من الحالات</span><b class="up">${pct(mc.cagr_p95,1)} سنوياً</b></div>
+      <div class="row"><span>أسوأ هبوط متوقع (في الوسط / في أسوأ 5%)</span><b class="down">${pct(-mc.dd_p50,0)} / ${pct(-mc.dd_p95,0)}</b></div>
+      <div class="row"><span>احتمال أن تنتهي السنة الأولى بخسارة</span><b>${pct(mc.p_loss_first_year,0,false)}</b></div>
+    </div>
+    <p class="note">هذا لو شابه المستقبل الماضي. السوق قد يأتي بما لم يحدث من قبل، والسجل الحي هو الحكم.</p></div>`;
+}
 function ideaList(list){return list.map(i=>{const st=IDEA_ST[i.status]||[i.status,'chip'];return `<div class="idea"><div class="t"><b>${esc(i.title)}</b><span class="chip ${st[1]}">${st[0]}</span></div><p>${esc(i.result||i.idea||'')}</p></div>`}).join('')||'<div class="empty">لا أفكار هنا.</div>'}
 function renderLearn(){
   const L=S.les&&S.les.scope==='G'&&S.les.daily&&S.les.daily.length?S.les.daily[S.les.daily.length-1]:null;
@@ -580,6 +607,8 @@ function renderLearn(){
         <h3 style="font-size:15px;font-weight:600;margin:18px 0 0">كل فترة من الخمس</h3>
         <div class="bars">${folds.map(f=>`<div><b class="n">${(f.ret*100).toFixed(0)}%</b><i class="${f.ret<0?'neg':''}" style="height:${Math.max(4,Math.abs(f.ret)/fmax*80)}px"></i><span class="n">${esc(f.start.slice(0,4))}</span></div>`).join('')}</div>
         <p class="note">بيتكوين ربح أكثر على هذه السنوات، لكنه هبط ${pct(hold?hold.max_dd:null,0,false)} في الطريق. الوكيل يربح أقل ويهبط أقل بكثير. هذا ماضٍ ولا يضمن المستقبل: الاختبار الحقيقي هو السجل الحي.</p></div>`:''}
+      ${researchPanel()}
+      ${expectPanel()}
       <div class="panel"><div class="h-row"><h2>أفكار التطوير</h2><span class="muted">${cnt('adopted')} معتمدة، ${cnt('pending')} تنتظر، ${cnt('rejected')} مرفوضة</span></div>
         <p class="lead">كل فكرة تُختبر على الماضي ضد الوكيل الحالي، ولا تُعتمد إلا إذا تفوقت بالأرقام.</p>
         ${ideaList(ideas.filter(i=>['adopted','candidate','pending'].includes(i.status)))}

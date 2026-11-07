@@ -1,5 +1,18 @@
 {
  "note": "The live strategy's parameters. Empty params = the original rules (DEFAULT_PARAMS in agent.py). Changed only by the pre-registered research rule (agent.py RESEARCH_RULE, results in lab_data/research_G.json) or by an explicit owner decision; every change is recorded in history and docs/DECISIONS.md.",
- "params": {},
- "history": []
+ "params": {
+  "exit": "donchian",
+  "exit_low_n": 20
+ },
+ "history": [
+  {
+   "date": "2026-11-08",
+   "change": {
+    "exit": "trail -> donchian",
+    "exit_low_n": 20
+   },
+   "by": "research rule (RESEARCH_RULE), lab_data/research_G.json generated 2026-11-07",
+   "evidence": "2019-05..2026-11, 30 OKX-tradable halal coins, risk engine on: CAGR 14.1% -> 24.0%, max drawdown 18.5% -> 16.6%, Calmar 0.76 -> 1.44, better in all 5 folds, costs x3 +358.8%. Stage 2: no higher risk per trade kept the drawdown within 18.5%+0.5, so risk per trade stays 1%."
+  }
+ ]
 }
