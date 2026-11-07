@@ -31,6 +31,16 @@ jobs:
         run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 1500 python agent.py backtest || true
       - name: Research round (pre-registered candidates against the live strategy)
         run: SPOT_LAB_DATA="$PWD/data/lab_data" timeout 3000 python agent.py research || true
+      - name: Apply the research verdict (mechanical; only what the pre-registered rule adopted)
+        run: |
+          SPOT_LAB_DATA="$PWD/data/lab_data" python apply_research.py || true
+          if ! git diff --quiet -- strategy.json control.json candidates.json changelog.json docs/DECISIONS.md; then
+            git config user.name "spot-radar-research"
+            git config user.email "actions@users.noreply.github.com"
+            git add strategy.json control.json candidates.json changelog.json docs/DECISIONS.md
+            git commit -q -m "Research rule adopted a change (lab_data/research_G.json)"
+            for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 10; done
+          fi
       - name: Agent on noise (yardstick)
         run: |
           mkdir -p "$RUNNER_TEMP/gnull"

@@ -2,7 +2,8 @@
 
 A paper-trading crypto SPOT agent, run as if it were real money. Halal coins only (`coins_policy.json`, source cryptohalal.cc). No exchange keys, no real orders.
 
-- `agent.py`: the agent. Reads the market regime daily (BTC 50/200-day averages and breadth), sets a risk budget, trades the leaders on breakouts or pullback resumes, 2.5 ATR stop, trailing 3 ATR, half sold at +2R. `python agent.py backtest` and `python agent.py variants` run the champion/challenger tests.
+- `strategy.json`: the live strategy's parameters (defaults = the original rules), changed only by the research rule. `candidates.json`: the challengers tested every week.
+- `agent.py`: the agent. Reads the market regime daily (BTC 50/200-day averages and breadth), sets a risk budget, trades the leaders on breakouts or pullback resumes, 2.5 ATR stop, trailing stop at the lowest low of 20 days (adopted 8 Nov 2026 by the research rule), half sold at +2R. `python agent.py backtest` runs the champion/challenger test; `python agent.py research` tests every candidate under the pre-registered RESEARCH_RULE, and `apply_research.py` applies its verdict mechanically.
 - `risk.py` + `control.json`: the deterministic risk engine. The agent proposes, the risk engine decides. Limits and the emergency stop live in `control.json`.
 - `journal.py` (hash-chained decision journal), `accounting.py` (P&L, fees, slippage, ratios, operating costs from `costs.json`).
 - `lessons.py` (daily lesson from closed trades), `monthly.py` (monthly scorecard vs BTC), `notify.py` (Telegram).
@@ -11,6 +12,6 @@ A paper-trading crypto SPOT agent, run as if it were real money. Halal coins onl
 - `tests/`: invariants of the risk engine, the journal and the agent. Run on every push.
 - `index.html`: the dashboard (GitHub Pages), one self-contained file; `changelog.json` feeds its change log. State lives on the `data` branch (`lab_data/`).
 
-Workflows: `paper-trade` (one cycle about every 30-40 minutes), `backtest` (weekly: agent backtest, challengers, noise yardstick), `monthly`, `okx-candles`, `tests`.
+Workflows: `paper-trade` (one cycle about every 30-40 minutes), `backtest` (weekly: agent backtest, research round with automatic adoption, noise yardstick), `monthly`, `okx-candles`, `tests`.
 
 State backups: branches `backup-mon` ... `backup-sun` (one per weekday). The old accounts A-F were deleted on 4 Nov 2026; their code is on branch `archive-legacy-code` and their data on `archive-legacy`.

@@ -238,7 +238,7 @@ dialog p{margin:0 0 6px;font-size:14.5px}
   <h3>حلال فقط</h3>
   <p>يقرأ كل يوم أحكام موقع cryptohalal.cc، ولا يشتري إلا ما حكمه «مباح»، ويبيع أي عملة يتغير حكمها.</p>
   <h3>يتعلّم بحذر</h3>
-  <p>يقيس كل صفقة بعد إغلاقها، وكل أسبوع يختبر أفكار تطوير على بيانات السوق منذ 2019. لا يتغير شيء إلا إذا تفوقت الفكرة بالأرقام على الوكيل الحالي.</p>
+  <p>يقيس كل صفقة بعد إغلاقها. وكل أحد يختبر أفكار تطوير على بيانات السوق منذ 2019 بقاعدة مكتوبة قبل الاختبار، وما يفوز يُعتمد آلياً دون تدخل. لا يتغير شيء إلا إذا تفوقت الفكرة بوضوح وفي أغلب الفترات.</p>
   <p style="margin-top:16px"><button class="iconbtn" type="button" id="howClose">إغلاق</button></p>
 </div></dialog>
 
@@ -327,13 +327,13 @@ const ema=(a,n)=>{const k=2/(n+1);let e=null;return a.map(x=>e=e==null?x:x*k+e*(
 /* ---------------- state ---------------- */
 let S=null;
 async function load(){
-  const [g,csv,rep,bt,vr,les,mon,hal,okx,pol,back,costs,log]=await Promise.all([
+  const [g,csv,rep,bt,vr,les,mon,hal,okx,pol,back,costs,log,strat]=await Promise.all([
     J(DATA+'paper_G.json'),T(DATA+'paper_equity_G.csv'),J(DATA+'agent_report.json'),J(DATA+'backtest_G.json'),J(DATA+'research_G.json'),
     J(DATA+'lessons.json'),J(DATA+'monthly.json'),J(DATA+'halal_rulings.json'),J(DATA+'okx_check.json'),
-    J(MAIN+'coins_policy.json'),J(MAIN+'research_backlog.json'),J(MAIN+'costs.json'),J(MAIN+'changelog.json')]);
+    J(MAIN+'coins_policy.json'),J(MAIN+'research_backlog.json'),J(MAIN+'costs.json'),J(MAIN+'changelog.json'),J(MAIN+'strategy.json')]);
   if(!g){$('p-home').innerHTML='<div class="panel"><h2>لا توجد بيانات بعد</h2><p class="lead">تظهر هنا بعد أول دورة للوكيل. إن استمر هذا، فالمراقب اليومي يفحص التشغيل ويصلحه.</p></div>';return}
   const eq=csv.trim().split('\n').slice(1).map(l=>{const p=l.split(',');return{t:utc(p[0]),e:+p[1],b:+p[2]}}).filter(p=>p.t&&p.e>0);
-  S={g,eq,rep,bt,vr,les,mon,hal,okx,pol,back,costs,log};
+  S={g,eq,rep,bt,vr,les,mon,hal,okx,pol,back,costs,log,strat};
   render();
 }
 function render(){
@@ -567,8 +567,14 @@ function researchPanel(){
   const bf=base&&base.full;
   return `<div class="panel"><div class="h-row"><h2>جولة البحث</h2><span class="muted">${R.generated?esc(fmtDay(new Date(R.generated))):''}</span></div>
     <p class="lead">${Object.keys(R.candidates).length} أفكار اختُبرت ضد الوكيل الحالي على السوق منذ ${esc(R.period[0].slice(0,4))}، بقاعدة كُتبت قبل الاختبار. الوكيل الحالي: ${bf?`${pct(bf.cagr,1)} سنوياً بأسوأ هبوط ${pct(-bf.max_dd,0)}`:'—'}.</p>
+    ${lastAdopt()}
     <p style="margin:0 0 6px;font-size:14.5px"><b>${ad?`النتيجة: اعتُمد «${esc(ad.name)}»${ad.risk&&ad.risk.risk_per_trade?`، مع رفع المخاطرة للصفقة إلى ${pct(ad.risk.risk_per_trade,2,false)}`:''}.`:'النتيجة: لا فكرة تفوقت بوضوح، فبقي الوكيل كما هو.'}</b></p>
     ${rows}</div>`;
+}
+function lastAdopt(){
+  const h=S.strat&&S.strat.history;if(!h||!h.length)return '';
+  const x=h[h.length-1],m=String(x.evidence||'').match(/CAGR ([\d.]+)% -> ([\d.]+)%, max drawdown ([\d.]+)% -> ([\d.]+)%/);
+  return `<p class="note" style="margin:0 0 10px">آخر تغيير اعتمده البحث (${esc(fmtDay(new Date(x.date+'T12:00:00Z')))}): ${x.change&&x.change.exit==='trail -> donchian'?'الوقف المتحرك عند أدنى سعر في 20 يوماً':esc(JSON.stringify(x.change))}${m?`، ورفع العائد السنوي على الماضي من ${m[1]}% إلى ${m[2]}%`:''}.</p>`;
 }
 function expectPanel(){
   const R=S.vr;const mc=R&&R.monte_carlo&&(R.monte_carlo.adopted||R.monte_carlo.baseline);if(!mc)return '';

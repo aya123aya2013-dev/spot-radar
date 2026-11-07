@@ -94,6 +94,18 @@ def test_monte_carlo_is_a_range():
     assert mc["cagr_p5"] <= mc["cagr_p50"] <= mc["cagr_p95"] and 0 <= mc["dd_p50"] <= mc["dd_p95"] <= 1
 
 
+def test_default_rules_are_frozen():
+    """Guard for every future change: the original rules (DEFAULT_PARAMS) must give exactly these results on fixed
+    synthetic data.  A new parameter has to keep its default behaviour identical, or this fails."""
+    coins = ["BTC", "ETH", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "LTC", "DOT", "TRX", "ATOM"]
+    data = {c: mk.synthetic(c, "1d", 1500) for c in coins}
+    days = [r[0] // agent.DAY for r in data["BTC"]]
+    cfg = dict(risk.DEFAULTS, max_stop=0.20)
+    c, tr, _, _ = agent.backtest_run(data, days[260], days[-1], prm=dict(agent.DEFAULT_PARAMS), risk_cfg=cfg, edge_table={})
+    c2, tr2, _, _ = agent.backtest_run(data, days[260], days[-1], prm=dict(agent.DEFAULT_PARAMS))
+    assert (round(c[-1][1], 4), len(tr)) == (9622.6335, 307)
+    assert (round(c2[-1][1], 4), len(tr2)) == (9003.3516, 329)
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:
