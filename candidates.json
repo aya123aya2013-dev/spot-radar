@@ -113,6 +113,36 @@
    "added": "2026-11-07",
    "source": "المرحلة 4 من خطة المالك",
    "status": "active"
+  },
+  {
+   "id": "regime_band",
+   "title": "هامش أمان 2% قبل الحكم بأن السوق تغيّر",
+   "params": {
+    "regime_band": 0.02
+   },
+   "added": "2026-11-11",
+   "source": "المراجعة الأسبوعية 6 نوفمبر: البيع عند نزول بيتكوين 1% فقط تحت متوسط 200 يوم",
+   "status": "active"
+  },
+  {
+   "id": "no_weekend_entry",
+   "title": "لا شراء يومي السبت والأحد",
+   "params": {
+    "no_weekend_entry": true
+   },
+   "added": "2026-11-11",
+   "source": "سيولة أضعف في عطلة نهاية الأسبوع",
+   "status": "active"
+  },
+  {
+   "id": "volume_confirm",
+   "title": "لا شراء إلا بحجم تداول 1.5 ضعف المتوسط",
+   "params": {
+    "vol_confirm": 1.5
+   },
+   "added": "2026-11-11",
+   "source": "أدبيات الاختراقات: الاختراق بلا حجم أضعف",
+   "status": "active"
   }
  ]
 }

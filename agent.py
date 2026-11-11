@@ -69,6 +69,9 @@ DEFAULT_PARAMS = dict(
     pyramid=False,        # add one more unit once a position is pyramid_r x R in profit (stop of all moves up)
     pyramid_r=1.0,
     ml=False,             # entry filter: walk-forward logistic model of the chance a signal wins (ml_model_G.json)
+    regime_band=0.0,      # >0: while BTC is within this fraction of its EMA200, keep the previous side (no flip-flop)
+    no_weekend_entry=False,  # True: no new entries executed on Saturday or Sunday (UTC)
+    vol_confirm=0.0,      # >0: an entry needs the signal day's volume >= vol_confirm x its 20-day average
 )
 
 
@@ -106,7 +109,7 @@ def indicators(rows):
         m = sum(rs) / 20
         vol[i] = math.sqrt(sum((x - m) ** 2 for x in rs) / 19)
     return dict(day=[r[0] // DAY for r in rows], o=[r[1] for r in rows], h=[r[2] for r in rows], l=[r[3] for r in rows],
-                c=c, e20=e20, e50=e50, e200=e200, atr=at, vol=vol)
+                c=c, e20=e20, e50=e50, e200=e200, atr=at, vol=vol, v=[(r[5] if len(r) > 5 else 0.0) for r in rows])
 
 
 def roll(ind, key, n, fn, incl):
@@ -136,7 +139,10 @@ def snap(ind, k, brk_n=20):
     hi_brk = roll(ind, "h", brk_n, max, False)[k]
     hi252 = max(ind["h"][max(0, k - 252):k + 1])
     under_recent = any(c[j] < ind["e20"][j] for j in range(max(0, k - 5), k))
+    v = ind.get("v") or []
+    v20 = (sum(v[k - 20:k]) / 20) if len(v) > k >= 20 else 0.0
     out = dict(c=c[k], o_next=None, e20=ind["e20"][k], e50=ind["e50"][k], e200=ind["e200"][k], atr=ind["atr"][k],
+               vol_ratio=(v[k] / v20) if v20 > 0 else None,
                vol=ind["vol"][k], ret63=(c[k] / c[k - 63] - 1) if k >= 63 else None, near_high=c[k] / hi252 - 1,
                breakout=c[k] > hi_brk, brk_n=brk_n, resume=under_recent and c[k] > ind["e20"][k], low=ind["l"][k], high=ind["h"][k])
     cache[k] = out
@@ -210,8 +216,15 @@ class EntryFilter:
         return ok
 
 
-def regime(btc, breadth):
+def weekday(day):
+    """0 = Monday ... 6 = Sunday, for a day number since 1970-01-01 (a Thursday)."""
+    return (day + 3) % 7
+
+
+def regime(btc, breadth, band=0.0, prev=None):
     above200, golden, above50 = btc["c"] > btc["e200"], btc["e50"] > btc["e200"], btc["c"] > btc["e50"]
+    if band > 0 and prev is not None and abs(btc["c"] / btc["e200"] - 1) < band:
+        above200 = prev in ("bull", "early")          # inside the band: stay on the side the market was on
     if above200 and golden:
         return "bull", (1.0 if breadth >= 0.5 else 0.5)
     if above200:
@@ -223,16 +236,17 @@ def regime(btc, breadth):
     return "weak", 0.0
 
 
-def plan(snaps, positions, equity, values, force_budget=None, prm=None, entry_filter=None, tradable=None):
+def plan(snaps, positions, equity, values, force_budget=None, prm=None, entry_filter=None, tradable=None, prev_regime=None, exec_day=None):
     """snaps: {coin: snap or None} at today's close.  positions: {coin: {...}} with current values in `values`.
     prm: strategy parameters (default PARAMS).  entry_filter(feat) -> bool (the ML filter, optional).
     tradable: coins that can actually be bought (on OKX spot); the others still count for breadth.
+    prev_regime: yesterday's regime (for the optional band).  exec_day: the day entries would be executed (weekend rule).
     Returns the decision: regime, budget, watchlist, exits [(coin, frac, why)], entries [(coin, weight, stop)], feats."""
     prm = prm or PARAMS
     btc = snaps.get("BTC")
     live = {k: s for k, s in snaps.items() if s}
     breadth = sum(1 for s in live.values() if s["c"] > s["e50"]) / max(1, len(live))
-    reg, budget = regime(btc, breadth) if btc else ("weak", 0.0)
+    reg, budget = regime(btc, breadth, prm.get("regime_band", 0.0), prev_regime) if btc else ("weak", 0.0)
     if force_budget is not None:
         budget = force_budget
     b63 = btc["ret63"] if btc and btc["ret63"] is not None else 0.0
@@ -257,13 +271,16 @@ def plan(snaps, positions, equity, values, force_budget=None, prm=None, entry_fi
     entries, feats, filtered = [], {}, []
     room = budget * equity - held_val
     n_pos = len(positions) - sum(1 for e in exits if e[1] == 1.0)
-    if budget > 0:
+    weekend = bool(prm.get("no_weekend_entry")) and exec_day is not None and weekday(exec_day) >= 5
+    if budget > 0 and not weekend:
         for rank, k in enumerate(watch):
             s = live[k]
             if k in positions or n_pos >= prm["max_pos"] or room < 0.02 * equity:
                 continue
             signal = s["breakout"] or (prm["resume"] and s["resume"])
             if not (s["c"] > s["e20"] > s["e50"] and signal) or not s["vol"] or not s["atr"]:
+                continue
+            if prm.get("vol_confirm", 0.0) > 0 and (s.get("vol_ratio") or 0.0) < prm["vol_confirm"]:
                 continue
             f = features(s, b63, breadth, reg, btc, rank, prm["watch_n"])
             if entry_filter is not None and not entry_filter(f):
@@ -302,6 +319,7 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
     peak, halt_until, streak_until, cooldown = CAPITAL, -1, -1, {}
     prev_eq, week_start, week_id, closed = CAPITAL, CAPITAL, None, []
     brk_n, part_r = prm["breakout_n"], prm["partial_r"]
+    prev_reg = None
     days = [d for d in inds["BTC"]["day"] if start_day <= d <= end_day]
     for t, d in enumerate(days[:-1]):
         nd = days[t + 1]
@@ -367,7 +385,8 @@ def backtest_run(data, start_day, end_day, force_budget=None, cost_mult=1.0, ris
         sat_equity = equity * (1 - share)
         flt = (lambda f, _d=d: entry_filter(_d, f)) if entry_filter else None
         dec = plan(snaps, pos, sat_equity, values, 0.0 if (risk_cfg and halt_until >= d) else force_budget, prm=prm,
-                   entry_filter=flt, tradable=tradable)
+                   entry_filter=flt, tradable=tradable, prev_regime=prev_reg, exec_day=nd)
+        prev_reg = dec["regime"]
         acc["filtered"] += len(dec["filtered"])
         # ---- core sleeve: hold BTC/ETH while their own trend is up (close > EMA200 and EMA50 > EMA200), cash when the
         #      close falls under EMA200; decided at the close, executed at the next open
@@ -1189,7 +1208,8 @@ def cycle():
                 except Exception:
                     flt = None                                   # no model yet: no verdict, signals pass (like the edge gate)
             dec = plan(snaps, st["pos"], equity, values, force_budget=0.0 if st.get("halt_until") else None, prm=PARAMS,
-                       entry_filter=(lambda f: flt(today, f)) if flt else None, tradable=set(rules) if rules else None)
+                       entry_filter=(lambda f: flt(today, f)) if flt else None, tradable=set(rules) if rules else None,
+                       prev_regime=st.get("regime"), exec_day=today)
             edge_ok, edge_mean, edge_n = risk.edge_eligible(cfg, load_edge(), dec["regime"])
             actions, orders, rejected = [], [], []
             for k, frac, why in dec["exits"]:

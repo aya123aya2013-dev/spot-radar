@@ -106,6 +106,32 @@ def test_default_rules_are_frozen():
     assert (round(c[-1][1], 4), len(tr)) == (9622.6335, 307)
     assert (round(c2[-1][1], 4), len(tr2)) == (9003.3516, 329)
 
+
+def test_regime_band_keeps_the_previous_side_near_the_ema200():
+    btc = dict(c=99.0, e50=101.0, e200=100.0)            # 1% under EMA200, EMA50 above it
+    assert agent.regime(btc, 0.6)[0] == "weak"            # no band: below EMA200 means weak
+    assert agent.regime(btc, 0.6, band=0.02, prev="bull")[0] == "bull"   # inside the 2% band: stays bull
+    assert agent.regime(btc, 0.6, band=0.02, prev="weak")[0] == "weak"
+    far = dict(c=95.0, e50=101.0, e200=100.0)             # 5% under: outside the band, flips
+    assert agent.regime(far, 0.6, band=0.02, prev="bull")[0] == "weak"
+
+
+def test_no_weekend_entries_when_asked():
+    sat = 2 + 7 * 2900                                     # day 2 was a Saturday (1970-01-03)
+    assert agent.weekday(sat) == 5 and agent.weekday(sat + 2) == 0
+    on = agent.plan(snaps(), {}, 5000, {}, prm=dict(agent.DEFAULT_PARAMS, no_weekend_entry=True), exec_day=sat)
+    off = agent.plan(snaps(), {}, 5000, {}, prm=dict(agent.DEFAULT_PARAMS, no_weekend_entry=True), exec_day=sat + 2)
+    assert on["entries"] == [] and off["entries"]
+
+
+def test_volume_confirmation():
+    sn = snaps()
+    sn["AAA"] = dict(sn["AAA"], vol_ratio=2.0)
+    sn["CCC"] = dict(sn["CCC"], vol_ratio=1.0)
+    d = agent.plan(sn, {}, 5000, {}, prm=dict(agent.DEFAULT_PARAMS, vol_confirm=1.5))
+    got = [e[0] for e in d["entries"]]
+    assert "AAA" in got and "CCC" not in got
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:

@@ -14,7 +14,8 @@ from datetime import datetime, timezone
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.environ.get("SPOT_LAB_DATA") or os.path.join(HERE, "lab_data")
 PARAM_KEYS = {"watch_n", "max_pos", "slot", "vol_unit", "init_atr", "trail_atr", "partial_r", "target2_r", "breakout_n", "resume",
-              "exit", "exit_low_n", "time_stop_days", "time_stop_r", "pyramid", "pyramid_r", "ml"}
+              "exit", "exit_low_n", "time_stop_days", "time_stop_r", "pyramid", "pyramid_r", "ml", "regime_band", "no_weekend_entry",
+              "vol_confirm"}
 RISK_KEYS = {"risk_per_trade", "max_positions"}
 
 
