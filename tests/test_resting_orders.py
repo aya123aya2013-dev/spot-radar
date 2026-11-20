@@ -37,10 +37,23 @@ def test_gap_below_stop_fills_at_open():
 
 
 def test_target1_sells_half_then_stop_moves_to_break_even():
-    fills, pos = run([bar(0, 101, 121, 100.5, 118), bar(1, 118, 119, 99, 100)])
+    saved, agent.PARTIAL_R = agent.PARTIAL_R, 2.0                  # the mechanism is tested with target 1 = 2R, whatever strategy.json says
+    try:
+        fills, pos = run([bar(0, 101, 121, 100.5, 118), bar(1, 118, 119, 99, 100)])
+    finally:
+        agent.PARTIAL_R = saved
     assert fills[0] == ("partial", 0.5, 120.0, T0)                 # target 1 = 100 + 2 * 10
     assert fills[1] == ("stop", 1.0, 100.0, T0 + B)                # the rest stops out at break-even
     assert not pos
+
+
+def test_no_partial_when_target1_disabled():
+    saved, agent.PARTIAL_R = agent.PARTIAL_R, 0.0                  # live setting since 15 Nov 2026: let the winner run
+    try:
+        fills, pos = run([bar(0, 101, 121, 100.5, 118), bar(1, 118, 119, 99, 100)])
+    finally:
+        agent.PARTIAL_R = saved
+    assert fills == [] and "X" in pos
 
 
 def test_stop_assumed_first_when_both_touch_in_one_candle():
