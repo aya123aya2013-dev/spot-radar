@@ -3,7 +3,8 @@
  "params": {
   "exit": "donchian",
   "exit_low_n": 20,
-  "partial_r": 0.0
+  "partial_r": 0.0,
+  "vol_confirm": 1.5
  },
  "history": [
   {
@@ -22,6 +23,15 @@
    },
    "by": "research rule, research_G.json 2026-11-15",
    "evidence": "2019-05-17..2026-11-14: CAGR 21.9% -> 40.0%, max drawdown 16.9% -> 23.3%, Calmar 1.29 -> 1.72, costs x3 +1006.3%"
+  },
+  {
+   "date": "2026-11-22",
+   "change": {
+    "vol_confirm": 1.5,
+    "risk_per_trade": 0.0125
+   },
+   "by": "research rule, research_G.json 2026-11-22",
+   "evidence": "2019-05-24..2026-11-21: CAGR 38.9% -> 29.5%, max drawdown 24.2% -> 23.4%, Calmar 1.61 -> 1.26, costs x3 +528.2%"
   }
  ]
 }

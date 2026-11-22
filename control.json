@@ -3,7 +3,7 @@
  "mode": "paper",
  "emergency_stop": false,
  "risk": {
-  "risk_per_trade": 0.01,
+  "risk_per_trade": 0.0125,
   "max_stop": 0.2,
   "max_position": 0.25,
   "max_positions": 6,
@@ -30,6 +30,11 @@
    "change": "max_stop 0.12 -> 0.20",
    "reason": "Owner accepted a historical drawdown up to 25% for higher return. Round-2 test: CAGR 9.6% -> 14.7%, max drawdown -9% -> -24%, Calmar 1.06 -> 0.62, positive in 4 of 5 folds, costs x3 still positive. Per-trade risk stays 1%; the 15% drawdown breaker stays.",
    "authorized_by": "owner (chat, 2 Nov 2026)"
+  },
+  {
+   "date": "2026-11-22",
+   "change": "risk_per_trade -> 0.0125",
+   "authorized_by": "pre-registered research rule (within the owner's 25% drawdown line)"
   }
  ]
 }
